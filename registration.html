@@ -3,16 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - UTech CTF Hub</title>
+    <title>Register - UTech CTF Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Same cyberpunk theme */
+        /* Same cyberpunk theme as login page */
         :root {
             --neon-green: #50fa7b;
             --neon-blue: #3e9eff;
+            --neon-cyan: #8be9fd;
+            --neon-purple: #bd93f9;
+            --neon-yellow: #f1fa8c;
             --neon-red: #ff5555;
+            --neon-orange: #ffb86b;
+            --neon-pink: #ff79c6;
             --bg-primary: #0a0e1a;
             --bg-secondary: #141b2b;
+            --bg-terminal: #0f1117;
             --border-color: #2a3550;
             --text-primary: #e0e0e0;
             --text-secondary: #8892b0;
@@ -53,10 +59,12 @@
             z-index: 100;
         }
 
-        .logo { font-size: 1.2rem; font-weight: 700; color: var(--neon-green); }
+        .logo { font-size: 1.2rem; font-weight: 700; color: var(--neon-green); text-shadow: 0 0 10px rgba(80, 250, 123, 0.3); }
         .logo i { margin-right: 0.5rem; }
         .nav-links { display: flex; list-style: none; gap: 2rem; flex-wrap: wrap; }
-        .nav-links a { color: var(--text-secondary); text-decoration: none; transition: all 0.3s ease; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-weight: 500; transition: all 0.3s ease; position: relative; }
+        .nav-links a::before { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: var(--neon-green); transition: width 0.3s ease; }
+        .nav-links a:hover::before { width: 100%; }
         .nav-links a:hover { color: var(--neon-green); }
 
         .login-container {
@@ -69,100 +77,201 @@
             z-index: 1;
         }
 
-        .login-box {
+        .login-wrapper {
+            display: flex;
+            max-width: 1100px;
+            width: 100%;
             background: var(--bg-secondary);
-            border: 2px solid var(--neon-green);
             border-radius: 20px;
-            padding: 3rem;
-            width: 450px;
-            box-shadow: 0 0 50px rgba(80, 250, 123, 0.3);
-            animation: glowPulse 2s infinite;
+            overflow: hidden;
+            border: 1px solid rgba(80, 250, 123, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(80, 250, 123, 0.1);
+            position: relative;
         }
 
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(80, 250, 123, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(80, 250, 123, 0.6); }
+        .login-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--neon-green), var(--neon-blue), var(--neon-purple), transparent);
+            animation: scanline 3s linear infinite;
         }
 
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
+        @keyframes scanline {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
-        .login-header i {
-            font-size: 3rem;
-            color: var(--neon-green);
-            margin-bottom: 1rem;
+        .login-info {
+            flex: 1;
+            background: linear-gradient(145deg, #0f2b3d, #0a1a2a);
+            padding: 3rem 2rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .login-header h1 {
-            color: var(--neon-green);
-            font-size: 1.5rem;
+        .login-info::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(80, 250, 123, 0.15) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
         }
 
-        .input-group {
-            margin-bottom: 1.5rem;
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--neon-blue);
-        }
+        .info-content { position: relative; z-index: 1; color: white; }
+        .info-icon { font-size: 4rem; margin-bottom: 1rem; color: var(--neon-green); animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .info-content h1 { font-size: 2rem; margin-bottom: 1rem; background: linear-gradient(135deg, var(--neon-green), var(--neon-blue)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .info-content p { margin-bottom: 2rem; line-height: 1.6; opacity: 0.9; color: var(--text-secondary); }
+        .feature-list { margin: 2rem 0; }
+        .feature-item { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding: 0.5rem; border-left: 2px solid var(--neon-green); transition: all 0.3s ease; }
+        .feature-item:hover { transform: translateX(5px); border-left-color: var(--neon-blue); }
+        .feature-item i { color: var(--neon-green); font-size: 1.1rem; }
+        .feature-item span { color: var(--text-secondary); }
 
-        .input-group input {
+        .login-form-wrapper { flex: 1; padding: 3rem 2rem; background: var(--bg-secondary); }
+        .form-header { text-align: center; margin-bottom: 2rem; }
+        .form-header h2 { color: var(--neon-green); font-size: 1.8rem; margin-bottom: 0.5rem; text-shadow: 0 0 10px rgba(80, 250, 123, 0.3); }
+        .form-header p { color: var(--text-secondary); }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--neon-blue); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        .form-group label i { margin-right: 0.5rem; }
+        .form-group input {
             width: 100%;
             background: var(--bg-primary);
-            border: 1px solid var(--border-color);
+            border: 2px solid var(--border-color);
             color: var(--text-primary);
-            padding: 0.75rem;
+            padding: 0.8rem 1rem;
             border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
             font-family: monospace;
         }
-
-        .input-group input:focus {
+        .form-group input:focus {
             outline: none;
             border-color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(80, 250, 123, 0.2);
         }
 
-        .login-btn {
+        .password-input-wrapper { position: relative; }
+        .toggle-password {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .toggle-password:hover { color: var(--neon-green); }
+
+        .password-strength {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .strength-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        .strength-bar.weak { background: var(--neon-red); }
+        .strength-bar.medium { background: var(--neon-orange); }
+        .strength-bar.strong { background: var(--neon-green); }
+
+        .register-btn {
             width: 100%;
-            padding: 0.75rem;
             background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
             border: none;
             color: var(--bg-primary);
-            font-family: monospace;
-            font-weight: bold;
-            cursor: pointer;
+            padding: 1rem;
             border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s ease;
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .login-btn:hover {
+        .register-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .register-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .register-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 0 30px rgba(80, 250, 123, 0.4);
         }
 
-        .error-msg {
-            color: var(--neon-red);
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.8rem;
+        .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
-        .register-link {
-            text-align: center;
-            margin-top: 1rem;
-            color: var(--text-secondary);
-        }
+        .login-link { text-align: center; margin-top: 1.5rem; color: var(--text-secondary); }
+        .login-link a { color: var(--neon-green); text-decoration: none; transition: all 0.3s ease; }
+        .login-link a:hover { text-shadow: 0 0 10px var(--neon-green); }
 
-        .register-link a {
-            color: var(--neon-green);
-            text-decoration: none;
+        .alert {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+            font-size: 0.85rem;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alert-danger { background: rgba(255, 85, 85, 0.1); border: 1px solid var(--neon-red); color: var(--neon-red); }
+        .alert-success { background: rgba(80, 250, 123, 0.1); border: 1px solid var(--neon-green); color: var(--neon-green); }
+
+        .spinner { display: inline-block; animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .login-wrapper { flex-direction: column; }
+            .navbar { flex-direction: column; text-align: center; }
+            .nav-links { justify-content: center; }
         }
     </style>
 </head>
 <body>
+
     <canvas id="matrixCanvas"></canvas>
 
     <nav class="navbar">
@@ -172,58 +281,88 @@
             <li><a href="CTF learning material.html">Learn</a></li>
             <li><a href="CTF challenge.html">Challenges</a></li>
             <li><a href="CTF scoreboard.html">Scoreboard</a></li>
-            <li><a href="register.html">Register</a></li>
+            <li><a href="login.html">Login</a></li>
         </ul>
     </nav>
 
     <main class="login-container">
-        <div class="login-box">
-            <div class="login-header">
-                <i class="fas fa-terminal"></i>
-                <h1>UTech CTF Hub</h1>
-                <p>Access the Terminal</p>
+        <div class="login-wrapper">
+            <div class="login-info">
+                <div class="info-content">
+                    <i class="fas fa-user-plus info-icon"></i>
+                    <h1>Join the CTF Community</h1>
+                    <p>Create your account and start your ethical hacking journey today.</p>
+                    <div class="feature-list">
+                        <div class="feature-item"><i class="fas fa-trophy"></i><span>Compete on leaderboards</span></div>
+                        <div class="feature-item"><i class="fas fa-code"></i><span>Access all challenges</span></div>
+                        <div class="feature-item"><i class="fas fa-certificate"></i><span>Track your progress</span></div>
+                        <div class="feature-item"><i class="fas fa-shield-alt"></i><span>Learn from experts</span></div>
+                    </div>
+                </div>
             </div>
-            <form id="loginForm">
-                <div class="input-group">
-                    <label><i class="fas fa-user"></i> USERNAME</label>
-                    <input type="text" id="username" placeholder="Enter username" required>
+            
+            <div class="login-form-wrapper">
+                <div class="form-header">
+                    <h2>CREATE ACCOUNT</h2>
+                    <p>Fill in your details to register</p>
                 </div>
-                <div class="input-group">
-                    <label><i class="fas fa-lock"></i> PASSWORD</label>
-                    <input type="password" id="password" placeholder="Enter password" required>
-                </div>
-                <button type="submit" class="login-btn">
-                    <i class="fas fa-sign-in-alt"></i> LOGIN
-                </button>
-                <div id="errorMsg" class="error-msg"></div>
-                <div class="register-link">
-                    Don't have an account? <a href="register.html">Register here</a>
-                </div>
-            </form>
+
+                <div id="errorMessage" class="alert alert-danger"></div>
+                <div id="successMessage" class="alert alert-success"></div>
+
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> USERNAME</label>
+                        <input type="text" id="username" placeholder="Choose a username" autocomplete="username">
+                        <small id="usernameHint" style="color: var(--text-secondary); font-size: 0.7rem;">3-20 characters, letters and numbers only</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> EMAIL</label>
+                        <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> PASSWORD</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="password" placeholder="Create a password">
+                            <button type="button" class="toggle-password" onclick="togglePassword('password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-bar"></div>
+                            <div class="strength-bar"></div>
+                            <div class="strength-bar"></div>
+                        </div>
+                        <small style="color: var(--text-secondary); font-size: 0.7rem;">Minimum 6 characters, include letters and numbers</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> CONFIRM PASSWORD</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="confirmPassword" placeholder="Confirm your password">
+                            <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="register-btn" id="registerBtn">
+                        <span>REGISTER</span>
+                        <span class="spinner" style="display: none;"><i class="fas fa-circle-notch fa-spin"></i></span>
+                    </button>
+                    
+                    <div class="login-link">
+                        Already have an account? <a href="login.html">Login here</a>
+                    </div>
+                </form>
+            </div>
         </div>
     </main>
 
     <script>
-        // Same Database system as register page
-        const DB_KEYS = {
-            USERS: 'ctf_database_users',
-            CHALLENGES: 'ctf_database_challenges',
-            SUBMISSIONS: 'ctf_database_submissions'
-        };
-
-        class Database {
-            static getUsers() {
-                const users = localStorage.getItem(DB_KEYS.USERS);
-                return users ? JSON.parse(users) : [];
-            }
-            
-            static authenticateUser(username, password) {
-                const users = this.getUsers();
-                return users.find(u => u.username === username && u.password === password);
-            }
-        }
-
-        // Matrix rain effect
+        // Matrix Rain Effect
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
@@ -249,25 +388,139 @@
             canvas.height = window.innerHeight;
         });
 
-        // Login handler
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
+        // Password Strength Checker
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength++;
+            if (password.match(/[0-9]/)) strength++;
+            if (password.match(/[^a-zA-Z0-9]/)) strength++;
+            return strength;
+        }
+
+        function updatePasswordStrength() {
             const password = document.getElementById('password').value;
+            const strength = checkPasswordStrength(password);
+            const bars = document.querySelectorAll('.strength-bar');
             
-            const user = Database.authenticateUser(username, password);
-            
-            if (user) {
-                sessionStorage.setItem('currentUser', JSON.stringify({
-                    id: user.id,
-                    username: user.username,
-                    role: user.role,
-                    points: user.points
-                }));
-                window.location.href = 'homepage.html';
+            bars.forEach((bar, index) => {
+                if (index < strength) {
+                    if (strength <= 2) bar.className = 'strength-bar weak';
+                    else if (strength <= 3) bar.className = 'strength-bar medium';
+                    else bar.className = 'strength-bar strong';
+                } else {
+                    bar.className = 'strength-bar';
+                }
+            });
+        }
+
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = field.parentElement.querySelector('.toggle-password i');
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
             } else {
-                document.getElementById('errorMsg').innerHTML = '❌ Invalid username or password';
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
+        }
+
+        document.getElementById('password').addEventListener('input', updatePasswordStrength);
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            const registerBtn = document.getElementById('registerBtn');
+            const spinner = registerBtn.querySelector('.spinner');
+            const btnText = registerBtn.querySelector('span:first-child');
+            
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Validation
+            if (!username || !email || !password || !confirmPassword) {
+                errorDiv.textContent = '⚠️ All fields are required';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (username.length < 3 || username.length > 20) {
+                errorDiv.textContent = '⚠️ Username must be 3-20 characters';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                errorDiv.textContent = '⚠️ Username can only contain letters, numbers, and underscores';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (password !== confirmPassword) {
+                errorDiv.textContent = '⚠️ Passwords do not match';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (password.length < 6) {
+                errorDiv.textContent = '⚠️ Password must be at least 6 characters';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = '⚠️ Please enter a valid email address';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Show loading state
+            btnText.style.display = 'none';
+            spinner.style.display = 'inline-block';
+            registerBtn.disabled = true;
+            
+            // Simulate API call (replace with actual backend)
+            setTimeout(() => {
+                // Check if user exists (demo)
+                const existingUsers = ['student', 'admin', 'testuser'];
+                if (existingUsers.includes(username.toLowerCase())) {
+                    errorDiv.textContent = '✗ Username already exists. Please choose another.';
+                    errorDiv.style.display = 'block';
+                } else {
+                    const newUser = {
+                        id: Date.now(),
+                        username: username,
+                        email: email,
+                        role: 'student',
+                        points: 0,
+                        solves: 0
+                    };
+                    
+                    localStorage.setItem('user', JSON.stringify(newUser));
+                    
+                    successDiv.textContent = '✓ Registration successful! Redirecting...';
+                    successDiv.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        window.location.href = 'homepage.html';
+                    }, 2000);
+                }
+                
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
+                registerBtn.disabled = false;
+            }, 1000);
         });
     </script>
 </body>
