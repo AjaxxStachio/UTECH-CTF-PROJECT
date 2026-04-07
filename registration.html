@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - UTech CTF Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Same cyberpunk theme */
+        :root {
+            --neon-green: #50fa7b;
+            --neon-blue: #3e9eff;
+            --neon-red: #ff5555;
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141b2b;
+            --border-color: #2a3550;
+            --text-primary: #e0e0e0;
+            --text-secondary: #8892b0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2f 100%);
+            font-family: 'Segoe UI', 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.08;
+            pointer-events: none;
+        }
+
+        .navbar {
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--neon-green);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: relative;
+            z-index: 100;
+        }
+
+        .logo { font-size: 1.2rem; font-weight: 700; color: var(--neon-green); }
+        .logo i { margin-right: 0.5rem; }
+        .nav-links { display: flex; list-style: none; gap: 2rem; flex-wrap: wrap; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; transition: all 0.3s ease; }
+        .nav-links a:hover { color: var(--neon-green); }
+
+        .login-container {
+            min-height: calc(100vh - 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-box {
+            background: var(--bg-secondary);
+            border: 2px solid var(--neon-green);
+            border-radius: 20px;
+            padding: 3rem;
+            width: 450px;
+            box-shadow: 0 0 50px rgba(80, 250, 123, 0.3);
+            animation: glowPulse 2s infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(80, 250, 123, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(80, 250, 123, 0.6); }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header i {
+            font-size: 3rem;
+            color: var(--neon-green);
+            margin-bottom: 1rem;
+        }
+
+        .login-header h1 {
+            color: var(--neon-green);
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--neon-blue);
+        }
+
+        .input-group input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--neon-green);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            border: none;
+            color: var(--bg-primary);
+            font-family: monospace;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(80, 250, 123, 0.4);
+        }
+
+        .error-msg {
+            color: var(--neon-red);
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .register-link a {
+            color: var(--neon-green);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+
+    <nav class="navbar">
+        <div class="logo"><i class="fas fa-shield-alt"></i> UTECH CTF HUB</div>
+        <ul class="nav-links">
+            <li><a href="homepage.html">Home</a></li>
+            <li><a href="CTF learning material.html">Learn</a></li>
+            <li><a href="CTF challenge.html">Challenges</a></li>
+            <li><a href="CTF scoreboard.html">Scoreboard</a></li>
+            <li><a href="register.html">Register</a></li>
+        </ul>
+    </nav>
+
+    <main class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <i class="fas fa-terminal"></i>
+                <h1>UTech CTF Hub</h1>
+                <p>Access the Terminal</p>
+            </div>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label><i class="fas fa-user"></i> USERNAME</label>
+                    <input type="text" id="username" placeholder="Enter username" required>
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> PASSWORD</label>
+                    <input type="password" id="password" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> LOGIN
+                </button>
+                <div id="errorMsg" class="error-msg"></div>
+                <div class="register-link">
+                    Don't have an account? <a href="register.html">Register here</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Same Database system as register page
+        const DB_KEYS = {
+            USERS: 'ctf_database_users',
+            CHALLENGES: 'ctf_database_challenges',
+            SUBMISSIONS: 'ctf_database_submissions'
+        };
+
+        class Database {
+            static getUsers() {
+                const users = localStorage.getItem(DB_KEYS.USERS);
+                return users ? JSON.parse(users) : [];
+            }
+            
+            static authenticateUser(username, password) {
+                const users = this.getUsers();
+                return users.find(u => u.username === username && u.password === password);
+            }
+        }
+
+        // Matrix rain effect
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()";
+        const drops = [];
+        for (let i = 0; i < canvas.width / 20; i++) drops[i] = Math.random() * canvas.height;
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.04)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#50fa7b';
+            ctx.font = '14px monospace';
+            for (let i = 0; i < drops.length; i++) {
+                ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 20, drops[i] * 20);
+                if (drops[i] * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 35);
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Login handler
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const user = Database.authenticateUser(username, password);
+            
+            if (user) {
+                sessionStorage.setItem('currentUser', JSON.stringify({
+                    id: user.id,
+                    username: user.username,
+                    role: user.role,
+                    points: user.points
+                }));
+                window.location.href = 'homepage.html';
+            } else {
+                document.getElementById('errorMsg').innerHTML = '❌ Invalid username or password';
+            }
+        });
+    </script>
+</body>
+</html>

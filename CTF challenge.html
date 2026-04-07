@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en"> 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenges - UTECH CTF HUB</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* ===== CYBERPUNK THEME ===== */
+        
+        :root {
+            --neon-green: #50fa7b;
+            --neon-blue: #3e9eff;
+            --neon-cyan: #8be9fd;
+            --neon-purple: #bd93f9;
+            --neon-yellow: #f1fa8c;
+            --neon-red: #ff5555;
+            --neon-orange: #ffb86b;
+            --neon-pink: #ff79c6;
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141b2b;
+            --border-color: #2a3550;
+            --text-primary: #e0e0e0;
+            --text-secondary: #8892b0;
+            --glow-green: rgba(80, 250, 123, 0.3);
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --radius-2xl: 40px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-2xl: 48px;
+            --transition-normal: 0.3s ease;
+            --transition-fast: 0.15s ease;
+            --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', 'Share Tech Mono', monospace;
+            overflow-x: hidden;
+        }
+
+        /* Matrix Rain Canvas */
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--neon-green);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px rgba(80, 250, 123, 0.3);
+            cursor: pointer;
+        }
+
+        .logo i {
+            margin-right: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--neon-green);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::before,
+        .nav-links a.active::before {
+            width: 100%;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--neon-green);
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            background: rgba(255, 85, 85, 0.15);
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: var(--neon-red);
+            color: var(--bg-primary);
+            box-shadow: 0 0 15px rgba(255, 85, 85, 0.4);
+        }
+
+        .user-greeting {
+            color: var(--neon-green);
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            background: rgba(80, 250, 123, 0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            border: 1px solid rgba(80, 250, 123, 0.3);
+        }
+
+        /* Login Required Overlay */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .login-overlay-content {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--neon-red);
+            border-radius: 20px;
+            max-width: 500px;
+            margin: 2rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        .login-overlay-content i {
+            font-size: 4rem;
+            color: var(--neon-red);
+            margin-bottom: 1rem;
+        }
+
+        .login-overlay-content h2 {
+            color: var(--neon-red);
+            margin-bottom: 1rem;
+        }
+
+        .login-overlay-content p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .login-overlay-btn {
+            background: linear-gradient(135deg, var(--neon-red), var(--neon-orange));
+            border: none;
+            color: var(--bg-primary);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 85, 85, 0.4); }
+            50% { box-shadow: 0 0 0 15px rgba(255, 85, 85, 0); }
+        }
+
+        /* Protected Content */
+        .protected-content {
+            display: none;
+        }
+
+        .protected-content.visible {
+            display: block;
+        }
+
+        /* Challenges Container */
+        .challenges-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+        }
+
+        /* Filters Section */
+        .filters-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .cyber-selector label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--neon-blue);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .cyber-selector label i {
+            margin-right: var(--spacing-sm);
+        }
+
+        .cyber-select {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.8rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .cyber-select:hover {
+            border-color: var(--neon-blue);
+        }
+
+        .points-slider-container {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+        }
+
+        .slider-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--neon-pink);
+        }
+
+        .points-display {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .points-value {
+            background: rgba(80, 250, 123, 0.1);
+            border: 1px solid var(--neon-green);
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-2xl);
+            font-size: 0.9rem;
+            color: var(--neon-green);
+        }
+
+        .cyber-slider {
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .cyber-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: var(--spacing-sm);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .active-range {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--spacing-md);
+            padding-top: 0.75rem;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .range-badge {
+            background: rgba(80, 250, 123, 0.1);
+            border: 1px solid var(--neon-green);
+            border-radius: var(--radius-2xl);
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .range-badge i {
+            margin-right: 0.3rem;
+        }
+
+        .filter-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-md);
+        }
+
+        .btn {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            border: none;
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px var(--glow-green);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 0.85rem;
+        }
+
+        .stat-badge i {
+            color: var(--neon-green);
+        }
+
+        .stat-badge .count {
+            font-weight: 700;
+            color: var(--neon-green);
+        }
+
+        /* Challenges Grid */
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        /* Challenge Card */
+        .challenge-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .challenge-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--neon-green);
+            box-shadow: 0 10px 30px var(--glow-green);
+        }
+
+        .challenge-card.solved {
+            border-color: var(--neon-green);
+            background: linear-gradient(135deg, var(--bg-secondary), rgba(80, 250, 123, 0.05));
+        }
+
+        .challenge-card .card-header {
+            background: linear-gradient(135deg, rgba(80, 250, 123, 0.05), rgba(62, 158, 255, 0.05));
+            padding: var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 0.25rem 0.8rem;
+            border-radius: var(--radius-2xl);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .difficulty.beginner { background: rgba(80, 250, 123, 0.2); border: 1px solid var(--neon-green); color: var(--neon-green); }
+        .difficulty.intermediate { background: rgba(255, 184, 108, 0.2); border: 1px solid var(--neon-orange); color: var(--neon-orange); }
+        .difficulty.advanced { background: rgba(255, 85, 85, 0.2); border: 1px solid var(--neon-red); color: var(--neon-red); }
+
+        .challenge-card .points {
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--neon-green);
+        }
+
+        .challenge-card .card-body {
+            padding: var(--spacing-lg);
+        }
+
+        .challenge-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .challenge-category {
+            display: inline-block;
+            background: rgba(62, 158, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 0.2rem 0.8rem;
+            border-radius: var(--radius-2xl);
+            font-size: 0.7rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .challenge-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .challenge-meta {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-top: 1px dashed var(--border-color);
+            border-bottom: 1px dashed var(--border-color);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .challenge-card .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .challenge-status {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 0.75rem;
+        }
+
+        .status-solved { color: var(--neon-green); }
+        .status-unsolved { color: var(--neon-orange); }
+
+        .btn-view {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+
+        .btn-view:hover {
+            background: var(--neon-blue);
+            color: var(--bg-primary);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--neon-green);
+            border-radius: var(--radius-xl);
+            width: 90%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            top: var(--spacing-md);
+            right: var(--spacing-lg);
+            font-size: 2rem;
+            color: var(--neon-red);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .close:hover {
+            text-shadow: 0 0 10px var(--neon-red);
+        }
+
+        #challengeDetail {
+            padding: var(--spacing-xl);
+        }
+
+        .detail-header {
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--neon-green);
+        }
+
+        .detail-title {
+            font-size: 1.5rem;
+            color: var(--neon-green);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .detail-meta {
+            display: flex;
+            gap: var(--spacing-md);
+            flex-wrap: wrap;
+        }
+
+        .detail-badge {
+            display: inline-block;
+            padding: 0.25rem 0.8rem;
+            border-radius: var(--radius-2xl);
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .detail-scenario {
+            background: var(--bg-primary);
+            border-left: 4px solid var(--neon-blue);
+            padding: var(--spacing-lg);
+            margin: var(--spacing-lg) 0;
+            border-radius: var(--radius-md);
+        }
+
+        .detail-scenario h3 {
+            color: var(--neon-blue);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+            flex-wrap: wrap;
+        }
+
+        .flag-submission {
+            display: flex;
+            gap: var(--spacing-md);
+            flex: 2;
+            flex-wrap: wrap;
+        }
+
+        .flag-submission input {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            color: var(--neon-green);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .flag-submission input:focus {
+            border-color: var(--neon-green);
+            outline: none;
+        }
+
+        .flag-submission button {
+            background: transparent;
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 0 var(--spacing-xl);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .flag-submission button:hover {
+            background: var(--neon-green);
+            color: var(--bg-primary);
+        }
+
+        .reveal-btn {
+            background: transparent;
+            border: 2px solid var(--neon-orange);
+            color: var(--neon-orange);
+            padding: 0 var(--spacing-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .reveal-btn:hover:not(:disabled) {
+            background: var(--neon-orange);
+            color: var(--bg-primary);
+        }
+
+        .reveal-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hint-section {
+            background: rgba(255, 184, 108, 0.1);
+            border: 1px solid var(--neon-orange);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+        }
+
+        .hint-btn {
+            background: transparent;
+            border: 1px solid var(--neon-orange);
+            color: var(--neon-orange);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+        }
+
+        .hint-btn:hover {
+            background: var(--neon-orange);
+            color: var(--bg-primary);
+        }
+
+        .hint-text {
+            margin-top: var(--spacing-md);
+            padding: 0.75rem;
+            background: rgba(255, 184, 108, 0.05);
+            border-radius: var(--radius-md);
+            color: var(--neon-orange);
+            border-left: 3px solid var(--neon-orange);
+        }
+
+        .what-learned {
+            background: rgba(80, 250, 123, 0.05);
+            border-left: 4px solid var(--neon-green);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-lg);
+            border-radius: var(--radius-md);
+        }
+
+        .what-learned h3 {
+            color: var(--neon-green);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .penalty-warning {
+            font-size: 0.7rem;
+            color: var(--neon-orange);
+            margin-top: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .revealed-flag {
+            background: rgba(80, 250, 123, 0.1);
+            border: 1px solid var(--neon-green);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin: var(--spacing-sm) 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            .challenges-container { padding: 0 var(--spacing-md); }
+            .filter-grid { grid-template-columns: 1fr; }
+            .challenges-grid { grid-template-columns: 1fr; }
+            .action-buttons { flex-direction: column; }
+            .flag-submission { flex-direction: column; }
+            .modal-content { width: 95%; }
+            #challengeDetail { padding: var(--spacing-md); }
+            .navbar { flex-direction: column; text-align: center; }
+            .nav-links { justify-content: center; }
+        }
+
+        @keyframes particleFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100px) scale(0); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrixCanvas"></canvas>
+
+    <nav class="navbar">
+        <div class="logo" onclick="navigateTo('homepage.html')">
+            <i class="fas fa-shield-alt"></i> UTECH CTF HUB
+        </div>
+        <ul class="nav-links">
+            <li><a onclick="navigateTo('homepage.html')">Home</a></li>
+            <li><a onclick="navigateTo('CTF learning material.html')">Learn</a></li>
+            <li><a class="active">Challenges</a></li>
+            <li><a onclick="navigateTo('CTF scoreboard.html')">Scoreboard</a></li>
+            <li id="authContainer" style="display: flex; align-items: center; gap: 0.8rem;"></li>
+        </ul>
+    </nav>
+
+    <!-- Login Required Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-overlay-content">
+            <i class="fas fa-lock"></i>
+            <h2>ACCESS RESTRICTED</h2>
+            <p>You must be logged in to access challenges. Please login to start your CTF journey.</p>
+            <button class="login-overlay-btn" onclick="navigateTo('login.html')">
+                <i class="fas fa-sign-in-alt"></i> LOGIN TO CONTINUE
+            </button>
+        </div>
+    </div>
+
+    <!-- Protected Content -->
+    <div id="protectedContent" class="protected-content">
+        <main class="challenges-container">
+            <div class="section-header">
+                <h1><i class="fas fa-flag"></i> Challenges Dashboard</h1>
+                <p>Test your skills with hands-on cybersecurity challenges</p>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-badge">
+                    <i class="fas fa-database"></i>
+                    <span>Total: <span class="count" id="totalCount">18</span></span>
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Completed: <span class="count" id="completedCount">0</span></span>
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-trophy"></i>
+                    <span>Points: <span class="count" id="pointsEarned">0</span></span>
+                </div>
+            </div>
+
+            <div class="filters-section">
+                <div class="filter-grid">
+                    <div class="cyber-selector">
+                        <label><i class="fas fa-tag"></i> CATEGORY</label>
+                        <select id="categoryFilter" class="cyber-select">
+                            <option value="all">ALL CATEGORIES</option>
+                            <option value="web">WEB SECURITY</option>
+                            <option value="crypto">CRYPTOGRAPHY</option>
+                            <option value="network">NETWORK</option>
+                            <option value="reversing">REVERSE ENGINEERING</option>
+                            <option value="binary">BINARY EXPLOITATION</option>
+                        </select>
+                    </div>
+
+                    <div class="cyber-selector">
+                        <label><i class="fas fa-chart-line"></i> DIFFICULTY</label>
+                        <select id="difficultyFilter" class="cyber-select">
+                            <option value="all">ALL LEVELS</option>
+                            <option value="Beginner">BEGINNER</option>
+                            <option value="Intermediate">INTERMEDIATE</option>
+                            <option value="Advanced">ADVANCED</option>
+                        </select>
+                    </div>
+
+                    <div class="points-slider-container">
+                        <div class="slider-header">
+                            <span class="slider-label"><i class="fas fa-bolt"></i> POINTS FILTER</span>
+                            <div class="points-display">
+                                <div class="points-value"><span>MIN</span> 0</div>
+                                <div class="points-value" id="maxPointsDisplay"><span>MAX</span> 500</div>
+                            </div>
+                        </div>
+                        <input type="range" id="pointsRange" class="cyber-slider" min="0" max="500" value="500" step="10">
+                        <div class="slider-labels">
+                            <span>0</span><span>100</span><span>200</span><span>300</span><span>400</span><span>500</span>
+                        </div>
+                        <div class="active-range">
+                            <div class="range-badge"><i class="fas fa-filter"></i> ACTIVE RANGE</div>
+                            <div class="range-badge"><i class="fas fa-bolt"></i> <span id="activeRangeValue">0 - 500</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn" style="border-color: var(--neon-red); color: var(--neon-red);" onclick="showResetConfirm()"><i class="fas fa-undo-alt"></i> RESET ALL PROGRESS</button>
+                    <button class="btn btn-primary" onclick="applyFilters()"><i class="fas fa-filter"></i> APPLY FILTERS</button>
+                </div>
+            </div>
+
+            <div class="challenges-grid" id="challengesGrid"></div>
+        </main>
+    </div>
+
+    <div id="challengeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="challengeDetail"></div>
+        </div>
+    </div>
+
+    <div id="resetConfirmModal" class="reset-confirm-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); backdrop-filter:blur(8px); z-index:3000; justify-content:center; align-items:center;">
+        <div style="background: var(--bg-secondary); border: 2px solid var(--neon-red); border-radius: 20px; padding: 2rem; max-width: 400px; text-align: center;">
+            <h3 style="color: var(--neon-red); margin-bottom: 1rem;"><i class="fas fa-exclamation-triangle"></i> RESET ALL PROGRESS</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">This will reset your score, completed challenges, and revealed flags. This action cannot be undone!</p>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button class="btn-cancel" style="background:transparent; border:2px solid var(--neon-blue); color:var(--neon-blue); padding:0.5rem 1.5rem; border-radius:8px; cursor:pointer;" onclick="closeResetModal()">CANCEL</button>
+                <button class="btn-confirm" style="background:var(--neon-red); border:none; color:white; padding:0.5rem 1.5rem; border-radius:8px; cursor:pointer;" onclick="resetAllProgress()">RESET EVERYTHING</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== MATRIX RAIN ==========
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*";
+        let drops = [];
+        function initDrops() { drops = []; for(let i=0; i<canvas.width/14; i++) drops[i]=Math.random()*canvas.height; }
+        initDrops();
+        function drawMatrix() {
+            if(!ctx) return;
+            ctx.fillStyle = 'rgba(10,10,10,0.04)';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#50fa7b';
+            ctx.font = '14px monospace';
+            for(let i=0;i<drops.length;i++) {
+                ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*14, drops[i]*14);
+                if(drops[i]*14 > canvas.height && Math.random()>0.975) drops[i]=0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix,35);
+        window.addEventListener('resize',()=>{ resizeCanvas(); initDrops(); });
+
+        // ========== AUTH STATE MANAGEMENT ==========
+        function getCurrentUser() {
+            const user = localStorage.getItem('user') || sessionStorage.getItem('user');
+            if(user) {
+                try { return JSON.parse(user); } catch(e) { return null; }
+            }
+            return null;
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            sessionStorage.removeItem('user');
+            alert('🔐 You have been logged out. Redirecting to login page...');
+            window.location.href = 'login.html';
+        }
+
+        function isLoggedIn() {
+            return getCurrentUser() !== null;
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        function updateAuthUI() {
+            const authContainer = document.getElementById('authContainer');
+            const loginOverlay = document.getElementById('loginOverlay');
+            const protectedContent = document.getElementById('protectedContent');
+            
+            if(!authContainer) return;
+            const user = getCurrentUser();
+            const loggedIn = !!user;
+            
+            if(loggedIn && user.username) {
+                authContainer.innerHTML = `
+                    <span class="user-greeting"><i class="fas fa-user-astronaut"></i> ${user.username}</span>
+                    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> LOGOUT</button>
+                `;
+                if(loginOverlay) loginOverlay.style.display = 'none';
+                if(protectedContent) protectedContent.classList.add('visible');
+                
+                // Initialize challenges after login
+                if(typeof initChallenges === 'function') initChallenges();
+            } else {
+                authContainer.innerHTML = `<a href="login.html" style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-sign-in-alt"></i> Login</a>`;
+                if(loginOverlay) loginOverlay.style.display = 'flex';
+                if(protectedContent) protectedContent.classList.remove('visible');
+            }
+        }
+
+        // ========== CHALLENGES DATABASE ==========
+        const challenges = [
+            { id: 1, title: "SQL Injection: Login Bypass", category: "web", difficulty: "Beginner", points: 100, solves: 145, description: "Bypass the login form using SQL injection.", scenario: "Login form with query: SELECT * FROM users WHERE username='[input]' AND password='[input]'", flag: "flag{sqli_auth_bypass_master_2024}", hint: "Try using ' OR '1'='1' --", whatLearned: "SQL injection occurs when unsanitized input is inserted into SQL queries." },
+            { id: 2, title: "Base64 Decoder", category: "crypto", difficulty: "Beginner", points: 75, solves: 234, description: "Decode the hidden message.", scenario: "You found: ZmxhZ3tiNHNlNjRfMXNfZTFzNl9kM2MwbDNfY3I0Y2sxfQ==", flag: "flag{b4se64_1s_e1s6_d3c0l3_cr4ck1}", hint: "Base64 decoding: echo 'string' | base64 -d", whatLearned: "Base64 is encoding, not encryption." },
+            { id: 3, title: "ROT13 Cipher", category: "crypto", difficulty: "Beginner", points: 50, solves: 312, description: "Decode the ROT13 message.", scenario: "You intercepted: synt{ebg13_vf_nyjnlf_grzcnepbhy_ohg_abg_frpher}", flag: "flag{rot13_is_always_temporary_but_not_secure}", hint: "ROT13 shifts letters by 13 positions.", whatLearned: "ROT13 is a simple substitution cipher." },
+            { id: 4, title: "Port Scanner Detection", category: "network", difficulty: "Beginner", points: 100, solves: 98, description: "Identify open port and service.", scenario: "PCAP shows repeated SYN packets to port 22.", flag: "flag{ssh_scan_detected_22_tcp}", hint: "Port 22 is for SSH", whatLearned: "SYN scans detect open ports." },
+            { id: 5, title: "Phishing Detection", category: "web", difficulty: "Beginner", points: 75, solves: 189, description: "Identify phishing red flags.", scenario: "Email from: support@paypa1.com", flag: "flag{phish_detected_domain_spoofing_urgency}", hint: "Look at the sender domain", whatLearned: "Phishing emails use spoofed domains." },
+            { id: 6, title: "String Extraction", category: "reversing", difficulty: "Beginner", points: 100, solves: 67, description: "Find hidden flag in binary.", scenario: "Binary contains hidden flag.", flag: "flag{strings_are_your_best_friend}", hint: "Try: strings filename | grep flag", whatLearned: "strings reveals hardcoded strings." },
+            { id: 7, title: "Union-Based SQL Injection", category: "web", difficulty: "Intermediate", points: 200, solves: 78, description: "Extract database information.", scenario: "URL parameter 'id' is vulnerable.", flag: "flag{union_select_master}", hint: "Use UNION SELECT username,password FROM users", whatLearned: "UNION injection extracts data." },
+            { id: 8, title: "XSS: Cookie Stealer", category: "web", difficulty: "Intermediate", points: 200, solves: 56, description: "Steal session cookies.", scenario: "Comment section is vulnerable.", flag: "flag{xss_cookie_stealer}", hint: "Use script tag with document.cookie", whatLearned: "XSS can steal cookies." },
+            { id: 9, title: "Vigenère Cipher", category: "crypto", difficulty: "Intermediate", points: 175, solves: 45, description: "Decrypt Vigenère cipher.", scenario: "Encrypted with key 'CYBER'", flag: "flag{vigenere_cipher}", hint: "Subtract key shifts from each letter", whatLearned: "Vigenère uses repeating key." },
+            { id: 10, title: "PCAP Extraction", category: "network", difficulty: "Intermediate", points: 250, solves: 34, description: "Extract file from PCAP.", scenario: "HTTP transfer in network trace.", flag: "flag{pcap_extraction}", hint: "Wireshark: Export Objects", whatLearned: "PCAPs reconstruct files." },
+            { id: 11, title: "Crackme", category: "reversing", difficulty: "Intermediate", points: 225, solves: 42, description: "Find correct password.", scenario: "Binary asks for password.", flag: "flag{crackme_success}", hint: "Look for CMP instruction, 0x539 = 1337", whatLearned: "Assembly reveals passwords." },
+            { id: 12, title: "IDOR Vulnerability", category: "web", difficulty: "Intermediate", points: 150, solves: 89, description: "Access another user's profile.", scenario: "Profile at /profile?id=42", flag: "flag{idor_vulnerability}", hint: "Try changing ID to 1", whatLearned: "IDOR is broken access control." },
+            { id: 13, title: "Blind SQL Injection", category: "web", difficulty: "Advanced", points: 350, solves: 23, description: "Extract data via boolean responses.", scenario: "True/False responses only.", flag: "flag{blind_sqli}", hint: "Use ASCII and SUBSTRING", whatLearned: "Blind SQL extracts bit by bit." },
+            { id: 14, title: "RSA Small Exponent", category: "crypto", difficulty: "Advanced", points: 400, solves: 18, description: "Decrypt RSA with e=3.", scenario: "Short message, small exponent.", flag: "flag{rsa_small_e}", hint: "Take cube root of ciphertext", whatLearned: "Small exponents are vulnerable." },
+            { id: 15, title: "Buffer Overflow", category: "binary", difficulty: "Advanced", points: 450, solves: 12, description: "Exploit buffer overflow.", scenario: "Program uses gets()", flag: "flag{buffer_overflow}", hint: "Find offset to EIP", whatLearned: "Overflow redirects execution." },
+            { id: 16, title: "SSRF Metadata", category: "web", difficulty: "Advanced", points: 500, solves: 8, description: "Steal cloud metadata.", scenario: "Server fetches user URLs.", flag: "flag{ssrf_metadata}", hint: "Try 169.254.169.254", whatLearned: "SSRF leaks cloud credentials." },
+            { id: 17, title: "Format String", category: "binary", difficulty: "Advanced", points: 475, solves: 9, description: "Leak memory with format string.", scenario: "printf(user_input)", flag: "flag{format_string}", hint: "Use %p to leak stack", whatLearned: "Format strings leak memory." },
+            { id: 18, title: "Golden Ticket", category: "network", difficulty: "Advanced", points: 500, solves: 5, description: "Forge Kerberos ticket.", scenario: "You have krbtgt hash.", flag: "flag{golden_ticket}", hint: "Use Mimikatz kerberos::golden", whatLearned: "Golden tickets grant domain admin." }
+        ];
+
+        let solvedChallenges = JSON.parse(localStorage.getItem("solvedChallenges") || "[]");
+        let userPoints = parseInt(localStorage.getItem("userPoints") || "0");
+        let revealedFlags = JSON.parse(localStorage.getItem("revealedFlags") || "[]");
+
+        function updateSliderDisplay() {
+            var slider = document.getElementById("pointsRange");
+            if (!slider) return;
+            var maxPoints = parseInt(slider.value);
+            var maxDisplay = document.getElementById("maxPointsDisplay");
+            var activeRange = document.getElementById("activeRangeValue");
+            if (maxDisplay) maxDisplay.innerHTML = "<span>MAX</span> " + maxPoints;
+            if (activeRange) activeRange.innerHTML = "0 - " + maxPoints;
+        }
+
+        function showResetConfirm() {
+            document.getElementById("resetConfirmModal").style.display = "flex";
+        }
+
+        function closeResetModal() {
+            document.getElementById("resetConfirmModal").style.display = "none";
+        }
+
+        function resetAllProgress() {
+            solvedChallenges = [];
+            userPoints = 0;
+            revealedFlags = [];
+            
+            localStorage.setItem("solvedChallenges", JSON.stringify(solvedChallenges));
+            localStorage.setItem("userPoints", userPoints);
+            localStorage.setItem("revealedFlags", JSON.stringify(revealedFlags));
+            
+            document.getElementById("categoryFilter").value = "all";
+            document.getElementById("difficultyFilter").value = "all";
+            document.getElementById("pointsRange").value = 500;
+            updateSliderDisplay();
+            
+            renderChallenges(getFilteredChallenges());
+            closeResetModal();
+            alert("All progress has been reset! Your score is now 0.");
+        }
+
+        function renderChallenges(filtered) {
+            var grid = document.getElementById("challengesGrid");
+            if (!grid) return;
+            if (!filtered || filtered.length === 0) {
+                grid.innerHTML = '<div class="no-results"><i class="fas fa-search"></i><h3>No challenges found</h3><p>Try adjusting your filters</p></div>';
+                return;
+            }
+            var html = "";
+            for (var i = 0; i < filtered.length; i++) {
+                var c = filtered[i];
+                var isSolved = solvedChallenges.indexOf(c.id) !== -1;
+                var solvedClass = isSolved ? "solved" : "";
+                var statusIcon = isSolved ? "fa-check-circle" : "fa-circle";
+                var statusText = isSolved ? "COMPLETED" : "PENDING";
+                var statusClass = isSolved ? "status-solved" : "status-unsolved";
+                html += '<div class="challenge-card ' + solvedClass + '">';
+                html += '<div class="card-header">';
+                html += '<span class="difficulty ' + c.difficulty.toLowerCase() + '">' + c.difficulty + '</span>';
+                html += '<span class="points"><i class="fas fa-bolt"></i> ' + c.points + ' pts</span>';
+                html += '</div><div class="card-body">';
+                html += '<h3 class="challenge-title"><i class="fas fa-flag"></i> ' + c.title + '</h3>';
+                html += '<span class="challenge-category">' + c.category.toUpperCase() + '</span>';
+                html += '<p class="challenge-description">' + c.description + '</p>';
+                html += '<div class="challenge-meta">';
+                html += '<div class="meta-item"><i class="fas fa-users"></i><span>' + c.solves + ' solves</span></div>';
+                html += '<div class="meta-item"><i class="fas fa-star"></i><span>' + c.points + ' points</span></div>';
+                html += '</div><div class="card-footer">';
+                html += '<div class="challenge-status"><i class="fas ' + statusIcon + '"></i><span class="' + statusClass + '">' + statusText + '</span></div>';
+                html += '<button class="btn-view" onclick="openChallenge(' + c.id + ')"><i class="fas fa-terminal"></i> VIEW CHALLENGE</button>';
+                html += '</div></div></div>';
+            }
+            grid.innerHTML = html;
+            updateStats();
+        }
+
+        function getFilteredChallenges() {
+            var category = document.getElementById("categoryFilter") ? document.getElementById("categoryFilter").value : "all";
+            var difficulty = document.getElementById("difficultyFilter") ? document.getElementById("difficultyFilter").value : "all";
+            var maxPoints = document.getElementById("pointsRange") ? parseInt(document.getElementById("pointsRange").value) : 500;
+            var result = [];
+            for (var i = 0; i < challenges.length; i++) {
+                var c = challenges[i];
+                if (category !== "all" && c.category !== category) continue;
+                if (difficulty !== "all" && c.difficulty !== difficulty) continue;
+                if (c.points > maxPoints) continue;
+                result.push(c);
+            }
+            return result;
+        }
+
+        function applyFilters() {
+            renderChallenges(getFilteredChallenges());
+        }
+
+        function updateStats() {
+            var totalPoints = 0;
+            for (var i = 0; i < solvedChallenges.length; i++) {
+                var c = challenges.find(function(ch) { return ch.id === solvedChallenges[i]; });
+                if (c) totalPoints += c.points;
+            }
+            document.getElementById("totalCount").textContent = challenges.length;
+            document.getElementById("completedCount").textContent = solvedChallenges.length;
+            document.getElementById("pointsEarned").textContent = totalPoints;
+            localStorage.setItem("userPoints", totalPoints);
+        }
+
+        function openChallenge(id) {
+            var challenge = challenges.find(c => c.id === id);
+            if (!challenge) return;
+            var modal = document.getElementById("challengeModal");
+            var detailDiv = document.getElementById("challengeDetail");
+            if (!modal || !detailDiv) return;
+            
+            var isSolved = solvedChallenges.indexOf(id) !== -1;
+            var isRevealed = revealedFlags.indexOf(id) !== -1;
+            
+            var revealedHtml = "";
+            if (isRevealed && !isSolved) {
+                revealedHtml = '<div class="revealed-flag"><i class="fas fa-flag"></i> <strong>FLAG:</strong> ' + challenge.flag + '</div>';
+            }
+            
+            var revealButtonHtml = "";
+            if (!isSolved) {
+                var disabledAttr = isRevealed ? 'disabled' : '';
+                revealButtonHtml = '<button class="reveal-btn" onclick="revealFlag(' + challenge.id + ')" ' + disabledAttr + '><i class="fas fa-eye"></i> REVEAL FLAG (-10 pts)</button>';
+            }
+            
+            var penaltyHtml = "";
+            if (!isSolved && !isRevealed) {
+                penaltyHtml = '<div class="penalty-warning"><i class="fas fa-exclamation-triangle"></i> Using "Reveal Flag" will deduct 10 points from your total score.</div>';
+            }
+            
+            detailDiv.innerHTML = 
+                '<div class="detail-header">' +
+                    '<h2 class="detail-title"><i class="fas fa-flag"></i> ' + challenge.title + '</h2>' +
+                    '<div class="detail-meta">' +
+                        '<span class="detail-badge" style="background:rgba(80,250,123,0.1);color:#50fa7b;">' + challenge.difficulty + '</span>' +
+                        '<span class="detail-badge" style="background:rgba(62,158,255,0.1);color:#3e9eff;">' + challenge.category.toUpperCase() + '</span>' +
+                        '<span class="detail-badge" style="background:rgba(255,184,108,0.1);color:#ffb86b;">' + challenge.points + ' pts</span>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="detail-scenario">' +
+                    '<h3><i class="fas fa-terminal"></i> Scenario</h3>' +
+                    '<p>' + challenge.scenario + '</p>' +
+                '</div>' +
+                '<div class="action-buttons">' +
+                    '<div class="flag-submission">' +
+                        '<input type="text" id="flagInput" placeholder="Enter flag: flag{...}">' +
+                        '<button onclick="submitFlag(' + challenge.id + ')">SUBMIT</button>' +
+                    '</div>' +
+                    revealButtonHtml +
+                '</div>' +
+                revealedHtml +
+                '<div class="hint-section">' +
+                    '<button class="hint-btn" onclick="showHint(' + challenge.id + ')"><i class="fas fa-lightbulb"></i> GET HINT</button>' +
+                    '<div id="hint-' + challenge.id + '" class="hint-text hidden">' + challenge.hint + '</div>' +
+                '</div>' +
+                '<div class="what-learned">' +
+                    '<h3><i class="fas fa-graduation-cap"></i> What You\'ll Learn</h3>' +
+                    '<p>' + challenge.whatLearned + '</p>' +
+                '</div>' +
+                penaltyHtml;
+            modal.style.display = "flex";
+        }
+
+        function revealFlag(id) {
+            var challenge = challenges.find(c => c.id === id);
+            if (!challenge) return;
+            
+            if (solvedChallenges.indexOf(id) !== -1) {
+                alert("Challenge already solved!");
+                return;
+            }
+            
+            if (revealedFlags.indexOf(id) !== -1) {
+                alert("Flag already revealed for this challenge!");
+                return;
+            }
+            
+            var currentPoints = parseInt(localStorage.getItem("userPoints") || "0");
+            currentPoints = Math.max(0, currentPoints - 10);
+            localStorage.setItem("userPoints", currentPoints);
+            userPoints = currentPoints;
+            
+            revealedFlags.push(id);
+            localStorage.setItem("revealedFlags", JSON.stringify(revealedFlags));
+            
+            updateStats();
+            openChallenge(id);
+            alert("⚠️ 10 points deducted. The flag has been revealed.");
+        }
+
+        function submitFlag(id) {
+            var challenge = challenges.find(c => c.id === id);
+            var flagInput = document.getElementById("flagInput");
+            if (!challenge || !flagInput) return;
+            
+            if (flagInput.value.trim().toLowerCase() === challenge.flag.toLowerCase()) {
+                if (solvedChallenges.indexOf(id) === -1) {
+                    solvedChallenges.push(id);
+                    localStorage.setItem("solvedChallenges", JSON.stringify(solvedChallenges));
+                    
+                    var currentPoints = parseInt(localStorage.getItem("userPoints") || "0");
+                    currentPoints += challenge.points;
+                    localStorage.setItem("userPoints", currentPoints);
+                    userPoints = currentPoints;
+                    
+                    celebrateSuccess();
+                    alert("✓ Correct! You earned " + challenge.points + " points!");
+                    closeModal();
+                    applyFilters();
+                } else {
+                    alert("Challenge already completed!");
+                }
+            } else {
+                alert("✗ Incorrect flag. Try again!");
+            }
+        }
+
+        function showHint(id) {
+            var hintDiv = document.getElementById("hint-" + id);
+            if (hintDiv) hintDiv.classList.remove("hidden");
+        }
+
+        function celebrateSuccess() {
+            for (var i = 0; i < 30; i++) {
+                var particle = document.createElement("div");
+                particle.style.position = "fixed";
+                particle.style.width = (Math.random() * 8 + 2) + "px";
+                particle.style.height = particle.style.width;
+                particle.style.background = "radial-gradient(circle, #50fa7b, transparent)";
+                particle.style.left = Math.random() * window.innerWidth + "px";
+                particle.style.top = Math.random() * window.innerHeight + "px";
+                particle.style.pointerEvents = "none";
+                particle.style.zIndex = "9999";
+                particle.style.animation = "particleFloat 1s ease-out forwards";
+                document.body.appendChild(particle);
+                setTimeout(function(p) { return function() { p.remove(); }; }(particle), 1000);
+            }
+        }
+
+        function closeModal() {
+            var modal = document.getElementById("challengeModal");
+            if (modal) modal.style.display = "none";
+        }
+
+        function initChallenges() {
+            var slider = document.getElementById("pointsRange");
+            if (slider) slider.addEventListener("input", updateSliderDisplay);
+            updateSliderDisplay();
+            renderChallenges(challenges);
+            updateStats();
+        }
+
+        // Initialize on DOM load
+        document.addEventListener("DOMContentLoaded", function() {
+            updateAuthUI();
+        });
+    </script>
+</body>
+</html>

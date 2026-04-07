@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeopardy - CTF Hub</title>
+    <link rel="stylesheet" href="Theme.css">
+    <style>
+        /* ===== CYBERPUNK JEOPARDY STYLES ===== */
+        :root {
+            --neon-green: #50fa7b;
+            --neon-blue: #3e9eff;
+            --neon-cyan: #8be9fd;
+            --neon-magenta: #ff79c6;
+            --neon-purple: #bd93f9;
+            --neon-yellow: #f1fa8c;
+            --neon-red: #ff5555;
+            --diff-beginner: #50fa7b;
+            --diff-intermediate: #ffb86b;
+            --diff-advanced: #ff5555;
+            --bg-panel: #141b2b;
+            --bg-terminal: #0f1117;
+            --bg-deep: #0a0c10;
+            --text-primary: #e0e0e0;
+            --text-secondary: #8892b0;
+        }
+
+        /* Jeopardy Wrapper */
+        .jeopardy-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Score Bar */
+        .score-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: var(--bg-panel);
+            border: 2px solid var(--neon-green);
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(80, 250, 123, 0.2);
+        }
+
+        .score-block {
+            text-align: center;
+            padding: 0.5rem 1rem;
+            background: var(--bg-terminal);
+            border-radius: 8px;
+            min-width: 100px;
+        }
+
+        .score-label {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+        }
+
+        .score-val {
+            display: block;
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-shadow: 0 0 12px var(--neon-green);
+        }
+
+        .score-val.cyan { color: var(--neon-cyan); text-shadow: 0 0 12px var(--neon-cyan); }
+        .score-val.amber { color: var(--diff-intermediate); text-shadow: 0 0 12px var(--diff-intermediate); }
+
+        /* Game Mode Selector */
+        .game-mode-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: var(--bg-terminal);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--neon-blue);
+        }
+
+        .game-mode-selector label {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        #gameModeSelect {
+            background: var(--bg-deep);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 0.3rem 0.8rem;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+        }
+
+        /* Board Controls */
+        .board-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .btn-primary, .btn-secondary {
+            background: transparent;
+            border: 2px solid;
+            padding: 0.75rem 1.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        .btn-primary:hover {
+            background: var(--neon-green);
+            color: var(--bg-deep);
+            box-shadow: 0 0 20px var(--neon-green);
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
+        .btn-secondary:hover {
+            background: var(--neon-blue);
+            color: var(--bg-deep);
+            box-shadow: 0 0 20px var(--neon-blue);
+            transform: scale(1.05);
+        }
+
+        /* Jeopardy Board Grid */
+        .jeopardy-board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            margin-bottom: 2rem;
+        }
+
+        /* Category Headers */
+        .j-category {
+            background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-terminal) 100%);
+            border: 2px solid var(--neon-green);
+            padding: 1rem 0.5rem;
+            text-align: center;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            min-height: 85px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .j-category i {
+            font-size: 1.3rem;
+        }
+
+        .j-category.cat-web { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+        .j-category.cat-crypto { border-color: var(--neon-purple); color: var(--neon-purple); }
+        .j-category.cat-network { border-color: var(--neon-blue); color: var(--neon-blue); }
+        .j-category.cat-linux { border-color: var(--neon-green); color: var(--neon-green); }
+        .j-category.cat-owasp { border-color: var(--neon-yellow); color: var(--neon-yellow); }
+        .j-category.cat-incident { border-color: var(--neon-magenta); color: var(--neon-magenta); }
+
+        .j-category::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -100%;
+            width: 100%;
+            height: 2px;
+            background: currentColor;
+            opacity: 0.4;
+            animation: hdr-scan 3s linear infinite;
+        }
+
+        @keyframes hdr-scan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Question Tiles */
+        .j-tile {
+            background: var(--bg-terminal);
+            border: 2px solid rgba(0, 255, 157, 0.3);
+            min-height: 85px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            font-family: 'Orbitron', monospace;
+            font-weight: 900;
+            font-size: 1.5rem;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px var(--neon-green);
+        }
+
+        .j-tile:hover:not(.answered-correct):not(.answered-wrong) {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(80, 250, 123, 0.4);
+            border-color: var(--neon-green);
+            z-index: 2;
+        }
+
+        .j-tile.answered-correct {
+            background: rgba(80, 250, 123, 0.15);
+            border-color: var(--neon-green);
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .j-tile.answered-wrong {
+            background: rgba(255, 85, 85, 0.15);
+            border-color: var(--neon-red);
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .j-tile.daily-double {
+            border-color: var(--neon-yellow);
+            box-shadow: 0 0 15px var(--neon-yellow);
+            position: relative;
+        }
+
+        .j-tile.daily-double::before {
+            content: '★';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            font-size: 0.8rem;
+            color: var(--neon-yellow);
+        }
+
+        /* Question Modal */
+        .j-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .j-modal-overlay.open { display: flex; }
+
+        .j-modal-box {
+            background: var(--bg-terminal);
+            border: 3px solid var(--neon-green);
+            box-shadow: 0 0 60px rgba(80, 250, 123, 0.3);
+            width: 100%;
+            max-width: 750px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 2rem;
+            position: relative;
+            animation: modal-pop 0.25s ease;
+        }
+
+        @keyframes modal-pop {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .j-modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 2rem;
+            color: var(--neon-red);
+            cursor: pointer;
+            transition: all 0.25s;
+            z-index: 10;
+        }
+
+        .j-modal-close:hover {
+            text-shadow: 0 0 15px var(--neon-red);
+            transform: rotate(90deg);
+        }
+
+        .j-question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--neon-green);
+        }
+
+        .j-category-label {
+            background: rgba(62, 158, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: inline-block;
+        }
+
+        .j-points-label {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            color: var(--neon-green);
+            text-shadow: 0 0 15px var(--neon-green);
+        }
+
+        .j-timer-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .j-timer-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan), var(--neon-yellow));
+            border-radius: 3px;
+            transition: width 1s linear;
+        }
+
+        .j-question-text {
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 1.5rem 0;
+            background: var(--bg-deep);
+            border-left: 4px solid var(--neon-magenta);
+            padding: 1.2rem;
+        }
+
+        /* Multiple Choice Options */
+        .j-mc-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin: 1.5rem 0;
+        }
+
+        .j-mc-btn {
+            background: var(--bg-deep);
+            border: 2px solid var(--neon-blue);
+            color: var(--text-primary);
+            padding: 1rem;
+            text-align: left;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .j-mc-btn:hover:not(:disabled) {
+            border-color: var(--neon-green);
+            transform: translateX(8px);
+            box-shadow: 0 0 15px rgba(80, 250, 123, 0.2);
+        }
+
+        .j-mc-btn.correct {
+            border-color: var(--neon-green);
+            background: rgba(80, 250, 123, 0.1);
+            color: var(--neon-green);
+        }
+
+        .j-mc-btn.wrong {
+            border-color: var(--neon-red);
+            background: rgba(255, 85, 85, 0.1);
+            color: var(--neon-red);
+        }
+
+        .option-letter {
+            font-weight: 700;
+            color: var(--neon-cyan);
+            font-size: 1.1rem;
+        }
+
+        /* Flag Input */
+        .j-flag-row {
+            display: flex;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .j-flag-row input {
+            flex: 1;
+            background: var(--bg-deep);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-green);
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+
+        .j-flag-row input:focus {
+            outline: none;
+            border-color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(80, 250, 123, 0.3);
+        }
+
+        /* Result Banner */
+        .j-result {
+            display: none;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .j-result.correct {
+            background: rgba(80, 250, 123, 0.1);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+        }
+
+        .j-result.wrong {
+            background: rgba(255, 85, 85, 0.1);
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+        }
+
+        .what-learned {
+            background: rgba(80, 250, 123, 0.05);
+            border-left: 4px solid var(--neon-green);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Final Modal */
+        .j-final-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .j-final-stat {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg-deep);
+            border-radius: 8px;
+        }
+
+        .j-final-stat .val {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--neon-green);
+        }
+
+        .j-final-stat .lbl {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .j-cat-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .cat-name {
+            width: 100px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .j-cat-bar-track {
+            flex: 1;
+            height: 8px;
+            background: var(--bg-deep);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .j-cat-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .jeopardy-board {
+                gap: 4px;
+            }
+            .j-tile, .j-category {
+                min-height: 65px;
+                font-size: 0.9rem;
+            }
+            .j-category i {
+                font-size: 1rem;
+            }
+            .score-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .score-block {
+                text-align: center;
+            }
+            .j-final-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .jeopardy-board {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .j-category {
+                font-size: 0.6rem;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="dark-theme">
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-shield-alt"></i>
+            UTECH CTF HUB
+        </div>
+        <ul class="nav-links">
+            <li><a href="homepage.html">Home</a></li>
+            <li><a href="CTF learning material.html">Learn</a></li>
+            <li><a href="CTF challenge.html">Challenges</a></li>
+            <li><a href="CTF scoreboard.html">Scoreboard</a></li>
+            <li><a href="login.html" id="auth-link">Login</a></li>
+        </ul>
+    </nav>
+
+    <main class="jeopardy-wrapper">
+        <!-- Page header -->
+        <div class="section-header">
+            <h1><i class="fas fa-puzzle-piece"></i> Jeopardy Challenge</h1>
+            <p>Pick a category and point value — test your cybersecurity knowledge</p>
+        </div>
+
+        <!-- Score Bar -->
+        <div class="score-bar">
+            <div class="score-block">
+                <span class="score-label"><i class="fas fa-star"></i> Score</span>
+                <span class="score-val" id="jScore">0</span>
+            </div>
+            <div class="score-block">
+                <span class="score-label"><i class="fas fa-check-circle"></i> Answered</span>
+                <span class="score-val cyan" id="jAnswered">0 / 30</span>
+            </div>
+            <div class="score-block">
+                <span class="score-label"><i class="fas fa-check-double"></i> Correct</span>
+                <span class="score-val" id="jCorrect">0</span>
+            </div>
+            <div class="score-block">
+                <span class="score-label"><i class="fas fa-hourglass-half"></i> Remaining</span>
+                <span class="score-val amber" id="jRemaining">30</span>
+            </div>
+            <div class="game-mode-selector">
+                <label><i class="fas fa-gamepad"></i> Mode:</label>
+                <select id="gameModeSelect">
+                    <option value="mc">Multiple Choice</option>
+                    <option value="flag">Flag Input</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="board-controls">
+            <button class="btn-primary" onclick="resetBoard()">
+                <i class="fas fa-random"></i> New Game
+            </button>
+            <button class="btn-secondary" onclick="showFinalScore()">
+                <i class="fas fa-trophy"></i> Final Score
+            </button>
+            <span style="color: var(--text-secondary); font-size: 0.8rem; margin-left: auto;">
+                <i class="fas fa-info-circle"></i>
+                Daily Double ★ = Double Points
+            </span>
+        </div>
+
+        <!-- Jeopardy Board -->
+        <div class="jeopardy-board" id="jeopardyBoard"></div>
+    </main>
+
+    <!-- Question Modal -->
+    <div class="j-modal-overlay" id="questionModal">
+        <div class="j-modal-box">
+            <div class="j-modal-close" onclick="closeQuestion()">✕</div>
+            <div id="questionContent"></div>
+        </div>
+    </div>
+
+    <!-- Final Score Modal -->
+    <div class="j-modal-overlay" id="finalModal">
+        <div class="j-modal-box" id="finalContent"></div>
+    </div>
+
+    <script>
+        // ================================================================
+        // UTECH CTF HUB — JEOPARDY ENGINE (FULL FUSED VERSION)
+        // 6 categories × 5 point values = 30 questions
+        // Categories: Web, Crypto, Network, Linux, OWASP, Incident Basics
+        // ================================================================
+
+        const CATEGORIES = [
+            { key: 'web', label: 'Web Security', icon: 'fa-globe' },
+            { key: 'crypto', label: 'Cryptography', icon: 'fa-lock' },
+            { key: 'network', label: 'Network', icon: 'fa-network-wired' },
+            { key: 'linux', label: 'Linux', icon: 'fa-terminal' },
+            { key: 'owasp', label: 'OWASP', icon: 'fa-shield-alt' },
+            { key: 'incident', label: 'Incident Basics', icon: 'fa-fire-extinguisher' }
+        ];
+
+        const POINT_VALUES = [100, 200, 300, 400, 500];
+
+        // ================================================================
+        // QUESTION BANK — 30 Questions
+        // ================================================================
+        const questions = [
+            // Web Security (5 questions)
+            { id: 'web-100', category: 'Web Security', catKey: 'web', points: 100, question: 'What character is most commonly used as the first test in an SQL injection attempt because it breaks query syntax?', options: ["Double quote (\")", "Single quote (')", "Semicolon (;)", "Hash (#)"], correct: 1, flag: "flag{single_quote}", explanation: "The single quote (') terminates the string literal in SQL syntax. Injecting it into a query reveals whether the input is unsanitized, causing a syntax error or altered behavior." },
+            { id: 'web-200', category: 'Web Security', catKey: 'web', points: 200, question: 'Which type of XSS attack permanently stores the malicious script in the server\'s database, executing for every visitor who loads the infected page?', options: ["Reflected XSS", "DOM-based XSS", "Stored XSS", "Blind XSS"], correct: 2, flag: "flag{stored_xss}", explanation: "Stored (Persistent) XSS injects malicious scripts into a server-side store — every user who loads that page executes the payload." },
+            { id: 'web-300', category: 'Web Security', catKey: 'web', points: 300, question: 'An attacker changes the URL from /profile?id=42 to /profile?id=1 and accesses the admin account. What vulnerability is this?', options: ["SQL Injection", "CSRF", "Insecure Direct Object Reference (IDOR)", "Path Traversal"], correct: 2, flag: "flag{idor_vuln}", explanation: "IDOR occurs when applications expose internal objects via user-controllable references without proper authorization checks." },
+            { id: 'web-400', category: 'Web Security', catKey: 'web', points: 400, question: 'What header prevents CSRF attacks by controlling when cookies are sent with cross-site requests?', options: ["Content-Security-Policy", "SameSite", "X-Frame-Options", "CORS"], correct: 1, flag: "flag{samesite_cookie}", explanation: "SameSite=Strict/Lax cookies prevent browsers from sending cookies with cross-origin requests, blocking CSRF attacks." },
+            { id: 'web-500', category: 'Web Security', catKey: 'web', points: 500, dailyDouble: true, question: 'A web app fetches a URL supplied by the user: fetch($_GET[\'url\']). An attacker supplies http://169.254.169.254/latest/meta-data/ and receives AWS credentials. What is this vulnerability?', options: ["RCE", "SSRF", "XXE", "Open Redirect"], correct: 1, flag: "flag{ssrf_cloud}", explanation: "SSRF makes the server request internal services — reaching the AWS metadata service (169.254.169.254) to steal IAM credentials." },
+            
+            // Cryptography (5 questions)
+            { id: 'crypto-100', category: 'Cryptography', catKey: 'crypto', points: 100, question: 'What encoding scheme converts binary to printable ASCII using 64 characters and often ends with "=" padding?', options: ["Hexadecimal", "ROT13", "Base64", "URL encoding"], correct: 2, flag: "flag{base64_encoding}", explanation: "Base64 maps 3 bytes to 4 printable ASCII characters. Padding (=) is added when input length is not a multiple of 3." },
+            { id: 'crypto-200', category: 'Cryptography', catKey: 'crypto', points: 200, question: 'What defensive technique makes each stored password hash unique, defeating rainbow table attacks?', options: ["Key stretching", "Salting", "HMAC", "Symmetric encryption"], correct: 1, flag: "flag{password_salt}", explanation: "Salting appends a unique random value to each password before hashing — even identical passwords produce completely different hashes." },
+            { id: 'crypto-300', category: 'Cryptography', catKey: 'crypto', points: 300, question: 'In asymmetric cryptography, which key does Alice use to encrypt a message for Bob?', options: ["Alice's private", "Alice's public", "Bob's public", "Bob's private"], correct: 2, flag: "flag{asymmetric_crypto}", explanation: "Encrypt with the RECIPIENT's public key; only the recipient's private key can decrypt it." },
+            { id: 'crypto-400', category: 'Cryptography', catKey: 'crypto', points: 400, question: 'A Caesar cipher encrypted message reads: "IODJ{FDHVDU}". Shift by 3. What is the plaintext?', options: ["flag{caesar}", "FLAG{CAESAR}", "flag{CAESAR}", "hlag{daezar}"], correct: 0, flag: "flag{caesar}", explanation: "Shift back 3: I→f, O→l, D→a, J→g → flag{caesar}" },
+            { id: 'crypto-500', category: 'Cryptography', catKey: 'crypto', points: 500, question: 'RSA: p=3, q=11, n=33, e=7. What is φ(n)?', options: ["20", "22", "30", "32"], correct: 0, flag: "flag{rsa_phi_20}", explanation: "φ(n) = (p-1)(q-1) = 2×10 = 20. The private exponent d satisfies e×d ≡ 1 (mod φ(n))." },
+            
+            // Network Security (5 questions)
+            { id: 'network-100', category: 'Network', catKey: 'network', points: 100, question: 'Which port does HTTPS use, and what protocol encrypts traffic?', options: ["80, SSL", "443, TLS", "8080, SSH", "443, IPSec"], correct: 1, flag: "flag{https_443_tls}", explanation: "HTTPS uses port 443 with TLS (Transport Layer Security), providing encryption, integrity, and authentication." },
+            { id: 'network-200', category: 'Network', catKey: 'network', points: 200, question: 'TCP 3-way handshake sequence?', options: ["SYN→ACK→SYN-ACK", "SYN→SYN-ACK→ACK", "ACK→SYN→SYN-ACK", "SYN-ACK→SYN→ACK"], correct: 1, flag: "flag{tcp_handshake}", explanation: "SYN → SYN-ACK → ACK establishes a TCP connection before data transfer." },
+            { id: 'network-300', category: 'Network', catKey: 'network', points: 300, question: 'What plaintext protocol transmits "USER admin" and "PASS secret" in clear text?', options: ["SFTP", "HTTPS", "FTP", "SSH"], correct: 2, flag: "flag{ftp_plaintext}", explanation: "FTP transmits credentials in plaintext — visible to anyone capturing network traffic." },
+            { id: 'network-400', category: 'Network', catKey: 'network', points: 400, question: 'What attack sends forged ARP replies to become the Man-in-the-Middle on a LAN?', options: ["DNS Spoofing", "ARP Poisoning", "BGP Hijacking", "MAC Flooding"], correct: 1, flag: "flag{arp_poisoning}", explanation: "ARP Poisoning sends gratuitous ARP replies, mapping the attacker's MAC to a legitimate IP to intercept traffic." },
+            { id: 'network-500', category: 'Network', catKey: 'network', points: 500, question: 'Wireshark filter shows: tcp.flags.syn==1 && tcp.flags.ack==0 with thousands of source IPs. What attack?', options: ["ARP Poisoning", "SYN Flood DDoS", "DNS Amplification", "Session Hijacking"], correct: 1, flag: "flag{syn_flood}", explanation: "SYN Flood DDoS exhausts server resources by sending incomplete TCP handshakes from spoofed IPs." },
+            
+            // Linux (5 questions)
+            { id: 'linux-100', category: 'Linux', catKey: 'linux', points: 100, question: 'Which command extracts printable strings from a binary file?', options: ["cat", "hexdump", "strings", "file"], correct: 2, flag: "flag{strings_command}", explanation: "`strings` scans a binary and prints printable character sequences — revealing hardcoded flags or passwords." },
+            { id: 'linux-200', category: 'Linux', catKey: 'linux', points: 200, question: 'What does the SetUID bit (s in -rwsr-xr-x) do?', options: ["Runs as creator", "Runs as file owner regardless of executor", "Shared across users", "Cannot be deleted"], correct: 1, flag: "flag{setuid_bit}", explanation: "SetUID executes with the file OWNER's privileges — a privilege escalation risk if exploitable." },
+            { id: 'linux-300', category: 'Linux', catKey: 'linux', points: 300, question: 'What does `find / -perm -4000` search for?', options: ["Writable files", "SetUID binaries", "Modified files", "Hidden configs"], correct: 1, flag: "flag{suid_privesc}", explanation: "-perm -4000 finds SetUID files — potential privilege escalation vectors." },
+            { id: 'linux-400', category: 'Linux', catKey: 'linux', points: 400, question: 'Which file contains hashed passwords, readable only by root?', options: ["/etc/passwd", "/etc/shadow", "/etc/group", "/var/log/auth.log"], correct: 1, flag: "flag{etc_shadow}", explanation: "/etc/shadow stores password hashes and expiry info — gaining read access enables offline cracking." },
+            { id: 'linux-500', category: 'Linux', catKey: 'linux', points: 500, question: 'Why is `eval "$(cat user_input.txt)"` a critical RCE vulnerability?', options: ["eval reads files", "eval executes its argument as shell code", "cat is insecure", "$() is deprecated"], correct: 1, flag: "flag{eval_rce}", explanation: "`eval` executes its argument as shell code — attacker-controlled input achieves arbitrary code execution." },
+            
+            // OWASP (5 questions)
+            { id: 'owasp-100', category: 'OWASP', catKey: 'owasp', points: 100, question: 'OWASP Top 10 2021 #1 vulnerability?', options: ["Injection", "Cryptographic Failures", "Broken Access Control", "Security Misconfiguration"], correct: 2, flag: "flag{owasp_a01}", explanation: "A01: Broken Access Control moved to #1 in 2021, up from #5 in 2017." },
+            { id: 'owasp-200', category: 'OWASP', catKey: 'owasp', points: 200, question: 'Which is NOT an injection vulnerability?', options: ["SQL Injection", "Command Injection", "LDAP Injection", "Session Fixation"], correct: 3, flag: "flag{owasp_injection}", explanation: "Session Fixation is an authentication failure (A07), not injection (A03)." },
+            { id: 'owasp-300', category: 'OWASP', catKey: 'owasp', points: 300, question: 'Storing API keys in JavaScript source code on GitHub falls under which OWASP category?', options: ["Broken Access Control", "Cryptographic Failures", "Security Misconfiguration", "Logging Failures"], correct: 1, flag: "flag{owasp_crypto_fail}", explanation: "A02: Cryptographic Failures covers failure to protect sensitive data like secrets in source code." },
+            { id: 'owasp-400', category: 'OWASP', catKey: 'owasp', points: 400, question: 'Which category addresses risks from outdated components with known vulnerabilities?', options: ["A04: Insecure Design", "A06: Vulnerable & Outdated Components", "A05: Security Misconfiguration", "A08: Integrity Failures"], correct: 1, flag: "flag{owasp_a06}", explanation: "A06: Vulnerable and Outdated Components — Equifax breach exploited unpatched Apache Struts (CVE-2017-5638)." },
+            { id: 'owasp-500', category: 'OWASP', catKey: 'owasp', points: 500, question: 'Which scenario demonstrates SSRF (A10:2021)?', options: ["Uploaded PDF crashes parser", "Fetching user URL reaches internal AWS metadata", "Intercepting HTTP traffic", "Unlimited login attempts"], correct: 1, flag: "flag{owasp_ssrf}", explanation: "SSRF makes the server request internal services — reaching 169.254.169.254 to steal cloud credentials." },
+            
+            // Incident Basics (5 questions)
+            { id: 'incident-100', category: 'Incident Basics', catKey: 'incident', points: 100, question: 'What does IOC stand for in incident response?', options: ["Index of Commands", "Indicator of Compromise", "Instance of Control", "Input Output Controller"], correct: 1, flag: "flag{ioc_defined}", explanation: "IOCs are forensic evidence of a breach: unusual traffic, known malicious IPs, file hashes, or registry changes." },
+            { id: 'incident-200', category: 'Incident Basics', catKey: 'incident', points: 200, question: 'What should be done FIRST during an incident?', options: ["Wipe systems", "Contain & preserve evidence", "Disconnect all internet", "Notify law enforcement"], correct: 1, flag: "flag{contain_preserve}", explanation: "Containment stops spread while preserving evidence for forensic investigation." },
+            { id: 'incident-300', category: 'Incident Basics', catKey: 'incident', points: 300, question: 'Disabled AV, new admin accounts, and slow performance indicate which attack phase?', options: ["Reconnaissance", "Initial Access", "Post-Exploitation / Persistence", "Exfiltration"], correct: 2, flag: "flag{post_exploitation}", explanation: "Post-Exploitation: attacker establishes persistence (MITRE ATT&CK TA0003)." },
+            { id: 'incident-400', category: 'Incident Basics', catKey: 'incident', points: 400, question: '50,000 SSH failures from 200 IPs in 10 minutes. What attack and mitigation?', options: ["Phishing → email filter", "Brute-force → rate limiting & fail2ban", "SQLi → WAF", "DDoS → ISP filter"], correct: 1, flag: "flag{brute_force}", explanation: "Distributed brute-force: implement rate-limiting, account lockout, fail2ban, and key-based auth only." },
+            { id: 'incident-500', category: 'Incident Basics', catKey: 'incident', points: 500, question: 'MITRE ATT&CK TTP stands for?', options: ["Tools, Tactics, Procedures", "Tactics, Techniques, Procedures", "Threats, Tactics, Protocols", "Tactics, Tools, Processes"], correct: 1, flag: "flag{mitre_attack}", explanation: "Tactics = goals, Techniques = methods (e.g., T1003 credential dumping), Procedures = real implementations." }
+        ];
+
+        // ================================================================
+        // GAME STATE
+        // ================================================================
+        const state = {
+            answered: {},
+            score: 0,
+            correct: 0,
+            catScores: {},
+            timerInterval: null,
+            currentQuestion: null,
+            mode: 'mc'
+        };
+
+        // ================================================================
+        // BOARD RENDERING
+        // ================================================================
+        function renderBoard() {
+            const board = document.getElementById('jeopardyBoard');
+            if (!board) return;
+            board.innerHTML = '';
+
+            // Category headers
+            CATEGORIES.forEach(cat => {
+                const header = document.createElement('div');
+                header.className = `j-category cat-${cat.key}`;
+                header.innerHTML = `<i class="fas ${cat.icon}"></i><span>${cat.label}</span>`;
+                board.appendChild(header);
+            });
+
+            // Point value rows
+            POINT_VALUES.forEach(pts => {
+                CATEGORIES.forEach(cat => {
+                    const q = questions.find(x => x.catKey === cat.key && x.points === pts);
+                    if (!q) return;
+
+                    const tile = document.createElement('div');
+                    tile.className = 'j-tile';
+                    tile.dataset.id = q.id;
+                    tile.dataset.points = pts;
+
+                    if (q.dailyDouble) tile.classList.add('daily-double');
+
+                    const status = state.answered[q.id];
+                    if (status === 'correct') {
+                        tile.classList.add('answered-correct');
+                        tile.innerHTML = `<span>✓</span>`;
+                    } else if (status === 'wrong') {
+                        tile.classList.add('answered-wrong');
+                        tile.innerHTML = `<span>✗</span>`;
+                    } else {
+                        tile.innerHTML = `<span>${pts}</span>`;
+                        tile.addEventListener('click', () => openQuestion(q.id));
+                    }
+
+                    board.appendChild(tile);
+                });
+            });
+
+            updateStats();
+        }
+
+        // ================================================================
+        // QUESTION MODAL
+        // ================================================================
+        function openQuestion(id) {
+            const q = questions.find(x => x.id === id);
+            if (!q) return;
+
+            const mode = document.getElementById('gameModeSelect')?.value || 'mc';
+            state.currentQuestion = q;
+            state.mode = mode;
+
+            const modal = document.getElementById('questionModal');
+            const content = document.getElementById('questionContent');
+
+            const isDailyDouble = !!q.dailyDouble;
+            const timerSeconds = { 100: 30, 200: 30, 300: 45, 400: 60, 500: 90 }[q.points] || 45;
+
+            content.innerHTML = `
+                <div class="j-question-header">
+                    <div>
+                        <div class="j-category-label">${q.category}</div>
+                        ${isDailyDouble ? `<div style="color:var(--neon-yellow);font-size:0.75rem;margin-top:0.35rem;">★ DAILY DOUBLE (2x Points)</div>` : ''}
+                    </div>
+                    <div class="j-points-label">$${q.points}</div>
+                </div>
+                <div class="j-timer-bar">
+                    <div class="j-timer-fill" id="timerFill" style="width:100%;"></div>
+                </div>
+                <p style="text-align:right;font-size:0.75rem;color:var(--text-secondary);margin-bottom:1rem;">
+                    <i class="fas fa-clock"></i> <span id="timerText">${timerSeconds}s</span>
+                </p>
+                <p class="j-question-text">${q.question}</p>
+                <div id="answerArea"></div>
+                <div class="j-result" id="jResult">
+                    <i class="fas fa-circle" id="jResultIcon"></i>
+                    <span id="jResultText"></span>
+                </div>
+                <div id="explanationBox" class="what-learned" style="display:none;">
+                    <h3><i class="fas fa-graduation-cap"></i> What You'll Learn</h3>
+                    <p>${q.explanation}</p>
+                </div>
+                <button class="btn-primary" id="nextBtn" style="display:none;margin-top:1rem;width:100%;" onclick="closeQuestion()">
+                    <i class="fas fa-arrow-right"></i> Continue
+                </button>
+            `;
+
+            // Render answer area based on mode
+            if (mode === 'mc') {
+                renderMCOptions(q);
+            } else {
+                renderFlagInput(q);
+            }
+
+            modal.classList.add('open');
+            startTimer(timerSeconds, q);
+        }
+
+        function renderMCOptions(q) {
+            const letters = ['A', 'B', 'C', 'D'];
+            const area = document.getElementById('answerArea');
+            area.innerHTML = `<div class="j-mc-options" id="mcOptions">
+                ${q.options.map((opt, i) => `
+                    <button class="j-mc-btn" data-idx="${i}" onclick="submitMC(${i})">
+                        <span class="option-letter">${letters[i]}.</span>${opt}
+                    </button>
+                `).join('')}
+            </div>`;
+        }
+
+        function renderFlagInput(q) {
+            const area = document.getElementById('answerArea');
+            area.innerHTML = `
+                <div class="j-flag-row">
+                    <input type="text" id="flagInput" placeholder="flag{...}" onkeypress="if(event.key==='Enter') submitFlag()">
+                    <button class="btn-primary" onclick="submitFlag()" style="margin:0;padding:0.75rem 1.5rem;">Submit</button>
+                </div>
+            `;
+        }
+
+        // ================================================================
+        // SUBMISSION HANDLERS
+        // ================================================================
+        function submitMC(selectedIdx) {
+            const q = state.currentQuestion;
+            const btns = document.querySelectorAll('.j-mc-btn');
+            stopTimer();
+
+            btns.forEach(btn => {
+                btn.disabled = true;
+                const idx = parseInt(btn.dataset.idx);
+                if (idx === q.correct) btn.classList.add('correct');
+                else if (idx === selectedIdx && idx !== q.correct) btn.classList.add('wrong');
+            });
+
+            const isCorrect = selectedIdx === q.correct;
+            resolveAnswer(isCorrect, q);
+        }
+
+        function submitFlag() {
+            const q = state.currentQuestion;
+            const input = document.getElementById('flagInput');
+            if (!input) return;
+
+            const submitted = input.value.trim().toLowerCase();
+            const correct = q.flag.toLowerCase();
+            stopTimer();
+
+            input.disabled = true;
+            resolveAnswer(submitted === correct, q);
+        }
+
+        function resolveAnswer(isCorrect, q) {
+            const isDailyDouble = !!q.dailyDouble;
+            const pointsEarned = isCorrect ? (isDailyDouble ? q.points * 2 : q.points) : 0;
+
+            const resultEl = document.getElementById('jResult');
+            const resultTx = document.getElementById('jResultText');
+            const resultIc = document.getElementById('jResultIcon');
+            const explBox = document.getElementById('explanationBox');
+            const nextBtn = document.getElementById('nextBtn');
+
+            resultEl.style.display = 'flex';
+
+            if (isCorrect) {
+                state.score += pointsEarned;
+                state.correct += 1;
+                state.catScores[q.catKey] = (state.catScores[q.catKey] || 0) + pointsEarned;
+
+                resultEl.className = 'j-result correct';
+                resultIc.className = 'fas fa-check-circle';
+                resultTx.textContent = `Correct! +${pointsEarned} points${isDailyDouble ? ' (Daily Double!)' : ''}`;
+                state.answered[q.id] = 'correct';
+
+                saveToUser(pointsEarned);
+            } else {
+                resultEl.className = 'j-result wrong';
+                resultIc.className = 'fas fa-times-circle';
+                const correctAnswer = q.options ? q.options[q.correct] : q.flag;
+                resultTx.textContent = `Incorrect. Correct answer: "${correctAnswer}"`;
+                state.answered[q.id] = 'wrong';
+            }
+
+            explBox.style.display = 'block';
+            nextBtn.style.display = 'block';
+
+            saveState();
+            updateStats();
+        }
+
+        function timeExpired(q) {
+            const btns = document.querySelectorAll('.j-mc-btn');
+            btns.forEach(btn => btn.disabled = true);
+
+            const input = document.getElementById('flagInput');
+            if (input) input.disabled = true;
+
+            const resultEl = document.getElementById('jResult');
+            const resultTx = document.getElementById('jResultText');
+            const resultIc = document.getElementById('jResultIcon');
+
+            resultEl.style.display = 'flex';
+            resultEl.className = 'j-result wrong';
+            resultIc.className = 'fas fa-hourglass-end';
+            resultTx.textContent = `Time's up! Correct: "${q.options ? q.options[q.correct] : q.flag}"`;
+            state.answered[q.id] = 'wrong';
+
+            document.getElementById('explanationBox').style.display = 'block';
+            document.getElementById('nextBtn').style.display = 'block';
+
+            saveState();
+            updateStats();
+        }
+
+        // ================================================================
+        // TIMER
+        // ================================================================
+        function startTimer(seconds, q) {
+            stopTimer();
+            let remaining = seconds;
+            const fill = document.getElementById('timerFill');
+            const text = document.getElementById('timerText');
+
+            state.timerInterval = setInterval(() => {
+                remaining--;
+                if (fill) fill.style.width = (remaining / seconds * 100) + '%';
+                if (text) text.textContent = remaining + 's';
+
+                if (remaining <= 0) {
+                    stopTimer();
+                    if (!state.answered[q.id]) timeExpired(q);
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (state.timerInterval) {
+                clearInterval(state.timerInterval);
+                state.timerInterval = null;
+            }
+        }
+
+        // ================================================================
+        // MODAL CONTROL
+        // ================================================================
+        function closeQuestion() {
+            stopTimer();
+            document.getElementById('questionModal').classList.remove('open');
+            renderBoard();
+        }
+
+        function closeFinalModal() {
+            document.getElementById('finalModal').classList.remove('open');
+        }
+
+        // ================================================================
+        // FINAL SCORE MODAL
+        // ================================================================
+        function showFinalScore() {
+            const total = questions.length;
+            const answered = Object.keys(state.answered).length;
+            const pct = answered ? Math.round((state.correct / answered) * 100) : 0;
+            const maxPts = questions.reduce((s, q) => s + q.points, 0);
+
+            const catRows = CATEGORIES.map(cat => {
+                const catQs = questions.filter(q => q.catKey === cat.key);
+                const maxCat = catQs.reduce((s, q) => s + q.points, 0);
+                const earned = state.catScores[cat.key] || 0;
+                const pctCat = maxCat ? Math.round((earned / maxCat) * 100) : 0;
+                const color = pctCat >= 70 ? 'var(--neon-green)' : pctCat >= 40 ? 'var(--neon-yellow)' : 'var(--neon-red)';
+                return `
+                    <div class="j-cat-row">
+                        <span class="cat-name">${cat.label}</span>
+                        <div class="j-cat-bar-track"><div class="j-cat-bar-fill" style="width:${pctCat}%;background:${color};"></div></div>
+                        <span style="color:var(--neon-green);">${earned}</span>
+                    </div>`;
+            }).join('');
+
+            const rank = state.score >= 2000 ? '🏆 Elite Hacker' : state.score >= 1200 ? '⚡ Advanced' : state.score >= 600 ? '🔧 Intermediate' : '🌱 Beginner';
+
+            const finalContent = document.getElementById('finalContent');
+            finalContent.innerHTML = `
+                <div style="text-align:center;margin-bottom:1.5rem;">
+                    <h2 style="color:var(--neon-green);">Final Score</h2>
+                    <p style="font-size:3rem;font-family:'Orbitron',monospace;color:var(--neon-green);text-shadow:0 0 20px var(--neon-green);">${state.score}</p>
+                    <p style="color:var(--neon-cyan);font-size:1.1rem;">${rank}</p>
+                </div>
+                <div class="j-final-grid">
+                    <div class="j-final-stat"><span class="val">${state.correct}</span><span class="lbl">Correct</span></div>
+                    <div class="j-final-stat"><span class="val">${answered - state.correct}</span><span class="lbl">Wrong</span></div>
+                    <div class="j-final-stat"><span class="val">${pct}%</span><span class="lbl">Accuracy</span></div>
+                    <div class="j-final-stat"><span class="val">${maxPts - state.score}</span><span class="lbl">Left</span></div>
+                </div>
+                <div style="margin:1.5rem 0;"><p style="color:var(--neon-cyan);margin-bottom:1rem;">Category Breakdown</p>${catRows}</div>
+                <button class="btn-primary" onclick="closeFinalModal()" style="width:100%;">Close</button>
+            `;
+
+            document.getElementById('finalModal').classList.add('open');
+        }
+
+        // ================================================================
+        // STATS & PERSISTENCE
+        // ================================================================
+        function updateStats() {
+            const total = questions.length;
+            const answered = Object.keys(state.answered).length;
+            const remaining = total - answered;
+
+            const scoreEl = document.getElementById('jScore');
+            const answEl = document.getElementById('jAnswered');
+            const corrEl = document.getElementById('jCorrect');
+            const remEl = document.getElementById('jRemaining');
+
+            if (scoreEl) scoreEl.textContent = state.score;
+            if (answEl) answEl.textContent = answered + ' / ' + total;
+            if (corrEl) corrEl.textContent = state.correct;
+            if (remEl) remEl.textContent = remaining;
+        }
+
+        function saveState() {
+            localStorage.setItem('jeopardyState', JSON.stringify({
+                answered: state.answered,
+                score: state.score,
+                correct: state.correct,
+                catScores: state.catScores
+            }));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('jeopardyState');
+            if (!saved) return;
+            const s = JSON.parse(saved);
+            state.answered = s.answered || {};
+            state.score = s.score || 0;
+            state.correct = s.correct || 0;
+            state.catScores = s.catScores || {};
+        }
+
+        function saveToUser(pts) {
+            const raw = localStorage.getItem('user') || sessionStorage.getItem('user') || '{}';
+            const user = JSON.parse(raw);
+            user.points = (user.points || 0) + pts;
+            const store = localStorage.getItem('user') ? localStorage : sessionStorage;
+            store.setItem('user', JSON.stringify(user));
+        }
+
+        function resetBoard() {
+            if (!confirm('Reset the entire board? All progress will be lost.')) return;
+            state.answered = {};
+            state.score = 0;
+            state.correct = 0;
+            state.catScores = {};
+            localStorage.removeItem('jeopardyState');
+            renderBoard();
+        }
+
+        // ================================================================
+        // INIT
+        // ================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            renderBoard();
+
+            // Auth link update
+            const raw = localStorage.getItem('user') || sessionStorage.getItem('user');
+            if (raw) {
+                const user = JSON.parse(raw);
+                const link = document.getElementById('auth-link');
+                if (link && user.username) link.textContent = user.username;
+            }
+        });
+
+        // Make functions globally accessible for inline onclick
+        window.openQuestion = openQuestion;
+        window.closeQuestion = closeQuestion;
+        window.closeFinalModal = closeFinalModal;
+        window.submitMC = submitMC;
+        window.submitFlag = submitFlag;
+        window.resetBoard = resetBoard;
+        window.showFinalScore = showFinalScore;
+    </script>
+</body>
+</html>

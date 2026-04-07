@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>SCOREBOARD • CTF HUB • DYNAMIC BADGES</title>
+    <!-- Font Awesome & Chart.js CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* ----- GLOBAL THEME (DARK / CYBERPUNK) ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #0f1322;
+            --neon-green: #50fa7b;
+            --neon-blue: #3e9eff;
+            --neon-purple: #bd93f9;
+            --neon-pink: #ff79c6;
+            --neon-red: #ff5555;
+            --neon-yellow: #f1fa8c;
+            --neon-orange: #ffb86b;
+            --neon-cyan: #8be9fd;
+            --border-color: #2a3550;
+            --text-secondary: #8892b0;
+            --glow-green: rgba(80, 250, 123, 0.3);
+            --transition-normal: 0.2s ease;
+            --radius-xl: 20px;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --font-primary: 'Inter', 'Segoe UI', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body.dark-theme {
+            background: var(--bg-primary);
+            font-family: var(--font-primary);
+            color: #e4e6f0;
+            overflow-x: hidden;
+        }
+
+        /* Matrix Canvas */
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2.5rem;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--neon-green);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .logo {
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            cursor: pointer;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: 0.2s;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .nav-links a.active, .nav-links a:hover {
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--glow-green);
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            background: rgba(255, 85, 85, 0.15);
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: var(--neon-red);
+            color: var(--bg-primary);
+            box-shadow: 0 0 15px rgba(255, 85, 85, 0.4);
+        }
+
+        .user-greeting {
+            color: var(--neon-green);
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            background: rgba(80, 250, 123, 0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            border: 1px solid rgba(80, 250, 123, 0.3);
+        }
+
+        /* Login Required Overlay */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .login-overlay-content {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-secondary);
+            border: 2px solid var(--neon-red);
+            border-radius: 20px;
+            max-width: 500px;
+            margin: 2rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        .login-overlay-content i {
+            font-size: 4rem;
+            color: var(--neon-red);
+            margin-bottom: 1rem;
+        }
+
+        .login-overlay-content h2 {
+            color: var(--neon-red);
+            margin-bottom: 1rem;
+        }
+
+        .login-overlay-content p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .login-overlay-btn {
+            background: linear-gradient(135deg, var(--neon-red), var(--neon-orange));
+            border: none;
+            color: var(--bg-primary);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 85, 85, 0.4); }
+            50% { box-shadow: 0 0 0 15px rgba(255, 85, 85, 0); }
+        }
+
+        /* Protected Content */
+        .protected-content {
+            display: none;
+        }
+
+        .protected-content.visible {
+            display: block;
+        }
+
+        /* main container */
+        .scoreboard-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.8rem;
+        }
+        .section-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
+            color: var(--neon-green);
+        }
+        /* live stats cards */
+        .live-stats-section {
+            background: linear-gradient(145deg, var(--bg-secondary), var(--bg-primary));
+            border: 1px solid var(--neon-blue);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            position: relative;
+        }
+        .stats-pyramid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 1.8rem;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.2rem 1.8rem;
+            text-align: center;
+            width: 220px;
+            transition: 0.2s;
+        }
+        .stat-card.center-card {
+            width: 280px;
+            border: 2px solid var(--neon-purple);
+        }
+        .stat-card p {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--neon-green);
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        .chart-container {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+        }
+        /* refresh */
+        .refresh-control {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        .refresh-btn {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 0.3rem 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        /* leaderboard */
+        .leaderboard {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+            overflow-x: auto;
+            margin-bottom: 2rem;
+        }
+        .leaderboard table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .leaderboard th, .leaderboard td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .leaderboard th {
+            color: var(--neon-green);
+        }
+        .rank-1 { color: var(--neon-yellow); font-weight: bold; }
+        .rank-2 { color: var(--neon-cyan); }
+        .rank-3 { color: var(--neon-orange); }
+        .badge {
+            display: inline-block;
+            background: rgba(189, 147, 249, 0.2);
+            border: 1px solid var(--neon-purple);
+            border-radius: 30px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.7rem;
+            margin: 0.2rem;
+            color: var(--neon-purple);
+            white-space: nowrap;
+        }
+        .activity-list {
+            max-height: 380px;
+            overflow-y: auto;
+        }
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            background: var(--bg-primary);
+            margin-bottom: 0.6rem;
+            padding: 0.8rem;
+            border-radius: var(--radius-md);
+            border-left: 3px solid var(--neon-green);
+        }
+        @media (max-width: 780px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .stat-card { width: 100%; max-width: 260px; }
+            .navbar { flex-direction: column; }
+            .nav-links { justify-content: center; }
+        }
+        .points-cell { color: var(--neon-green); font-weight: 700; }
+        .trend-up { color: var(--neon-green); }
+    </style>
+</head>
+<body class="dark-theme">
+    <canvas id="matrixCanvas"></canvas>
+    <nav class="navbar">
+        <div class="logo" onclick="navigateTo('homepage.html')"><i class="fas fa-shield-alt"></i> UTECH CTF HUB</div>
+        <ul class="nav-links">
+            <li><a onclick="navigateTo('homepage.html')">Home</a></li>
+            <li><a onclick="navigateTo('CTF learning material.html')">Learn</a></li>
+            <li><a onclick="navigateTo('CTF challenge.html')">Challenges</a></li>
+            <li><a class="active">Scoreboard</a></li>
+            <li id="authContainer" style="display: flex; align-items: center; gap: 0.8rem;"></li>
+        </ul>
+    </nav>
+
+    <!-- Login Required Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-overlay-content">
+            <i class="fas fa-lock"></i>
+            <h2>ACCESS RESTRICTED</h2>
+            <p>You must be logged in to view the scoreboard and track your progress.</p>
+            <button class="login-overlay-btn" onclick="navigateTo('login.html')">
+                <i class="fas fa-sign-in-alt"></i> LOGIN TO CONTINUE
+            </button>
+        </div>
+    </div>
+
+    <!-- Protected Content -->
+    <div id="protectedContent" class="protected-content">
+        <main class="scoreboard-container">
+            <div class="section-header">
+                <h1><i class="fas fa-trophy"></i> LIVE LEADERBOARD • BADGE PROGRESSION</h1>
+                <p>Points unlock exclusive CTF badges automatically</p>
+            </div>
+
+            <div class="live-stats-section">
+                <div class="live-badge" style="display:inline-flex; gap:8px; background:rgba(255,85,85,0.2); border-radius:30px; padding:4px 12px; margin-bottom:16px;">
+                    <i class="fas fa-circle" style="color:var(--neon-red); font-size:10px;"></i> <span>LIVE DATA STREAM</span>
+                </div>
+                <div class="stats-pyramid">
+                    <div class="stats-row top">
+                        <div class="stat-card"><h3><i class="fas fa-users"></i> TOTAL PLAYERS</h3><p id="totalPlayers">0</p></div>
+                        <div class="stat-card"><h3><i class="fas fa-flag-checkered"></i> TOTAL SOLVES</h3><p id="totalSolves">0</p></div>
+                        <div class="stat-card"><h3><i class="fas fa-trophy"></i> TOP SCORE</h3><p id="topScore">0</p></div>
+                    </div>
+                    <div class="stats-row bottom">
+                        <div class="stat-card center-card"><h3><i class="fas fa-fire"></i> ACTIVE TODAY</h3><p id="activeToday">0</p></div>
+                    </div>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-container"><h3><i class="fas fa-chart-line"></i> SUBMISSION TREND</h3><canvas id="submissionChart"></canvas></div>
+                    <div class="chart-container"><h3><i class="fas fa-chart-pie"></i> CATEGORY DISTRIBUTION</h3><canvas id="categoryChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="refresh-control">
+                <div class="auto-refresh"><i class="fas fa-sync-alt"></i> <span>Auto every</span>
+                    <input type="number" id="refreshInterval" value="9" min="4" max="45" step="3" style="width:55px; background:#0a0e1a; border:1px solid #2a3550; color:#50fa7b; border-radius:6px; padding:4px; text-align:center;"> sec
+                </div>
+                <button class="refresh-btn" id="manualRefreshBtn"><i class="fas fa-sync-alt"></i> REFRESH NOW</button>
+                <span class="last-updated" id="lastUpdated">Last updated: --:--:--</span>
+            </div>
+
+            <div class="leaderboard">
+                <table>
+                    <thead><tr><th>RANK</th><th>USERNAME</th><th>POINTS</th><th>SOLVES</th><th>BADGES 🎖️</th></tr></thead>
+                    <tbody id="scoreboardBody"><tr><td colspan="5" style="text-align:center;">loading...</td></tr></tbody>
+                </table>
+            </div>
+
+            <div class="recent-solves">
+                <h3><i class="fas fa-history"></i> RECENT ACTIVITY</h3>
+                <div class="activity-list" id="recentActivity"><div style="padding:1rem; text-align:center;">fetching...</div></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ========== MATRIX RAIN EFFECT ==========
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        const chars = "01アイウエオカキクケコABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&";
+        const charArray = chars.split("");
+        const fontSize = 14;
+        let columns = Math.floor(canvas.width / fontSize);
+        let drops = new Array(columns).fill(0).map(() => Math.floor(Math.random() * canvas.height));
+        function drawMatrix() {
+            if (!ctx) return;
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.045)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#2aff7e';
+            ctx.font = `${fontSize}px 'Monaco', monospace`;
+            for (let i = 0; i < drops.length; i++) {
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 40);
+        
+        // ========== AUTH STATE MANAGEMENT ==========
+        function getCurrentUser() {
+            const user = localStorage.getItem('user') || sessionStorage.getItem('user');
+            if(user) {
+                try { return JSON.parse(user); } catch(e) { return null; }
+            }
+            return null;
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            sessionStorage.removeItem('user');
+            alert('🔐 You have been logged out. Redirecting to login page...');
+            window.location.href = 'login.html';
+        }
+
+        function isLoggedIn() {
+            return getCurrentUser() !== null;
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        function updateAuthUI() {
+            const authContainer = document.getElementById('authContainer');
+            const loginOverlay = document.getElementById('loginOverlay');
+            const protectedContent = document.getElementById('protectedContent');
+            
+            if(!authContainer) return;
+            const user = getCurrentUser();
+            const loggedIn = !!user;
+            
+            if(loggedIn && user.username) {
+                authContainer.innerHTML = `
+                    <span class="user-greeting"><i class="fas fa-user-astronaut"></i> ${user.username}</span>
+                    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> LOGOUT</button>
+                `;
+                if(loginOverlay) loginOverlay.style.display = 'none';
+                if(protectedContent) protectedContent.classList.add('visible');
+                
+                // Initialize scoreboard after login
+                if(typeof initScoreboard === 'function') initScoreboard();
+            } else {
+                authContainer.innerHTML = `<a href="login.html" style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-sign-in-alt"></i> Login</a>`;
+                if(loginOverlay) loginOverlay.style.display = 'flex';
+                if(protectedContent) protectedContent.classList.remove('visible');
+            }
+        }
+        
+        // ========== BADGE DEFINITIONS (point thresholds) ==========
+        const BADGE_THRESHOLDS = [
+            { minPoints: 0, badge: "🌱 Rookie", color: "#8be9fd" },
+            { minPoints: 300, badge: "⚡ Script Kiddie", color: "#50fa7b" },
+            { minPoints: 600, badge: "🔍 Web Surfer", color: "#3e9eff" },
+            { minPoints: 900, badge: "💎 Crypto Knight", color: "#bd93f9" },
+            { minPoints: 1200, badge: "🔥 Pwn Master", color: "#ffb86b" },
+            { minPoints: 1600, badge: "👑 Elite Hacker", color: "#ff79c6" },
+            { minPoints: 2100, badge: "🌀 0xLegend", color: "#f1fa8c" }
+        ];
+        
+        function getBadgesForPoints(points) {
+            const earned = [];
+            for (let i = BADGE_THRESHOLDS.length-1; i >= 0; i--) {
+                if (points >= BADGE_THRESHOLDS[i].minPoints) {
+                    earned.push(BADGE_THRESHOLDS[i].badge);
+                }
+            }
+            return [...new Set(earned)];
+        }
+        
+        // ----- INITIAL DATASET -----
+        let leaderboardData = [
+            { username: "h4x0r_pr0", points: 1250, solves: 15, badges: [] },
+            { username: "sec_ninja", points: 980, solves: 12, badges: [] },
+            { username: "crypto_queen", points: 890, solves: 10, badges: [] },
+            { username: "binary_buster", points: 750, solves: 8, badges: [] },
+            { username: "web_hacker", points: 620, solves: 7, badges: [] },
+            { username: "pcap_analyst", points: 550, solves: 6, badges: [] },
+            { username: "forensic_fox", points: 480, solves: 5, badges: [] },
+            { username: "cloud_cracker", points: 400, solves: 4, badges: [] },
+            { username: "reverse_rookie", points: 350, solves: 3, badges: [] },
+            { username: "script_kiddie", points: 200, solves: 2, badges: [] }
+        ];
+        
+        function assignBadgesToAll() {
+            leaderboardData.forEach(user => {
+                user.badges = getBadgesForPoints(user.points);
+            });
+        }
+        
+        function sortAndRank() {
+            leaderboardData.sort((a,b) => b.points - a.points);
+            leaderboardData.forEach((user, idx) => { user.rank = idx + 1; });
+        }
+        
+        let recentActivity = [
+            { user: "h4x0r_pr0", action: "solved", challenge: "SQLi: Ghost Login", time: "just now", points: 100 },
+            { user: "sec_ninja", action: "solved", challenge: "Base64 Riddle", time: "2 min ago", points: 75 },
+            { user: "crypto_queen", action: "started", challenge: "RSA Small e", time: "5 min ago", points: 0 },
+            { user: "binary_buster", action: "solved", challenge: "Strings Extraction", time: "8 min ago", points: 100 },
+            { user: "web_hacker", action: "solved", challenge: "XSS Hunter", time: "12 min ago", points: 200 }
+        ];
+        
+        let submissionHistory = [
+            { day: "Mon", count: 12 }, { day: "Tue", count: 19 }, { day: "Wed", count: 15 },
+            { day: "Thu", count: 22 }, { day: "Fri", count: 28 }, { day: "Sat", count: 35 }, { day: "Sun", count: 42 }
+        ];
+        let categoryStats = [
+            { category: "Web Security", count: 45 }, { category: "Cryptography", count: 32 },
+            { category: "Network", count: 28 }, { category: "Reverse Eng", count: 22 },
+            { category: "Binary Exploit", count: 18 }, { category: "Forensics", count: 15 }
+        ];
+        
+        let submissionChart, categoryChart;
+        let refreshTimer = null;
+        
+        function updateStatsUI() {
+            const totalPlayers = leaderboardData.length;
+            const totalSolves = leaderboardData.reduce((s,u) => s + u.solves, 0);
+            const topScore = leaderboardData[0]?.points || 0;
+            const activeToday = Math.floor(Math.random() * 28) + 18;
+            document.getElementById("totalPlayers").innerText = totalPlayers;
+            document.getElementById("totalSolves").innerText = totalSolves;
+            document.getElementById("topScore").innerText = topScore;
+            document.getElementById("activeToday").innerText = activeToday;
+        }
+        
+        function renderLeaderboard() {
+            const tbody = document.getElementById("scoreboardBody");
+            if (!tbody) return;
+            tbody.innerHTML = leaderboardData.map(user => {
+                let rankDisplay = user.rank;
+                let rankClass = "";
+                if (user.rank === 1) { rankClass = "rank-1"; rankDisplay = "🥇 1"; }
+                else if (user.rank === 2) { rankClass = "rank-2"; rankDisplay = "🥈 2"; }
+                else if (user.rank === 3) { rankClass = "rank-3"; rankDisplay = "🥉 3"; }
+                const badgesHtml = user.badges.map(b => `<span class="badge">${b}</span>`).join('');
+                return `<tr>
+                    <td class="${rankClass}" style="font-weight:bold;">${rankDisplay}</td>
+                    <td><i class="fas fa-user-secret"></i> ${user.username}</td>
+                    <td class="points-cell">${user.points} pts</td>
+                    <td>${user.solves}</td>
+                    <td>${badgesHtml || '<span style="opacity:0.5;">—</span>'}</td>
+                </tr>`;
+            }).join('');
+        }
+        
+        function renderActivity() {
+            const container = document.getElementById("recentActivity");
+            if (!container) return;
+            container.innerHTML = recentActivity.slice(0, 10).map(act => {
+                let icon = "fa-flag-checkered";
+                let color = "var(--neon-green)";
+                if (act.action === "started") { icon = "fa-play"; color = "var(--neon-blue)"; }
+                else if (act.action === "attempted") { icon = "fa-times"; color = "var(--neon-red)"; }
+                const pointsSpan = act.points > 0 ? `<span style="color:var(--neon-green);"> (+${act.points})</span>` : '';
+                return `<div class="activity-item">
+                    <div><i class="fas ${icon}" style="color:${color};"></i></div>
+                    <div style="flex:1;"><strong>${act.user}</strong> ${act.action} <span style="color:var(--neon-blue);">${act.challenge}</span>${pointsSpan}</div>
+                    <div style="font-size:0.7rem;"><i class="fas fa-clock"></i> ${act.time}</div>
+                </div>`;
+            }).join('');
+        }
+        
+        function initCharts() {
+            const subCtx = document.getElementById("submissionChart")?.getContext("2d");
+            const catCtx = document.getElementById("categoryChart")?.getContext("2d");
+            if (submissionChart) submissionChart.destroy();
+            if (categoryChart) categoryChart.destroy();
+            if (subCtx) {
+                submissionChart = new Chart(subCtx, {
+                    type: 'line',
+                    data: { labels: submissionHistory.map(d=>d.day), datasets: [{ label: 'Daily Solves', data: submissionHistory.map(d=>d.count), borderColor: '#50fa7b', backgroundColor: 'rgba(80,250,123,0.1)', tension: 0.3, fill: true }] },
+                    options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#ccc' } } } }
+                });
+            }
+            if (catCtx) {
+                categoryChart = new Chart(catCtx, {
+                    type: 'doughnut',
+                    data: { labels: categoryStats.map(c=>c.category), datasets: [{ data: categoryStats.map(c=>c.count), backgroundColor: ['#50fa7b','#3e9eff','#bd93f9','#ffb86b','#ff79c6','#ff5555'], borderWidth: 0 }] },
+                    options: { responsive: true, plugins: { legend: { position: 'right', labels: { color: '#aaa', font: { size: 10 } } } } }
+                });
+            }
+        }
+        
+        function performRealTimeUpdate() {
+            if (leaderboardData.length === 0) return;
+            const randomIndex = Math.floor(Math.random() * leaderboardData.length);
+            const user = leaderboardData[randomIndex];
+            const increment = [45, 60, 80, 110, 150, 200][Math.floor(Math.random() * 6)];
+            const oldBadgesSet = new Set(user.badges);
+            user.points += increment;
+            user.solves += 1;
+            user.badges = getBadgesForPoints(user.points);
+            
+            const challengeNames = ["SQLMap Ultra", "JWT Forgery", "Stack Pivot", "AES Side-Channel", "SSRF Meta", "Steg Hide", "RevMe", "Heap Overflow"];
+            const chosenChallenge = challengeNames[Math.floor(Math.random() * challengeNames.length)];
+            recentActivity.unshift({ user: user.username, action: "solved", challenge: chosenChallenge, time: "just now", points: increment });
+            if (recentActivity.length > 12) recentActivity.pop();
+            
+            const newlyEarned = user.badges.filter(b => !oldBadgesSet.has(b));
+            if (newlyEarned.length > 0) {
+                recentActivity.unshift({ user: user.username, action: "🏆 earned badge", challenge: newlyEarned.join(", "), time: "just now", points: 0 });
+                if (recentActivity.length > 12) recentActivity.pop();
+            }
+            
+            sortAndRank();
+            const todayIdx = new Date().getDay();
+            if (submissionHistory[todayIdx % 7]) submissionHistory[todayIdx % 7].count += 1;
+            const randomCat = Math.floor(Math.random() * categoryStats.length);
+            categoryStats[randomCat].count += Math.floor(Math.random() * 3) + 1;
+            
+            updateStatsUI();
+            renderLeaderboard();
+            renderActivity();
+            initCharts();
+            const now = new Date();
+            document.getElementById("lastUpdated").innerText = `Last updated: ${now.toLocaleTimeString()}`;
+        }
+        
+        function manualRefresh() { performRealTimeUpdate(); }
+        
+        function startAutoRefresh() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            let intervalSec = parseInt(document.getElementById("refreshInterval")?.value) || 9;
+            if (isNaN(intervalSec) || intervalSec < 3) intervalSec = 9;
+            refreshTimer = setInterval(() => performRealTimeUpdate(), intervalSec * 1000);
+        }
+        
+        function stopAutoRefresh() { if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; } }
+        
+        function initScoreboard() {
+            assignBadgesToAll();
+            sortAndRank();
+            updateStatsUI();
+            renderLeaderboard();
+            renderActivity();
+            initCharts();
+            startAutoRefresh();
+            
+            const intervalInput = document.getElementById("refreshInterval");
+            if (intervalInput) {
+                intervalInput.addEventListener("change", () => { stopAutoRefresh(); startAutoRefresh(); });
+            }
+            const manualBtn = document.getElementById("manualRefreshBtn");
+            if (manualBtn) manualBtn.addEventListener("click", manualRefresh);
+        }
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            updateAuthUI();
+        });
+        
+        window.addEventListener("beforeunload", () => stopAutoRefresh());
+    </script>
+</body>
+</html>
