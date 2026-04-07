@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UTECH CTF Hub | Ethical Hacking Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* ===== CYBERPUNK HOMEPAGE STYLES ===== */
+        
+        :root {
+            --neon-green: #50fa7b;
+            --neon-blue: #3e9eff;
+            --neon-cyan: #8be9fd;
+            --neon-purple: #bd93f9;
+            --neon-yellow: #f1fa8c;
+            --neon-red: #ff5555;
+            --neon-orange: #ffb86b;
+            --neon-pink: #ff79c6;
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141b2b;
+            --bg-terminal: #0f1117;
+            --border-color: #2a3550;
+            --text-primary: #e0e0e0;
+            --text-secondary: #8892b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', 'Share Tech Mono', monospace;
+            overflow-x: hidden;
+        }
+
+        /* Matrix Rain Canvas */
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--neon-green);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px rgba(80, 250, 123, 0.3);
+            cursor: pointer;
+        }
+
+        .logo i {
+            margin-right: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--neon-green);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::before,
+        .nav-links a.active::before {
+            width: 100%;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--neon-green);
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            background: rgba(255, 85, 85, 0.15);
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: var(--neon-red);
+            color: var(--bg-primary);
+            box-shadow: 0 0 15px rgba(255, 85, 85, 0.4);
+        }
+
+        .user-greeting {
+            color: var(--neon-green);
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            background: rgba(80, 250, 123, 0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            border: 1px solid rgba(80, 250, 123, 0.3);
+        }
+
+        /* Login Required Overlay for Cards */
+        .feature-card, .category-card, .difficulty-card, .step, .cta-content .btn, .hero-buttons .btn {
+            position: relative;
+        }
+
+        .locked-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(4px);
+            border-radius: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--neon-red);
+        }
+
+        .locked-overlay i {
+            font-size: 2rem;
+            color: var(--neon-red);
+        }
+
+        .locked-overlay span {
+            color: var(--neon-red);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .locked-overlay:hover {
+            background: rgba(255, 85, 85, 0.2);
+            transform: scale(1.02);
+        }
+
+        /* Hero Section */
+        .hero-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 3rem;
+        }
+
+        .hero-content {
+            flex: 1;
+        }
+
+        .hero-content h1 {
+            font-size: 2.8rem;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: glowPulse 3s infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 1.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            border: none;
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(80, 250, 123, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+        }
+
+        .btn-secondary:hover {
+            background: var(--neon-blue);
+            color: var(--bg-primary);
+            box-shadow: 0 0 20px rgba(62, 158, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .stats-banner {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-shadow: 0 0 15px rgba(80, 250, 123, 0.5);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-image {
+            flex: 1;
+            text-align: center;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .hero-image i {
+            font-size: 15rem;
+            color: var(--neon-green);
+            opacity: 0.3;
+            text-shadow: 0 0 50px rgba(80, 250, 123, 0.5);
+        }
+
+        /* Features Section - PYRAMID LAYOUT */
+        .features-section {
+            padding: 4rem 2rem;
+            background: linear-gradient(180deg, var(--bg-primary), var(--bg-secondary));
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+
+        /* Pyramid Grid Layout */
+        .pyramid-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .pyramid-row {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            width: 320px;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-blue), var(--neon-purple));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+            z-index: 5;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--neon-green);
+            box-shadow: 0 20px 40px rgba(80, 250, 123, 0.2);
+        }
+
+        .feature-card.center-card {
+            width: 380px;
+            background: linear-gradient(145deg, var(--bg-secondary), #1a1f2f);
+            border: 2px solid var(--neon-purple);
+        }
+
+        .feature-icon {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .feature-link {
+            color: var(--neon-blue);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .feature-link:hover {
+            color: var(--neon-green);
+            gap: 0.8rem;
+        }
+
+        /* Categories Section */
+        .categories-section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .category-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .category-card:hover {
+            border-color: var(--neon-purple);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(189, 147, 249, 0.1);
+        }
+
+        .category-card i {
+            font-size: 2.5rem;
+            color: var(--neon-purple);
+            margin-bottom: 1rem;
+        }
+
+        .category-card h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .category-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .challenge-count {
+            display: inline-block;
+            background: rgba(189, 147, 249, 0.1);
+            border: 1px solid var(--neon-purple);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--neon-purple);
+        }
+
+        /* Difficulty Section */
+        .difficulty-section {
+            padding: 4rem 2rem;
+            background: var(--bg-secondary);
+        }
+
+        .difficulty-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .difficulty-card {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .difficulty-card.beginner { border: 2px solid #50fa7b; }
+        .difficulty-card.intermediate { border: 2px solid #ffb86b; }
+        .difficulty-card.advanced { border: 2px solid #ff5555; }
+
+        .level-badge {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .beginner .level-badge { background: rgba(80, 250, 123, 0.2); color: #50fa7b; }
+        .intermediate .level-badge { background: rgba(255, 184, 108, 0.2); color: #ffb86b; }
+        .advanced .level-badge { background: rgba(255, 85, 85, 0.2); color: #ff5555; }
+
+        .difficulty-card ul {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .difficulty-card li {
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .difficulty-card li i { color: var(--neon-green); }
+
+        .btn-level {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .beginner .btn-level { background: rgba(80, 250, 123, 0.1); border: 2px solid #50fa7b; color: #50fa7b; }
+        .beginner .btn-level:hover { background: #50fa7b; color: var(--bg-primary); }
+
+        .intermediate .btn-level { background: rgba(255, 184, 108, 0.1); border: 2px solid #ffb86b; color: #ffb86b; }
+        .intermediate .btn-level:hover { background: #ffb86b; color: var(--bg-primary); }
+
+        .advanced .btn-level { background: rgba(255, 85, 85, 0.1); border: 2px solid #ff5555; color: #ff5555; }
+        .advanced .btn-level:hover { background: #ff5555; color: var(--bg-primary); }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+        }
+
+        .step-icon { font-size: 2rem; color: var(--neon-green); margin-bottom: 1rem; }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, rgba(80, 250, 123, 0.1), rgba(62, 158, 255, 0.1));
+            text-align: center;
+        }
+
+        .cta-content { max-width: 600px; margin: 0 auto; }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            padding: 4rem 2rem 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+        }
+
+        .footer-section h4 { color: var(--neon-green); margin-bottom: 1rem; }
+        .footer-section p, .footer-section a { color: var(--text-secondary); text-decoration: none; }
+        .footer-section a:hover { color: var(--neon-green); }
+        .footer-section ul { list-style: none; }
+        .footer-section ul li { margin-bottom: 0.5rem; }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero-section { flex-direction: column; text-align: center; }
+            .hero-content h1 { font-size: 1.8rem; }
+            .hero-buttons { justify-content: center; }
+            .stats-banner { justify-content: center; }
+            .hero-image i { font-size: 8rem; }
+            .navbar { flex-direction: column; text-align: center; }
+            .nav-links { justify-content: center; }
+            .feature-card, .feature-card.center-card { width: 100%; max-width: 350px; }
+            .pyramid-row { flex-direction: column; align-items: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrixCanvas"></canvas>
+
+    <nav class="navbar">
+        <div class="logo" onclick="navigateTo('homepage.html')">
+            <i class="fas fa-shield-alt"></i> UTECH CTF HUB
+        </div>
+        <ul class="nav-links">
+            <li><a onclick="navigateTo('homepage.html')" class="active">Home</a></li>
+            <li><a onclick="navigateTo('CTF learning material.html')">Learn</a></li>
+            <li><a onclick="navigateTo('CTF challenge.html')">Challenges</a></li>
+            <li><a onclick="navigateTo('CTF scoreboard.html')">Scoreboard</a></li>
+            <li id="authContainer" style="display: flex; align-items: center; gap: 0.8rem;">
+                <!-- Dynamic content: user greeting + logout button -->
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1>#Learn Ethical Hacking Through Hands-On Challenges</h1>
+            <p>Join UTech's premier CTF platform. Master cybersecurity skills with interactive challenges, guided learning, and real-world scenarios.</p>
+            <div class="hero-buttons">
+                <a class="btn btn-primary" onclick="handleGetStarted()">Get Started <i class="fas fa-arrow-right"></i></a>
+                <a class="btn btn-secondary" onclick="scrollToFeatures()">Explore Features</a>
+            </div>
+            <div class="stats-banner">
+                <div class="stat-item"><span class="stat-number" id="statChallenges">18+</span><span class="stat-label">Challenges</span></div>
+                <div class="stat-item"><span class="stat-number">6</span><span class="stat-label">Categories</span></div>
+                <div class="stat-item"><span class="stat-number">3</span><span class="stat-label">Difficulty Levels</span></div>
+                <div class="stat-item"><span class="stat-number" id="statStudents">100+</span><span class="stat-label">Students</span></div>
+            </div>
+        </div>
+        <div class="hero-image"><i class="fas fa-laptop-code"></i></div>
+    </section>
+
+    <!-- Features Section - PYRAMID LAYOUT -->
+    <section id="features" class="features-section">
+        <div class="section-header"><h2>Platform Features</h2><p>ALL YOU NEED TO BE A MASTER AT ETHICAL HACKING</p></div>
+        <div class="pyramid-container" id="featuresContainer">
+            <!-- Feature cards will be dynamically generated with login protection -->
+        </div>
+    </section>
+
+    <!-- Challenge Categories -->
+    <section class="categories-section">
+        <div class="section-header"><h2>Challenge Categories</h2><p>Explore our diverse range of cybersecurity topics</p></div>
+        <div class="categories-grid" id="categoriesContainer"></div>
+    </section>
+
+    <!-- Difficulty Levels -->
+    <section class="difficulty-section">
+        <div class="section-header"><h2>Progressive Difficulty</h2><p>Start your journey and advance at your own pace</p></div>
+        <div class="difficulty-grid" id="difficultyContainer"></div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="section-header"><h2>How It Works</h2><p>Your path to becoming an ethical hacker</p></div>
+        <div class="steps-container" id="stepsContainer"></div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="cta-content"><h2>Ready to Start Your Journey?</h2><p>Join hundreds of UTech students mastering ethical hacking skills</p><a class="btn btn-primary btn-large" onclick="handleGetStarted()">Create Free Account <i class="fas fa-arrow-right"></i></a><p class="demo-login-hint" style="margin-top:1rem;"><i class="fas fa-info-circle"></i> Demo: Use "student" / "ctf123" to explore</p></div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section"><h4>UTech CTF Hub</h4><p>A reusable ethical hacking learning platform for CNS3005</p></div>
+            <div class="footer-section"><h4>Quick Links</h4><ul><li><a onclick="navigateTo('CTF learning material.html')">Learn</a></li><li><a onclick="navigateTo('CTF challenge.html')">Challenges</a></li><li><a onclick="navigateTo('CTF scoreboard.html')">Scoreboard</a></li><li><a onclick="navigateTo('login.html')">Login</a></li></ul></div>
+            <div class="footer-section"><h4>Categories</h4><ul><li><a>Web Security</a></li><li><a>Cryptography</a></li><li><a>Network Security</a></li><li><a>Reverse Engineering</a></li></ul></div>
+            <div class="footer-section"><h4>University</h4><p>University of Technology, Jamaica</p><p>CNS3005 - Ethical Hacking</p><p>Semester 2</p></div>
+        </div>
+        <div class="footer-bottom"><p>&copy; 2026 UTECH ETHICAL HACKING CTF HUB. All rights reserved.</p></div>
+    </footer>
+
+    <script>
+        // ========== MATRIX RAIN ==========
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*";
+        let drops = [];
+        function initDrops() { drops = []; for(let i=0; i<canvas.width/14; i++) drops[i]=Math.random()*canvas.height; }
+        initDrops();
+        function drawMatrix() {
+            if(!ctx) return;
+            ctx.fillStyle = 'rgba(10,10,10,0.04)';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
+            ctx.fillStyle = '#50fa7b';
+            ctx.font = '14px monospace';
+            for(let i=0;i<drops.length;i++) {
+                ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*14, drops[i]*14);
+                if(drops[i]*14 > canvas.height && Math.random()>0.975) drops[i]=0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix,35);
+        window.addEventListener('resize',()=>{ resizeCanvas(); initDrops(); });
+
+        // ========== AUTH STATE MANAGEMENT ==========
+        function getCurrentUser() {
+            const user = localStorage.getItem('user') || sessionStorage.getItem('user');
+            if(user) {
+                try { return JSON.parse(user); } catch(e) { return null; }
+            }
+            return null;
+        }
+
+        function logout() {
+            localStorage.removeItem('user');
+            sessionStorage.removeItem('user');
+            alert('🔐 You have been logged out. Redirecting to login page...');
+            window.location.href = 'login.html';
+        }
+
+        function isLoggedIn() {
+            return getCurrentUser() !== null;
+        }
+
+        function redirectToLogin() {
+            alert('⚠️ Please login to access this feature.');
+            window.location.href = 'login.html';
+        }
+
+        function handleProtectedClick(action, event) {
+            event.stopPropagation();
+            if (!isLoggedIn()) {
+                redirectToLogin();
+                return false;
+            }
+            if (typeof action === 'function') {
+                action();
+            } else if (typeof action === 'string') {
+                navigateTo(action);
+            }
+            return true;
+        }
+
+        // Wrap element with login protection overlay
+        function protectElement(element, targetUrl) {
+            if (!element) return;
+            const overlay = document.createElement('div');
+            overlay.className = 'locked-overlay';
+            overlay.innerHTML = '<i class="fas fa-lock"></i><span>Login Required</span>';
+            overlay.style.cursor = 'pointer';
+            overlay.onclick = (e) => {
+                e.stopPropagation();
+                redirectToLogin();
+            };
+            element.style.position = 'relative';
+            element.appendChild(overlay);
+        }
+
+        function updateAuthUI() {
+            const authContainer = document.getElementById('authContainer');
+            if(!authContainer) return;
+            const user = getCurrentUser();
+            const loggedIn = !!user;
+            
+            if(loggedIn && user.username) {
+                authContainer.innerHTML = `
+                    <span class="user-greeting"><i class="fas fa-user-astronaut"></i> ${user.username}</span>
+                    <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> LOGOUT</button>
+                `;
+            } else {
+                authContainer.innerHTML = `<a href="login.html" style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-sign-in-alt"></i> Login</a>`;
+            }
+            
+            // Apply overlays to protected elements
+            applyProtectionOverlays();
+        }
+
+        function applyProtectionOverlays() {
+            const loggedIn = isLoggedIn();
+            
+            // Feature cards
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach(card => {
+                const existingOverlay = card.querySelector('.locked-overlay');
+                if (!loggedIn) {
+                    if (!existingOverlay) protectElement(card, null);
+                } else {
+                    if (existingOverlay) existingOverlay.remove();
+                }
+            });
+            
+            // Category cards
+            const categoryCards = document.querySelectorAll('.category-card');
+            categoryCards.forEach(card => {
+                const existingOverlay = card.querySelector('.locked-overlay');
+                if (!loggedIn) {
+                    if (!existingOverlay) protectElement(card, null);
+                } else {
+                    if (existingOverlay) existingOverlay.remove();
+                }
+            });
+            
+            // Difficulty cards
+            const difficultyCards = document.querySelectorAll('.difficulty-card');
+            difficultyCards.forEach(card => {
+                const existingOverlay = card.querySelector('.locked-overlay');
+                if (!loggedIn) {
+                    if (!existingOverlay) protectElement(card, null);
+                } else {
+                    if (existingOverlay) existingOverlay.remove();
+                }
+            });
+            
+            // Steps
+            const steps = document.querySelectorAll('.step');
+            steps.forEach(step => {
+                const existingOverlay = step.querySelector('.locked-overlay');
+                if (!loggedIn) {
+                    if (!existingOverlay) protectElement(step, null);
+                } else {
+                    if (existingOverlay) existingOverlay.remove();
+                }
+            });
+            
+            // Hero buttons
+            const heroBtns = document.querySelectorAll('.hero-buttons .btn');
+            heroBtns.forEach(btn => {
+                const existingOverlay = btn.querySelector('.locked-overlay');
+                if (!loggedIn && btn.innerHTML.includes('Get Started')) {
+                    if (!existingOverlay) protectElement(btn, null);
+                } else if (existingOverlay) {
+                    existingOverlay.remove();
+                }
+            });
+        }
+
+        // Render all content dynamically
+        function renderContent() {
+            // Features
+            document.getElementById('featuresContainer').innerHTML = `
+                <div class="pyramid-row top">
+                    <div class="feature-card"><div class="feature-icon"><i class="fas fa-graduation-cap"></i></div><h3>Structured Learning</h3><p>Micro-lessons with bullet points, examples, and self-check questions.</p><a class="feature-link" onclick="if(isLoggedIn()) navigateTo('CTF learning material.html'); else redirectToLogin();">Start Learning →</a></div>
+                    <div class="feature-card"><div class="feature-icon"><i class="fas fa-flag"></i></div><h3>CTF Challenges</h3><p>18+ challenges across Beginner, Intermediate, and Advanced tiers.</p><a class="feature-link" onclick="if(isLoggedIn()) navigateTo('CTF challenge.html'); else redirectToLogin();">View Challenges →</a></div>
+                    <div class="feature-card"><div class="feature-icon"><i class="fas fa-trophy"></i></div><h3>Competitive Scoreboard</h3><p>Track progress, earn badges, and compete on the leaderboard.</p><a class="feature-link" onclick="if(isLoggedIn()) navigateTo('CTF scoreboard.html'); else redirectToLogin();">See Leaderboard →</a></div>
+                </div>
+                <div class="pyramid-row middle">
+                    <div class="feature-card"><div class="feature-icon"><i class="fas fa-puzzle-piece"></i></div><h3>Jeopardy Games</h3><p>Test knowledge with category-based questions worth 100-500 points.</p><a class="feature-link" onclick="if(isLoggedIn()) navigateTo('Jeopardy.html'); else redirectToLogin();">Play Jeopardy →</a></div>
+                    <div class="feature-card"><div class="feature-icon"><i class="fas fa-question-circle"></i></div><h3>Interactive Quizzes</h3><p>Multiple-choice quizzes with immediate feedback and point rewards.</p><a class="feature-link" onclick="if(isLoggedIn()) navigateTo('Quizzes.html'); else redirectToLogin();">Take Quizzes →</a></div>
+                </div>
+                <div class="pyramid-row bottom">
+                    <div class="feature-card center-card"><div class="feature-icon"><i class="fas fa-shield-hal"></i></div><h3>Safe-by-Design CTF Rules</h3><p>All challenges are simulated in a controlled lab environment with clear post-solve explanations.</p><a class="feature-link" onclick="window.open('https://trailofbits.github.io/ctf/index.html', '_blank');">Learn More →</a></div>
+                </div>
+            `;
+            
+            // Categories
+            document.getElementById('categoriesContainer').innerHTML = `
+                <div class="category-card"><i class="fas fa-globe"></i><h3>Web Security</h3><p>SQL Injection, XSS, Authentication bypass</p><span class="challenge-count">6 challenges</span></div>
+                <div class="category-card"><i class="fas fa-lock"></i><h3>Cryptography</h3><p>Base64, ROT13, Vigenère, RSA basics</p><span class="challenge-count">4 challenges</span></div>
+                <div class="category-card"><i class="fas fa-network-wired"></i><h3>Network Security</h3><p>PCAP analysis, Protocol identification</p><span class="challenge-count">3 challenges</span></div>
+                <div class="category-card"><i class="fas fa-database"></i><h3>Data Security</h3><p>Password storage, Access control, Backups</p><span class="challenge-count">3 challenges</span></div>
+                <div class="category-card"><i class="fas fa-code"></i><h3>Reverse Engineering</h3><p>String extraction, Basic crackmes</p><span class="challenge-count">2 challenges</span></div>
+                <div class="category-card"><i class="fas fa-users"></i><h3>Social Engineering</h3><p>Phishing awareness, Pretexting scenarios</p><span class="challenge-count">2 challenges</span></div>
+                <div class="category-card"><i class="fas fa-search"></i><h3>OSINT</h3><p>Open-source intelligence, metadata analysis</p><span class="challenge-count">2 challenges</span></div>
+                <div class="category-card"><i class="fas fa-microscope"></i><h3>Forensics</h3><p>File carving, steganography, log analysis</p><span class="challenge-count">2 challenges</span></div>
+            `;
+            
+            // Difficulty
+            document.getElementById('difficultyContainer').innerHTML = `
+                <div class="difficulty-card beginner"><div class="level-badge">Beginner</div><i class="fas fa-seedling" style="font-size:2rem; color:#50fa7b;"></i><h3>Start Here</h3><ul><li><i class="fas fa-check"></i> 6 challenges</li><li><i class="fas fa-check"></i> Basic concepts</li><li><i class="fas fa-check"></i> Guided solutions</li></ul><a class="btn-level" onclick="if(isLoggedIn()) navigateTo('CTF challenge.html?difficulty=beginner'); else redirectToLogin();">Explore Beginner →</a></div>
+                <div class="difficulty-card intermediate"><div class="level-badge">Intermediate</div><i class="fas fa-fire" style="font-size:2rem; color:#ffb86b;"></i><h3>Build Skills</h3><ul><li><i class="fas fa-check"></i> 6 challenges</li><li><i class="fas fa-check"></i> Applied techniques</li><li><i class="fas fa-check"></i> Minimal guidance</li></ul><a class="btn-level" onclick="if(isLoggedIn()) navigateTo('CTF challenge.html?difficulty=intermediate'); else redirectToLogin();">Go Intermediate →</a></div>
+                <div class="difficulty-card advanced"><div class="level-badge">Advanced</div><i class="fas fa-skull" style="font-size:2rem; color:#ff5555;"></i><h3>Master Level</h3><ul><li><i class="fas fa-check"></i> 6 challenges</li><li><i class="fas fa-check"></i> Complex concepts</li><li><i class="fas fa-check"></i> Research required</li></ul><a class="btn-level" onclick="if(isLoggedIn()) navigateTo('CTF challenge.html?difficulty=advanced'); else redirectToLogin();">Accept Challenge →</a></div>
+            `;
+            
+            // Steps
+            document.getElementById('stepsContainer').innerHTML = `
+                <div class="step"><div class="step-number">1</div><i class="fas fa-user-plus step-icon"></i><h3>Create Account</h3><p>Register for free and join the UTech CTF community</p></div>
+                <div class="step"><div class="step-number">2</div><i class="fas fa-book step-icon"></i><h3>Learn Concepts</h3><p>Study micro-lessons with examples and self-checks</p></div>
+                <div class="step"><div class="step-number">3</div><i class="fas fa-flag step-icon"></i><h3>Solve Challenges</h3><p>Apply knowledge to capture flags and earn points</p></div>
+                <div class="step"><div class="step-number">4</div><i class="fas fa-chart-line step-icon"></i><h3>Track Progress</h3><p>Climb the leaderboard and earn achievement badges</p></div>
+            `;
+        }
+
+        function handleGetStarted() {
+            if (isLoggedIn()) {
+                navigateTo('CTF challenge.html');
+            } else {
+                navigateTo('registration.html');
+            }
+        }
+
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+
+        function scrollToFeatures() {
+            document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Animated counters
+        function animateCounter(element, target) {
+            let start = 0;
+            const increment = target / 60;
+            let current = start;
+            const timer = setInterval(() => {
+                current += increment;
+                if(current >= target) {
+                    element.textContent = target + (target >= 100 ? '+' : '');
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current);
+                }
+            }, 30);
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    const statChallenges = document.getElementById('statChallenges');
+                    const statStudents = document.getElementById('statStudents');
+                    if(statChallenges && statChallenges.textContent === '18+') {
+                        animateCounter(statChallenges, 18);
+                        animateCounter(statStudents, 128);
+                    }
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+        const heroSection = document.querySelector('.hero-section');
+        if(heroSection) observer.observe(heroSection);
+
+        // Card reveal animation
+        function observeCards() {
+            const cards = document.querySelectorAll('.feature-card, .category-card, .difficulty-card');
+            const cardObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry, idx) => {
+                    if(entry.isIntersecting) {
+                        setTimeout(() => { entry.target.style.opacity = '1'; entry.target.style.transform = 'translateY(0)'; }, idx * 80);
+                        cardObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            cards.forEach(card => { 
+                card.style.opacity = '0'; 
+                card.style.transform = 'translateY(30px)'; 
+                card.style.transition = 'all 0.5s ease'; 
+                cardObserver.observe(card); 
+            });
+        }
+
+        // Typing effect
+        const heroText = document.querySelector('.hero-content h1');
+        if(heroText && heroText.textContent.startsWith('#')) {
+            const original = heroText.textContent;
+            heroText.textContent = '';
+            let i=0;
+            function type() { if(i<original.length) { heroText.textContent += original.charAt(i); i++; setTimeout(type, 45); } }
+            type();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderContent();
+            updateAuthUI();
+            observeCards();
+        });
+    </script>
+</body>
+</html>
