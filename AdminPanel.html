@@ -3,1183 +3,819 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UTech CTF Hub | Database Powered Admin System</title>
+    <title>UTech CTF Hub | Secure Admin Terminal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --neon-green: #50fa7b;
-            --neon-blue: #3e9eff;
-            --neon-cyan: #8be9fd;
-            --neon-purple: #bd93f9;
-            --neon-yellow: #f1fa8c;
-            --neon-red: #ff5555;
-            --neon-orange: #ffb86b;
-            --neon-pink: #ff79c6;
-            --bg-primary: #0a0e1a;
-            --bg-secondary: #141b2b;
-            --border-color: #2a3550;
-            --text-primary: #e0e0e0;
-            --text-secondary: #8892b0;
+            --neon-green: #50fa7b; --neon-blue: #3e9eff; --neon-cyan: #8be9fd;
+            --neon-purple: #bd93f9; --neon-yellow: #f1fa8c; --neon-red: #ff5555;
+            --neon-orange: #ffb86b; --neon-pink: #ff79c6;
+            --bg-primary: #0a0e1a; --bg-secondary: #141b2b;
+            --border-color: #2a3550; --text-primary: #e0e0e0; --text-secondary: #8892b0;
         }
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: 'Segoe UI', 'Share Tech Mono', monospace; overflow: hidden; }
+        #matrixRain { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.1; pointer-events: none; }
 
-        body {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: 'Segoe UI', 'Share Tech Mono', monospace;
-            overflow: hidden;
-        }
-
-        #matrixRain {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.1;
-            pointer-events: none;
-        }
-
-        /* Login Page Styles */
-        .login-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 12, 26, 0.98);
-            backdrop-filter: blur(10px);
-            z-index: 9999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .login-box {
-            background: var(--bg-secondary);
-            border: 2px solid var(--neon-green);
-            border-radius: 20px;
-            padding: 3rem;
-            width: 400px;
-            box-shadow: 0 0 50px rgba(80, 250, 123, 0.3);
-            animation: glowPulse 2s infinite;
-        }
-
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(80, 250, 123, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(80, 250, 123, 0.6); }
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .login-header i {
-            font-size: 3rem;
-            color: var(--neon-green);
-            margin-bottom: 1rem;
-        }
-
-        .login-header h1 {
-            color: var(--neon-green);
-            font-size: 1.5rem;
-        }
-
-        .login-header p {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-        }
-
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--neon-blue);
-        }
-
-        .input-group input {
-            width: 100%;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-family: monospace;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: var(--neon-green);
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 0.75rem;
-            background: transparent;
-            border: 2px solid var(--neon-green);
-            color: var(--neon-green);
-            font-family: monospace;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 1rem;
-        }
-
-        .login-btn:hover {
-            background: var(--neon-green);
-            color: var(--bg-primary);
-        }
-
-        .error-msg {
-            color: var(--neon-red);
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.8rem;
-        }
-
-        .register-link {
-            text-align: center;
-            margin-top: 1rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-        }
-
-        .register-link span {
-            color: var(--neon-green);
-            text-decoration: underline;
-        }
-
-        .admin-terminal {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: rgba(10, 12, 15, 0.96);
-        }
-
-        .terminal-header {
-            background: linear-gradient(90deg, #040608, var(--bg-secondary));
-            border-bottom: 2px solid var(--neon-blue);
-            box-shadow: 0 0 20px rgba(62, 158, 255, 0.2);
-        }
-
-        .terminal-toolbar {
-            padding: 0.75rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .terminal-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .term-btn {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-        }
-
-        .term-btn.close { background: #ff5f56; }
-        .term-btn.minimize { background: #ffbd2e; }
-        .term-btn.maximize { background: #27c93f; }
-
-        .terminal-title {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            color: var(--neon-blue);
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .terminal-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.25rem 1rem;
-            background: rgba(62, 255, 158, 0.1);
-            border: 1px solid var(--neon-green);
-            border-radius: 20px;
-        }
-
-        .status-led {
-            width: 8px;
-            height: 8px;
-            background: var(--neon-green);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--neon-green);
-            animation: ledPulse 1.5s infinite;
-        }
-
-        .admin-layout {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .admin-sidebar {
-            width: 280px;
-            background: linear-gradient(180deg, #040608, var(--bg-secondary));
-            border-right: 2px solid var(--neon-purple);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid rgba(158, 62, 255, 0.3);
-        }
-
-        .admin-profile {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .admin-profile i {
-            font-size: 2.5rem;
-            color: var(--neon-purple);
-        }
-
-        .profile-name {
-            font-size: 1.1rem;
-            color: var(--neon-blue);
-        }
-
-        .profile-role {
-            font-size: 0.7rem;
-            color: var(--neon-pink);
-            letter-spacing: 2px;
-        }
-
-        .sidebar-nav {
-            flex: 1;
-            padding: 1rem 0;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .nav-item {
-            padding: 0.8rem 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            border-left: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .nav-item i { width: 20px; }
-        .nav-item span { flex: 1; font-size: 0.85rem; letter-spacing: 1px; }
-        .nav-count { background: rgba(62, 158, 255, 0.2); border: 1px solid var(--neon-blue); padding: 0.2rem 0.5rem; border-radius: 3px; font-size: 0.7rem; }
-        .nav-item:hover { background: rgba(158, 62, 255, 0.1); border-left-color: var(--neon-purple); color: var(--neon-purple); }
-        .nav-item.active { background: rgba(80, 250, 123, 0.1); border-left-color: var(--neon-green); color: var(--neon-green); }
-
-        .sidebar-footer {
-            padding: 1rem;
-            border-top: 1px solid rgba(158, 62, 255, 0.3);
-        }
-
-        .logout-btn {
-            width: 100%;
-            padding: 0.7rem;
-            background: transparent;
-            border: 2px solid var(--neon-red);
-            color: var(--neon-red);
-            font-family: monospace;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            transition: all 0.3s;
-        }
-
+        .admin-terminal { height: 100vh; display: flex; flex-direction: column; background: rgba(10,12,15,.96); }
+        .terminal-header { background: linear-gradient(90deg,#040608,var(--bg-secondary)); border-bottom: 2px solid var(--neon-blue); box-shadow: 0 0 20px rgba(62,158,255,.2); }
+        .terminal-toolbar { padding: .75rem 1.5rem; display: flex; align-items: center; gap: 2rem; }
+        .terminal-buttons { display: flex; gap: .5rem; }
+        .term-btn { width: 14px; height: 14px; border-radius: 50%; }
+        .term-btn.close { background: #ff5f56; } .term-btn.minimize { background: #ffbd2e; } .term-btn.maximize { background: #27c93f; }
+        .terminal-title { flex: 1; display: flex; align-items: center; gap: .75rem; color: var(--neon-blue); font-size: .9rem; text-transform: uppercase; letter-spacing: 1px; }
+        .terminal-status { display: flex; align-items: center; gap: .5rem; padding: .25rem 1rem; background: rgba(62,255,158,.1); border: 1px solid var(--neon-green); border-radius: 20px; }
+        .status-led { width: 8px; height: 8px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: ledPulse 1.5s infinite; }
+        @keyframes ledPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.2)} }
+        .admin-layout { display: flex; flex: 1; overflow: hidden; }
+        .admin-sidebar { width: 280px; background: linear-gradient(180deg,#040608,var(--bg-secondary)); border-right: 2px solid var(--neon-purple); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid rgba(158,62,255,.3); }
+        .admin-profile { display: flex; align-items: center; gap: 1rem; }
+        .admin-profile > i { font-size: 2.5rem; color: var(--neon-purple); }
+        .profile-name { font-size: 1.1rem; color: var(--neon-blue); }
+        .profile-role { font-size: .7rem; color: var(--neon-pink); letter-spacing: 2px; }
+        .sidebar-nav { flex: 1; padding: 1rem 0; display: flex; flex-direction: column; gap: .25rem; overflow-y: auto; }
+        .nav-item { padding: .8rem 1.5rem; display: flex; align-items: center; gap: 1rem; color: var(--text-secondary); cursor: pointer; border-left: 3px solid transparent; transition: all .3s; }
+        .nav-item i { width: 20px; } .nav-item span { flex: 1; font-size: .85rem; letter-spacing: 1px; }
+        .nav-count { background: rgba(62,158,255,.2); border: 1px solid var(--neon-blue); padding: .2rem .5rem; border-radius: 3px; font-size: .7rem; }
+        .nav-item:hover { background: rgba(158,62,255,.1); border-left-color: var(--neon-purple); color: var(--neon-purple); }
+        .nav-item.active { background: rgba(80,250,123,.1); border-left-color: var(--neon-green); color: var(--neon-green); }
+        .sidebar-footer { padding: 1rem; border-top: 1px solid rgba(158,62,255,.3); display: flex; flex-direction: column; gap: .5rem; }
+        .cyber-btn-exit { width: 100%; padding: .7rem; background: transparent; border: 2px solid var(--neon-orange); color: var(--neon-orange); font-family: monospace; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem; transition: all .3s; border-radius: 4px; }
+        .cyber-btn-exit:hover { background: var(--neon-orange); color: var(--bg-primary); }
+        .logout-btn { width: 100%; padding: .7rem; background: transparent; border: 2px solid var(--neon-red); color: var(--neon-red); font-family: monospace; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .5rem; transition: all .3s; border-radius: 4px; }
         .logout-btn:hover { background: var(--neon-red); color: var(--bg-primary); }
-
-        .admin-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 2rem;
-        }
-
+        .admin-content { flex: 1; overflow-y: auto; padding: 2rem; }
         .content-section { display: none; }
-        .content-section.active { display: block; animation: fadeIn 0.3s; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
+        .content-section.active { display: block; animation: fadeIn .3s; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
         .section-header { margin-bottom: 2rem; }
-        .section-header h2 { color: var(--neon-green); margin-bottom: 0.5rem; }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-            text-align: center;
-        }
-
+        .section-header h2 { color: var(--neon-green); margin-bottom: .5rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; text-align: center; }
         .stat-card p { font-size: 2rem; font-weight: 700; color: var(--neon-green); }
-
-        .action-bar {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .cyber-btn {
-            background: transparent;
-            border: 2px solid var(--neon-blue);
-            color: var(--neon-blue);
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s;
-        }
-
+        .action-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .cyber-btn { background: transparent; border: 2px solid var(--neon-blue); color: var(--neon-blue); padding: .5rem 1.5rem; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: .5rem; transition: all .3s; }
         .cyber-btn.primary { border-color: var(--neon-green); color: var(--neon-green); }
         .cyber-btn.primary:hover { background: var(--neon-green); color: var(--bg-primary); }
         .cyber-btn.danger { border-color: var(--neon-red); color: var(--neon-red); }
         .cyber-btn.danger:hover { background: var(--neon-red); color: var(--bg-primary); }
-
-        .table-container {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: auto;
-        }
-
-        .cyber-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .cyber-table th {
-            padding: 1rem;
-            text-align: left;
-            color: var(--neon-blue);
-            border-bottom: 2px solid var(--neon-purple);
-        }
-
-        .cyber-table td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .table-actions { display: flex; gap: 0.5rem; }
-        .table-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; }
-        .table-btn.edit:hover { color: var(--neon-blue); }
-        .table-btn.delete:hover { color: var(--neon-red); }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-        }
-
-        .status-badge.enabled { background: rgba(80, 250, 123, 0.1); border: 1px solid var(--neon-green); color: var(--neon-green); }
-        
-        .quiz-cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .quiz-card {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 1.5rem;
-        }
-
-        .quiz-card h3 { color: var(--neon-green); margin-bottom: 0.5rem; }
-
-        .cyber-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-terminal {
-            background: var(--bg-secondary);
-            border: 2px solid var(--neon-green);
-            border-radius: 16px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-terminal-header {
-            padding: 1rem;
-            border-bottom: 2px solid var(--neon-green);
-            display: flex;
-            justify-content: space-between;
-        }
-
+        .table-container { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; overflow: auto; max-height: 500px; }
+        .cyber-table { width: 100%; border-collapse: collapse; }
+        .cyber-table th { padding: 1rem; text-align: left; color: var(--neon-blue); border-bottom: 2px solid var(--neon-purple); position: sticky; top: 0; background: var(--bg-secondary); }
+        .cyber-table td { padding: 1rem; border-bottom: 1px solid var(--border-color); }
+        .table-actions { display: flex; gap: .5rem; }
+        .table-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; padding: 0 5px; }
+        .table-btn.edit:hover { color: var(--neon-blue); } .table-btn.delete:hover { color: var(--neon-red); }
+        .status-badge { padding: .25rem .75rem; border-radius: 20px; font-size: .7rem; display: inline-block; }
+        .status-badge.enabled { background: rgba(80,250,123,.1); border: 1px solid var(--neon-green); color: var(--neon-green); }
+        .quiz-cards-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(320px,1fr)); gap: 1.5rem; }
+        .quiz-card { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; transition: transform .2s; }
+        .quiz-card:hover { transform: translateY(-2px); border-color: var(--neon-green); }
+        .quiz-card h3 { color: var(--neon-green); margin-bottom: .5rem; }
+        .cyber-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.95); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-terminal { background: var(--bg-secondary); border: 2px solid var(--neon-green); border-radius: 16px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+        .modal-terminal-header { padding: 1rem; border-bottom: 2px solid var(--neon-green); display: flex; justify-content: space-between; align-items: center; }
         .modal-terminal-body { padding: 1.5rem; }
         .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--neon-blue); }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            padding: 0.75rem;
-            border-radius: 8px;
-        }
+        .form-group label { display: block; margin-bottom: .5rem; color: var(--neon-blue); }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); padding: .75rem; border-radius: 8px; font-family: monospace; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .db-status-indicator { position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,.8); padding: 5px 10px; border-radius: 5px; font-size: 10px; z-index: 1000; color: var(--text-secondary); }
 
-        .db-status-indicator {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 10px;
-            z-index: 1000;
-        }
+        .exit-password-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.95); z-index: 10000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .exit-password-box { background: var(--bg-secondary); border: 2px solid var(--neon-orange); border-radius: 20px; padding: 2rem; width: 360px; text-align: center; box-shadow: 0 0 40px rgba(255,184,107,.3); }
+        .exit-password-box h3 { color: var(--neon-orange); margin: 1rem 0 .5rem; }
+        .exit-password-box input { width: 100%; margin: .75rem 0; background: var(--bg-primary); border: 1px solid var(--border-color); color: white; padding: .75rem; font-family: monospace; border-radius: 6px; }
+        .exit-password-box input:focus { outline: none; border-color: var(--neon-orange); }
+        .exit-btn-row { display: flex; gap: 1rem; margin-top: .5rem; }
+        .exit-btn-row button { flex: 1; }
 
-        @keyframes ledPulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-        }
-
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-primary); }
         ::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 3px; }
+        
+        .toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--bg-secondary); border: 1px solid var(--neon-green); color: var(--neon-green); padding: 12px 24px; border-radius: 8px; z-index: 10001; animation: slideUp .3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
     </style>
 </head>
 <body>
-    <canvas id="matrixRain"></canvas>
+<canvas id="matrixRain"></canvas>
+
+<div id="adminTerminal" class="admin-terminal">
+    <div class="terminal-header">
+        <div class="terminal-toolbar">
+            <div class="terminal-buttons"><span class="term-btn close"></span><span class="term-btn minimize"></span><span class="term-btn maximize"></span></div>
+            <div class="terminal-title"><i class="fas fa-database"></i><span>database@ctf-platform:~/admin</span></div>
+            <div class="terminal-status"><span class="status-led"></span><span>DATABASE ONLINE</span></div>
+            <button class="cyber-btn danger" onclick="promptSecureLogout()" style="padding:.3rem .8rem;"><i class="fas fa-power-off"></i> SECURE EXIT</button>
+        </div>
+    </div>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="admin-profile">
+                    <i class="fas fa-user-shield"></i>
+                    <div><div class="profile-name" id="adminUsername">Admin</div><div class="profile-role">ROOT ADMIN</div></div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item active" data-section="dashboard"><i class="fas fa-tachometer-alt"></i><span>DASHBOARD</span><span class="nav-count">LIVE</span></a>
+                <a class="nav-item" data-section="challenges"><i class="fas fa-flag"></i><span>CHALLENGES</span><span id="challengeCountBadge" class="nav-count">0</span></a>
+                <a class="nav-item" data-section="quizzes"><i class="fas fa-question-circle"></i><span>QUIZZES</span><span id="quizCountBadge" class="nav-count">0</span></a>
+                <a class="nav-item" data-section="puzzles"><i class="fas fa-puzzle-piece"></i><span>PUZZLES</span><span id="puzzleCountBadge" class="nav-count">0</span></a>
+                <a class="nav-item" data-section="learning"><i class="fas fa-book-open"></i><span>LEARNING</span><span class="nav-count">MATERIALS</span></a>
+                <a class="nav-item" data-section="users"><i class="fas fa-users"></i><span>USERS</span><span id="userCountBadge" class="nav-count">0</span></a>
+                <a class="nav-item" data-section="submissions"><i class="fas fa-check-circle"></i><span>SUBMISSIONS</span><span id="submissionCountBadge" class="nav-count">0</span></a>
+                <a class="nav-item" data-section="system"><i class="fas fa-cog"></i><span>SYSTEM</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="cyber-btn-exit" onclick="promptSecureLogout()"><i class="fas fa-sign-out-alt"></i><span>SECURE LOGOUT</span></button>
+                <button class="logout-btn" onclick="exportDatabaseToFile()"><i class="fas fa-download"></i><span>BACKUP DATABASE</span></button>
+            </div>
+        </aside>
+        <main class="admin-content">
+            <div id="dashboard-section" class="content-section active">
+                <div class="section-header"><h2><i class="fas fa-database"></i> DATABASE DASHBOARD</h2><p>Real-time platform stats from persistent storage</p></div>
+                <div class="stats-grid" id="dashboardStats"></div>
+                <div class="table-container"><div style="padding:1rem;"><h3 style="color:var(--neon-green);">🏆 LIVE SCOREBOARD (Top 5)</h3><div id="liveScoreboardList"></div></div></div>
+            </div>
+            <div id="challenges-section" class="content-section">
+                <div class="section-header"><h2>🏁 CHALLENGE MANAGEMENT</h2></div>
+                <div class="action-bar"><button class="cyber-btn primary" onclick="openChallengeModal()"><i class="fas fa-plus"></i> ADD CHALLENGE</button><input type="text" id="searchChallenge" placeholder="Search challenges..." style="background:var(--bg-primary);border:1px solid var(--border-color);padding:.5rem;color:white;border-radius:6px;width:200px;"></div>
+                <div class="table-container"><table class="cyber-table"><thead><tr><th>ID</th><th>TITLE</th><th>CATEGORY</th><th>POINTS</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="challengesList"></tbody></table></div>
+            </div>
+            <div id="quizzes-section" class="content-section"><div class="section-header"><h2>📝 QUIZ MANAGEMENT</h2></div><div class="action-bar"><button class="cyber-btn primary" onclick="openQuizModal()"><i class="fas fa-plus"></i> ADD QUIZ</button></div><div class="quiz-cards-grid" id="quizzesList"></div></div>
+            <div id="puzzles-section" class="content-section"><div class="section-header"><h2>🧩 PUZZLE MANAGEMENT</h2></div><div class="action-bar"><button class="cyber-btn primary" onclick="openPuzzleModal()"><i class="fas fa-plus"></i> ADD PUZZLE</button></div><div class="quiz-cards-grid" id="puzzlesList"></div></div>
+            <div id="learning-section" class="content-section"><div class="section-header"><h2>📚 LEARNING MATERIALS</h2></div><div class="action-bar"><button class="cyber-btn primary" onclick="openLearningModal()"><i class="fas fa-plus"></i> ADD MATERIAL</button></div><div class="quiz-cards-grid" id="learningMaterialsList"></div></div>
+            <div id="users-section" class="content-section"><div class="section-header"><h2>👥 USER MANAGEMENT</h2></div><div class="table-container"><table class="cyber-table"><thead><tr><th>ID</th><th>USERNAME</th><th>EMAIL</th><th>ROLE</th><th>POINTS</th><th>REGISTERED</th><th>ACTIONS</th></tr></thead><tbody id="usersList"></tbody></table></div></div>
+            <div id="submissions-section" class="content-section"><div class="section-header"><h2>📋 SUBMISSION LOGS</h2></div><div class="table-container"><table class="cyber-table"><thead><tr><th>TIME</th><th>USER</th><th>CHALLENGE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="submissionsList"></tbody></table></div></div>
+            <div id="system-section" class="content-section">
+                <div class="section-header"><h2>⚙️ SYSTEM & DATABASE</h2></div>
+                <div class="stats-grid" style="grid-template-columns:repeat(2,1fr)">
+                    <div class="stat-card"><h3>DB STATUS</h3><p>🟢 ONLINE</p></div>
+                    <div class="stat-card"><h3>STORAGE</h3><p id="storageSize">0 KB</p></div>
+                </div>
+                <div class="action-bar">
+                    <button class="cyber-btn primary" onclick="exportDatabaseToFile()"><i class="fas fa-download"></i> EXPORT DATABASE</button>
+                    <button class="cyber-btn primary" onclick="importDatabaseFromFile()"><i class="fas fa-upload"></i> IMPORT DATABASE</button>
+                    <button class="cyber-btn danger" onclick="resetAllData()"><i class="fas fa-trash"></i> RESET ALL DATA</button>
+                </div>
+                <div class="table-container" style="margin-top:1rem;padding:1rem;"><h3 style="color:var(--neon-green);">📁 Database File Location</h3><p style="color:var(--text-secondary);margin-top:.5rem;">Data stored in localStorage — persists across browser restarts.</p><input type="file" id="databaseImportFile" accept=".json" style="display:none;" onchange="handleDatabaseImport(event)"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="db-status-indicator"><i class="fas fa-database"></i> Database: <span id="dbStatusText">Initializing...</span></div>
+
+<div id="universalModal" class="cyber-modal">
+    <div class="modal-terminal">
+        <div class="modal-terminal-header"><span id="modalTitle">Modal</span><button onclick="closeUniversalModal()" style="background:none;border:none;color:var(--neon-red);font-size:1.8rem;cursor:pointer;">&times;</button></div>
+        <div class="modal-terminal-body">
+            <form id="universalForm">
+                <input type="hidden" id="modalItemType"><input type="hidden" id="modalItemId">
+                <div id="modalDynamicFields"></div>
+                <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
+                    <button type="button" class="cyber-btn" onclick="closeUniversalModal()">CANCEL</button>
+                    <button type="submit" class="cyber-btn primary">SAVE</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Toast notification helper
+function showToast(message, isError = false) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.style.borderColor = isError ? 'var(--neon-red)' : 'var(--neon-green)';
+    toast.style.color = isError ? 'var(--neon-red)' : 'var(--neon-green)';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// Database Keys
+const DB_KEYS = { 
+    USERS: 'ctf_db_users', 
+    CHALLENGES: 'ctf_db_challenges', 
+    QUIZZES: 'ctf_db_quizzes', 
+    PUZZLES: 'ctf_db_puzzles', 
+    LEARNING: 'ctf_db_learning', 
+    SUBMISSIONS: 'ctf_db_submissions', 
+    CURRENT_USER: 'ctf_current_user' 
+};
+
+// Optimized Database Class
+class Database {
+    static get(key) {
+        try {
+            return JSON.parse(localStorage.getItem(key)) || [];
+        } catch(e) { 
+            return []; 
+        }
+    }
     
-    <!-- Login Page -->
-    <div id="loginPage" class="login-container">
-        <div class="login-box">
-            <div class="login-header">
-                <i class="fas fa-database"></i>
-                <h1>UTech CTF Hub</h1>
-                <p>Database Powered Platform</p>
+    static set(key, value) { 
+        localStorage.setItem(key, JSON.stringify(value)); 
+        this.updateSize();
+    }
+    
+    static getUsers() { return this.get(DB_KEYS.USERS); }
+    static saveUsers(v) { this.set(DB_KEYS.USERS, v); }
+    static getChallenges() { return this.get(DB_KEYS.CHALLENGES); }
+    static saveChallenges(v) { this.set(DB_KEYS.CHALLENGES, v); }
+    static getQuizzes() { return this.get(DB_KEYS.QUIZZES); }
+    static saveQuizzes(v) { this.set(DB_KEYS.QUIZZES, v); }
+    static getPuzzles() { return this.get(DB_KEYS.PUZZLES); }
+    static savePuzzles(v) { this.set(DB_KEYS.PUZZLES, v); }
+    static getLearning() { return this.get(DB_KEYS.LEARNING); }
+    static saveLearning(v) { this.set(DB_KEYS.LEARNING, v); }
+    static getSubmissions() { return this.get(DB_KEYS.SUBMISSIONS); }
+    static saveSubmissions(v) { this.set(DB_KEYS.SUBMISSIONS, v); }
+    static getCurrentUser() {
+        try { 
+            return JSON.parse(localStorage.getItem(DB_KEYS.CURRENT_USER)); 
+        } catch(e) { 
+            return null; 
+        }
+    }
+    static setCurrentUser(u) { localStorage.setItem(DB_KEYS.CURRENT_USER, JSON.stringify(u)); }
+    static clearCurrentUser() { localStorage.removeItem(DB_KEYS.CURRENT_USER); }
+    
+    static updateSize() {
+        let size = 0;
+        for(let key in localStorage) {
+            if(localStorage.hasOwnProperty(key)) {
+                size += localStorage[key].length * 2;
+            }
+        }
+        const el = document.getElementById('storageSize');
+        if(el) el.textContent = (size / 1024).toFixed(2) + ' KB';
+    }
+    
+    static init() {
+        if(!this.getUsers().length) {
+            this.saveUsers([
+                {id: 1, username: 'admin', email: 'admin@ctf.com', password: 'admin123', role: 'admin', points: 2500, registered: new Date().toISOString()},
+                {id: 2, username: 'student1', email: 'student1@test.com', password: 'pass123', role: 'student', points: 500, registered: new Date().toISOString()}
+            ]);
+        }
+        if(!this.getChallenges().length) {
+            this.saveChallenges([
+                {id: 101, title: 'SQL Injection 101', category: 'Web', points: 150, flag: 'flag{sqli_test}', enabled: true, description: 'Learn basic SQL injection techniques'},
+                {id: 102, title: 'XSS Vulnerability', category: 'Web', points: 200, flag: 'flag{xss_test}', enabled: true, description: 'Cross-site scripting attack vectors'}
+            ]);
+        }
+        if(!this.getQuizzes().length) {
+            this.saveQuizzes([{id: 201, title: 'Cybersecurity Basics', questions: 5, points: 50, description: 'Test your knowledge on cybersecurity fundamentals'}]);
+        }
+        if(!this.getPuzzles().length) {
+            this.savePuzzles([{id: 301, title: 'Reverse Me', difficulty: 'Hard', description: 'Crack the binary challenge'}]);
+        }
+        if(!this.getLearning().length) {
+            this.saveLearning([{id: 401, title: 'OWASP Top 10', type: 'Article', url: '#', description: 'Web security guide'}]);
+        }
+        if(!this.getSubmissions().length) {
+            this.saveSubmissions([{id: 1001, userId: 2, userName: 'student1', challenge: 'SQL Injection 101', correct: true, time: new Date().toLocaleString()}]);
+        }
+        document.getElementById('dbStatusText').textContent = '🟢 Online';
+        this.updateSize();
+    }
+}
+
+// Global state
+let state = {
+    challenges: [],
+    quizzes: [],
+    puzzles: [],
+    learningMaterials: [],
+    users: [],
+    submissions: []
+};
+
+function syncFromDB() {
+    state.challenges = Database.getChallenges();
+    state.quizzes = Database.getQuizzes();
+    state.puzzles = Database.getPuzzles();
+    state.learningMaterials = Database.getLearning();
+    state.users = Database.getUsers();
+    state.submissions = Database.getSubmissions();
+}
+
+function syncToDB() {
+    Database.saveChallenges(state.challenges);
+    Database.saveQuizzes(state.quizzes);
+    Database.savePuzzles(state.puzzles);
+    Database.saveLearning(state.learningMaterials);
+    Database.saveUsers(state.users);
+    Database.saveSubmissions(state.submissions);
+}
+
+// Optimized Secure Logout
+function promptSecureLogout() {
+    const overlay = document.createElement('div');
+    overlay.className = 'exit-password-overlay';
+    overlay.innerHTML = `
+        <div class="exit-password-box">
+            <i class="fas fa-lock" style="font-size:2rem;color:var(--neon-orange);"></i>
+            <h3>SECURE LOGOUT</h3>
+            <p>Enter the admin passkey to confirm logout</p>
+            <input type="password" id="exitPassInput" placeholder="Enter secure logout passkey" autocomplete="off">
+            <div class="exit-btn-row">
+                <button id="confirmExitBtn" class="cyber-btn primary">VERIFY &amp; LOGOUT</button>
+                <button id="cancelExitBtn" class="cyber-btn">CANCEL</button>
             </div>
-            <form id="loginForm">
-                <div class="input-group">
-                    <label><i class="fas fa-user"></i> USERNAME</label>
-                    <input type="text" id="loginUsername" placeholder="Enter username" required>
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-lock"></i> PASSWORD</label>
-                    <input type="password" id="loginPassword" placeholder="Enter password" required>
-                </div>
-                <button type="submit" class="login-btn">
-                    <i class="fas fa-terminal"></i> LOGIN
-                </button>
-                <div id="loginError" class="error-msg"></div>
-                <div class="register-link" onclick="showRegister()">
-                    No account? <span>Register here</span>
-                </div>
-            </form>
-        </div>
-    </div>
+            <div id="exitErrorMsg" style="color:var(--neon-red);margin-top:.6rem;font-size:.8rem;min-height:1rem;"></div>
+        </div>`;
+    document.body.appendChild(overlay);
 
-    <!-- Register Page -->
-    <div id="registerPage" class="login-container" style="display: none;">
-        <div class="login-box">
-            <div class="login-header">
-                <i class="fas fa-user-plus"></i>
-                <h1>Register New Account</h1>
-                <p>Join the CTF Platform</p>
-            </div>
-            <form id="registerForm">
-                <div class="input-group">
-                    <label><i class="fas fa-user"></i> USERNAME</label>
-                    <input type="text" id="regUsername" required>
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-envelope"></i> EMAIL</label>
-                    <input type="email" id="regEmail" required>
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-lock"></i> PASSWORD</label>
-                    <input type="password" id="regPassword" required>
-                </div>
-                <div class="input-group">
-                    <label><i class="fas fa-lock"></i> CONFIRM PASSWORD</label>
-                    <input type="password" id="regConfirmPassword" required>
-                </div>
-                <button type="submit" class="login-btn">
-                    <i class="fas fa-check-circle"></i> REGISTER
-                </button>
-                <div id="registerError" class="error-msg"></div>
-                <div class="register-link" onclick="showLogin()">
-                    Already have an account? <span>Login here</span>
-                </div>
-            </form>
-        </div>
-    </div>
+    const input = overlay.querySelector('#exitPassInput');
+    const confirmBtn = overlay.querySelector('#confirmExitBtn');
+    const cancelBtn = overlay.querySelector('#cancelExitBtn');
+    const errorDiv = overlay.querySelector('#exitErrorMsg');
+    
+    input.focus();
 
-    <!-- Admin Terminal (Hidden by default) -->
-    <div id="adminTerminal" class="admin-terminal" style="display: none;">
-        <div class="terminal-header">
-            <div class="terminal-toolbar">
-                <div class="terminal-buttons"><span class="term-btn close"></span><span class="term-btn minimize"></span><span class="term-btn maximize"></span></div>
-                <div class="terminal-title"><i class="fas fa-database"></i><span>database@ctf-platform:~/admin</span></div>
-                <div class="terminal-status"><span class="status-led"></span><span>DATABASE ONLINE</span></div>
-                <button class="cyber-btn danger" onclick="redirectToLogin()" style="padding:0.3rem 0.8rem;"><i class="fas fa-power-off"></i></button>
-            </div>
-        </div>
-        <div class="admin-layout">
-            <aside class="admin-sidebar">
-                <div class="sidebar-header">
-                    <div class="admin-profile">
-                        <i class="fas fa-user-shield"></i>
-                        <div>
-                            <div class="profile-name" id="adminUsername">Admin</div>
-                            <div class="profile-role">ROOT ADMIN</div>
-                        </div>
-                    </div>
-                </div>
-                <nav class="sidebar-nav">
-                    <a class="nav-item active" onclick="switchSection('dashboard')"><i class="fas fa-tachometer-alt"></i><span>DASHBOARD</span><span class="nav-count">LIVE</span></a>
-                    <a class="nav-item" onclick="switchSection('challenges')"><i class="fas fa-flag"></i><span>CHALLENGES</span><span id="challengeCountBadge" class="nav-count">0</span></a>
-                    <a class="nav-item" onclick="switchSection('quizzes')"><i class="fas fa-question-circle"></i><span>QUIZZES</span><span id="quizCountBadge" class="nav-count">0</span></a>
-                    <a class="nav-item" onclick="switchSection('puzzles')"><i class="fas fa-puzzle-piece"></i><span>PUZZLES</span><span id="puzzleCountBadge" class="nav-count">0</span></a>
-                    <a class="nav-item" onclick="switchSection('learning')"><i class="fas fa-book-open"></i><span>LEARNING</span><span class="nav-count">MATERIALS</span></a>
-                    <a class="nav-item" onclick="switchSection('users')"><i class="fas fa-users"></i><span>USERS</span><span id="userCountBadge" class="nav-count">0</span></a>
-                    <a class="nav-item" onclick="switchSection('submissions')"><i class="fas fa-check-circle"></i><span>SUBMISSIONS</span><span id="submissionCountBadge" class="nav-count">0</span></a>
-                    <a class="nav-item" onclick="switchSection('system')"><i class="fas fa-cog"></i><span>SYSTEM</span></a>
-                </nav>
-                <div class="sidebar-footer">
-                    <button class="logout-btn" onclick="exportDatabaseToFile()">
-                        <i class="fas fa-download"></i><span>BACKUP DATABASE</span>
-                    </button>
-                    <button class="logout-btn" onclick="redirectToLogin()" style="margin-top: 0.5rem;">
-                        <i class="fas fa-sign-out-alt"></i><span>EXIT TO LOGIN</span>
-                    </button>
-                </div>
-            </aside>
-            <main class="admin-content">
-                <!-- Dashboard -->
-                <div id="dashboard-section" class="content-section active">
-                    <div class="section-header"><h2><i class="fas fa-database"></i> DATABASE DASHBOARD</h2><p>Real-time platform stats from persistent storage</p></div>
-                    <div class="stats-grid" id="dashboardStats"></div>
-                    <div class="table-container" style="margin-top:1rem;"><div style="padding:1rem;"><h3 style="color:var(--neon-green);">🏆 LIVE SCOREBOARD (Top 5)</h3><div id="liveScoreboardList"></div></div></div>
-                </div>
-
-                <!-- Challenges -->
-                <div id="challenges-section" class="content-section">
-                    <div class="section-header"><h2>🏁 CHALLENGE MANAGEMENT</h2><p>Create/edit/delete CTF challenges (stored in database)</p></div>
-                    <div class="action-bar"><button class="cyber-btn primary" onclick="openChallengeModal()"><i class="fas fa-plus"></i> ADD CHALLENGE</button><div class="search-box" style="display:flex;gap:0.5rem;"><input type="text" id="searchChallenge" placeholder="Search..." style="background:var(--bg-primary);border:1px solid var(--border-color);padding:0.5rem;color:white;"></div></div>
-                    <div class="table-container"><table class="cyber-table"><thead><tr><th>ID</th><th>TITLE</th><th>CATEGORY</th><th>POINTS</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="challengesList"></tbody></table></div>
-                </div>
-
-                <!-- Quizzes -->
-                <div id="quizzes-section" class="content-section">
-                    <div class="section-header"><h2>📝 QUIZ MANAGEMENT</h2></div>
-                    <div class="action-bar"><button class="cyber-btn primary" onclick="openQuizModal()"><i class="fas fa-plus"></i> ADD QUIZ</button></div>
-                    <div class="quiz-cards-grid" id="quizzesList"></div>
-                </div>
-
-                <!-- Puzzles -->
-                <div id="puzzles-section" class="content-section">
-                    <div class="section-header"><h2>🧩 PUZZLE MANAGEMENT</h2></div>
-                    <div class="action-bar"><button class="cyber-btn primary" onclick="openPuzzleModal()"><i class="fas fa-plus"></i> ADD PUZZLE</button></div>
-                    <div class="quiz-cards-grid" id="puzzlesList"></div>
-                </div>
-
-                <!-- Learning Materials -->
-                <div id="learning-section" class="content-section">
-                    <div class="section-header"><h2>📚 LEARNING MATERIALS</h2><p>Manage educational content (affects homepage tiles)</p></div>
-                    <div class="action-bar"><button class="cyber-btn primary" onclick="openLearningModal()"><i class="fas fa-plus"></i> ADD MATERIAL</button></div>
-                    <div class="quiz-cards-grid" id="learningMaterialsList"></div>
-                </div>
-
-                <!-- Users -->
-                <div id="users-section" class="content-section">
-                    <div class="section-header"><h2>👥 USER MANAGEMENT</h2><p>Registered users from database - persists across sessions</p></div>
-                    <div class="table-container"><table class="cyber-table"><thead><tr><th>ID</th><th>USERNAME</th><th>EMAIL</th><th>ROLE</th><th>POINTS</th><th>REGISTERED</th><th>ACTIONS</th></tr></thead><tbody id="usersList"></tbody></table></div>
-                </div>
-
-                <!-- Submissions -->
-                <div id="submissions-section" class="content-section">
-                    <div class="section-header"><h2>📋 SUBMISSION LOGS</h2><p>All flag submissions stored in database</p></div>
-                    <div class="table-container"><table class="cyber-table"><thead><tr><th>TIME</th><th>USER</th><th>CHALLENGE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="submissionsList"></tbody></table></div>
-                </div>
-
-                <!-- System -->
-                <div id="system-section" class="content-section">
-                    <div class="section-header"><h2>⚙️ SYSTEM & DATABASE</h2></div>
-                    <div class="stats-grid">
-                        <div class="stat-card"><h3>DB STATUS</h3><p id="dbStatus">🟢 ONLINE</p></div>
-                        <div class="stat-card"><h3>STORAGE</h3><p id="storageSize">0 KB</p></div>
-                    </div>
-                    <div class="action-bar">
-                        <button class="cyber-btn primary" onclick="exportDatabaseToFile()"><i class="fas fa-download"></i> EXPORT DATABASE (JSON)</button>
-                        <button class="cyber-btn primary" onclick="importDatabaseFromFile()"><i class="fas fa-upload"></i> IMPORT DATABASE</button>
-                        <button class="cyber-btn danger" onclick="resetAllData()"><i class="fas fa-trash"></i> RESET ALL DATA</button>
-                    </div>
-                    <div class="table-container" style="margin-top: 1rem; padding: 1rem;">
-                        <h3 style="color: var(--neon-green);">📁 Database File Location</h3>
-                        <p style="color: var(--text-secondary); margin-top: 0.5rem;">Data is stored in your browser's IndexedDB - persists across browser restarts. You can export/import as JSON files for backup.</p>
-                        <input type="file" id="databaseImportFile" accept=".json" style="display: none;" onchange="handleDatabaseImport(event)">
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <div class="db-status-indicator" id="dbStatusIndicator">
-        <i class="fas fa-database"></i> Database: <span id="dbStatusText">Initializing...</span>
-    </div>
-
-    <!-- Universal Modal -->
-    <div id="universalModal" class="cyber-modal"><div class="modal-terminal"><div class="modal-terminal-header"><span id="modalTitle">Modal</span><button onclick="closeUniversalModal()" style="background:none;border:none;color:var(--neon-red);font-size:1.8rem;">&times;</button></div><div class="modal-terminal-body"><form id="universalForm"><input type="hidden" id="modalItemType"><input type="hidden" id="modalItemId"><div id="modalDynamicFields"></div><div class="form-actions" style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;"><button type="button" class="cyber-btn" onclick="closeUniversalModal()">CANCEL</button><button type="submit" class="cyber-btn primary">SAVE</button></div></form></div></div></div>
-
-    <script>
-        // ========== DATABASE LAYER ==========
-        // Using localStorage as a persistent file system simulation
-        // This acts like a database stored on the user's computer
-        
-        const DB_KEYS = {
-            USERS: 'ctf_db_users',
-            CHALLENGES: 'ctf_db_challenges',
-            QUIZZES: 'ctf_db_quizzes',
-            PUZZLES: 'ctf_db_puzzles',
-            LEARNING: 'ctf_db_learning',
-            SUBMISSIONS: 'ctf_db_submissions',
-            CURRENT_USER: 'ctf_current_user'
-        };
-
-        // Database operations
-        class Database {
-            static getUsers() {
-                const data = localStorage.getItem(DB_KEYS.USERS);
-                return data ? JSON.parse(data) : [];
-            }
-            
-            static saveUsers(users) {
-                localStorage.setItem(DB_KEYS.USERS, JSON.stringify(users));
-                this.updateStorageSize();
-            }
-            
-            static getChallenges() {
-                const data = localStorage.getItem(DB_KEYS.CHALLENGES);
-                return data ? JSON.parse(data) : [];
-            }
-            
-            static saveChallenges(challenges) {
-                localStorage.setItem(DB_KEYS.CHALLENGES, JSON.stringify(challenges));
-                this.updateStorageSize();
-            }
-            
-            static getQuizzes() {
-                const data = localStorage.getItem(DB_KEYS.QUIZZES);
-                return data ? JSON.parse(data) : [];
-            }
-            
-            static saveQuizzes(quizzes) {
-                localStorage.setItem(DB_KEYS.QUIZZES, JSON.stringify(quizzes));
-                this.updateStorageSize();
-            }
-            
-            static getPuzzles() {
-                const data = localStorage.getItem(DB_KEYS.PUZZLES);
-                return data ? JSON.parse(data) : [];
-            }
-            
-            static savePuzzles(puzzles) {
-                localStorage.setItem(DB_KEYS.PUZZLES, JSON.stringify(puzzles));
-                this.updateStorageSize();
-            }
-            
-            static getLearningMaterials() {
-                const data = localStorage.getItem(DB_KEYS.LEARNING);
-                return data ? JSON.parse(data) : [];
-            }
-            
-            static saveLearningMaterials(materials) {
-                localStorage.setItem(DB_KEYS.LEARNING, JSON.stringify(materials));
-                this.updateStorageSize();
-            }
-            
-            static getSubmissions() {
-                const data = localStorage.getItem(DB_KEYS.SUBMISSIONS);
-                return data ? JSON.parse(data) : [];
-            }
-            
-            static saveSubmissions(submissions) {
-                localStorage.setItem(DB_KEYS.SUBMISSIONS, JSON.stringify(submissions));
-                this.updateStorageSize();
-            }
-            
-            static getCurrentUser() {
-                const data = localStorage.getItem(DB_KEYS.CURRENT_USER);
-                return data ? JSON.parse(data) : null;
-            }
-            
-            static setCurrentUser(user) {
-                localStorage.setItem(DB_KEYS.CURRENT_USER, JSON.stringify(user));
-            }
-            
-            static clearCurrentUser() {
-                localStorage.removeItem(DB_KEYS.CURRENT_USER);
-            }
-            
-            static updateStorageSize() {
-                let total = 0;
-                for(let key in localStorage) {
-                    if(localStorage.hasOwnProperty(key)) {
-                        total += localStorage[key].length * 2; // Approximate size in bytes
-                    }
-                }
-                const sizeKB = (total / 1024).toFixed(2);
-                const sizeElem = document.getElementById('storageSize');
-                if(sizeElem) sizeElem.textContent = sizeKB + ' KB';
-            }
-            
-            static initializeDatabase() {
-                // Seed initial data if empty
-                if(this.getUsers().length === 0) {
-                    this.saveUsers([
-                        { id: 1, username: "admin", email: "admin@ctf.com", password: "admin123", role: "admin", points: 2500, registered: new Date().toISOString() },
-                        { id: 2, username: "student1", email: "student1@test.com", password: "pass123", role: "student", points: 500, registered: new Date().toISOString() }
-                    ]);
-                }
-                
-                if(this.getChallenges().length === 0) {
-                    this.saveChallenges([
-                        { id: 101, title: "SQL Injection 101", category: "Web", points: 150, flag: "flag{sqli_test}", enabled: true, difficulty: "Beginner" },
-                        { id: 102, title: "XSS Vulnerability", category: "Web", points: 200, flag: "flag{xss_test}", enabled: true, difficulty: "Intermediate" }
-                    ]);
-                }
-                
-                if(this.getQuizzes().length === 0) {
-                    this.saveQuizzes([
-                        { id: 201, title: "Cybersecurity Basics", questions: 5, points: 50, description: "Test your knowledge" }
-                    ]);
-                }
-                
-                if(this.getPuzzles().length === 0) {
-                    this.savePuzzles([
-                        { id: 301, title: "Reverse Me", difficulty: "Hard", description: "Crack the binary challenge" }
-                    ]);
-                }
-                
-                if(this.getLearningMaterials().length === 0) {
-                    this.saveLearningMaterials([
-                        { id: 401, title: "OWASP Top 10", type: "Article", url: "#", description: "Web security guide" }
-                    ]);
-                }
-                
-                if(this.getSubmissions().length === 0) {
-                    this.saveSubmissions([
-                        { id: 1001, userId: 2, userName: "student1", challenge: "SQL Injection 101", correct: true, time: new Date().toLocaleString() }
-                    ]);
-                }
-                
-                document.getElementById('dbStatusText').innerHTML = '🟢 Online';
-                this.updateStorageSize();
-            }
-        }
-        
-        // Global data accessors
-        let challenges = Database.getChallenges();
-        let quizzes = Database.getQuizzes();
-        let puzzles = Database.getPuzzles();
-        let learningMaterials = Database.getLearningMaterials();
-        let users = Database.getUsers();
-        let submissions = Database.getSubmissions();
-        
-        function syncFromDatabase() {
-            challenges = Database.getChallenges();
-            quizzes = Database.getQuizzes();
-            puzzles = Database.getPuzzles();
-            learningMaterials = Database.getLearningMaterials();
-            users = Database.getUsers();
-            submissions = Database.getSubmissions();
-        }
-        
-        function syncToDatabase() {
-            Database.saveChallenges(challenges);
-            Database.saveQuizzes(quizzes);
-            Database.savePuzzles(puzzles);
-            Database.saveLearningMaterials(learningMaterials);
-            Database.saveUsers(users);
-            Database.saveSubmissions(submissions);
-        }
-        
-        // Login/Register functionality
-        function showRegister() {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('registerPage').style.display = 'flex';
-        }
-        
-        function showLogin() {
-            document.getElementById('registerPage').style.display = 'none';
-            document.getElementById('loginPage').style.display = 'flex';
-        }
-        
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            const user = users.find(u => u.username === username && u.password === password);
-            
-            if (user) {
-                Database.setCurrentUser(user);
-                document.getElementById('loginPage').style.display = 'none';
-                document.getElementById('adminTerminal').style.display = 'flex';
-                document.getElementById('adminUsername').innerText = user.username;
-                initializeAdminPanel();
-            } else {
-                document.getElementById('loginError').innerHTML = '❌ ACCESS DENIED: Invalid credentials';
-            }
-        });
-        
-        document.getElementById('registerForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('regUsername').value;
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
-            
-            if (password !== confirmPassword) {
-                document.getElementById('registerError').innerHTML = '❌ Passwords do not match';
-                return;
-            }
-            
-            if (users.find(u => u.username === username)) {
-                document.getElementById('registerError').innerHTML = '❌ Username already exists';
-                return;
-            }
-            
-            const newUser = {
-                id: Date.now(),
-                username: username,
-                email: email,
-                password: password,
-                role: 'student',
-                points: 0,
-                registered: new Date().toISOString()
-            };
-            
-            users.push(newUser);
-            syncToDatabase();
-            alert('Registration successful! Please login.');
-            showLogin();
-        });
-        
-        function redirectToLogin() {
+    function performSecureLogout() {
+        if (input.value === 'nimda321') {
+            overlay.remove();
+            sessionStorage.setItem('forcedLogout', 'true');
+            sessionStorage.removeItem('userSession');
+            localStorage.removeItem('userData');
             Database.clearCurrentUser();
-            document.getElementById('loginPage').style.display = 'flex';
-            document.getElementById('adminTerminal').style.display = 'none';
-            document.getElementById('loginUsername').value = '';
-            document.getElementById('loginPassword').value = '';
-            document.getElementById('loginError').innerHTML = '';
-        }
-        
-        // Export/Import database as file
-        function exportDatabaseToFile() {
-            const dbData = {
-                users: Database.getUsers(),
-                challenges: Database.getChallenges(),
-                quizzes: Database.getQuizzes(),
-                puzzles: Database.getPuzzles(),
-                learning: Database.getLearningMaterials(),
-                submissions: Database.getSubmissions(),
-                exportDate: new Date().toISOString()
-            };
             
-            const blob = new Blob([JSON.stringify(dbData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ctf_database_backup_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            alert('Database exported successfully!');
-        }
-        
-        function importDatabaseFromFile() {
-            document.getElementById('databaseImportFile').click();
-        }
-        
-        function handleDatabaseImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const dbData = JSON.parse(e.target.result);
-                    if (dbData.users) Database.saveUsers(dbData.users);
-                    if (dbData.challenges) Database.saveChallenges(dbData.challenges);
-                    if (dbData.quizzes) Database.saveQuizzes(dbData.quizzes);
-                    if (dbData.puzzles) Database.savePuzzles(dbData.puzzles);
-                    if (dbData.learning) Database.saveLearningMaterials(dbData.learning);
-                    if (dbData.submissions) Database.saveSubmissions(dbData.submissions);
-                    
-                    syncFromDatabase();
-                    alert('Database imported successfully! Refreshing...');
-                    location.reload();
-                } catch(err) {
-                    alert('Error importing database: ' + err.message);
-                }
-            };
-            reader.readAsText(file);
-        }
-        
-        // Check if already logged in
-        const currentUser = Database.getCurrentUser();
-        if (currentUser) {
-            document.getElementById('loginPage').style.display = 'none';
-            document.getElementById('adminTerminal').style.display = 'flex';
-            document.getElementById('adminUsername').innerText = currentUser.username;
-            initializeAdminPanel();
+            // Check if login.html exists, if not, show message
+            fetch('login.html' , { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.replace('login.html');
+                    } else {
+                        showToast('Login page not found. Please ensure login.html exists.', true);
+                        console.error('login.html not found in current directory');
+                    }
+                })
+                .catch(() => {
+                    showToast('Cannot reach login page. Please check file location.', true);
+                });
         } else {
-            Database.initializeDatabase();
-            syncFromDatabase();
+            errorDiv.textContent = '❌ Invalid passkey! Access denied.';
+            input.value = '';
+            input.focus();
         }
-        
-        function initializeAdminPanel() {
-            updateBadges();
-            renderDashboard();
-            renderChallenges();
-            renderQuizzes();
-            renderPuzzles();
-            renderLearningMaterials();
-            renderUsers();
-            renderSubmissions();
-            
-            document.getElementById('searchChallenge')?.addEventListener('input',()=>renderChallenges());
+    }
+
+    confirmBtn.addEventListener('click', performSecureLogout);
+    cancelBtn.addEventListener('click', () => overlay.remove());
+    input.addEventListener('keypress', e => { if (e.key === 'Enter') performSecureLogout(); });
+}
+
+// Export/Import/Reset
+function exportDatabaseToFile() {
+    const data = {
+        users: Database.getUsers(),
+        challenges: Database.getChallenges(),
+        quizzes: Database.getQuizzes(),
+        puzzles: Database.getPuzzles(),
+        learning: Database.getLearning(),
+        submissions: Database.getSubmissions()
+    };
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    a.download = `ctf_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    showToast('Database exported successfully!');
+}
+
+function importDatabaseFromFile() { 
+    document.getElementById('databaseImportFile').click(); 
+}
+
+function handleDatabaseImport(event) {
+    const file = event.target.files[0];
+    if(!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const d = JSON.parse(e.target.result);
+            if(d.users) Database.saveUsers(d.users);
+            if(d.challenges) Database.saveChallenges(d.challenges);
+            if(d.quizzes) Database.saveQuizzes(d.quizzes);
+            if(d.puzzles) Database.savePuzzles(d.puzzles);
+            if(d.learning) Database.saveLearning(d.learning);
+            if(d.submissions) Database.saveSubmissions(d.submissions);
+            syncFromDB();
+            refreshAllViews();
+            showToast('Import successful!');
+        } catch(err) { 
+            showToast('Import failed: ' + err.message, true);
         }
-        
-        function updateBadges() {
-            const elements = ['challengeCountBadge', 'quizCountBadge', 'puzzleCountBadge', 'userCountBadge', 'submissionCountBadge'];
-            const data = [challenges.length, quizzes.length, puzzles.length, users.length, submissions.length];
-            elements.forEach((id, idx) => {
-                const el = document.getElementById(id);
-                if(el) el.innerText = data[idx];
-            });
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+function resetAllData() { 
+    if(confirm('⚠️ RESET ALL DATA? This cannot be undone!')) {
+        localStorage.clear();
+        Database.init();
+        syncFromDB();
+        refreshAllViews();
+        showToast('All data has been reset');
+    }
+}
+
+// Rendering functions (optimized)
+function refreshAllViews() {
+    updateBadges();
+    renderDashboard();
+    renderChallenges();
+    renderQuizzes();
+    renderPuzzles();
+    renderLearningMaterials();
+    renderUsers();
+    renderSubmissions();
+}
+
+function updateBadges() {
+    const counts = [state.challenges.length, state.quizzes.length, state.puzzles.length, state.users.length, state.submissions.length];
+    ['challengeCountBadge', 'quizCountBadge', 'puzzleCountBadge', 'userCountBadge', 'submissionCountBadge'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        if(el) el.textContent = counts[i];
+    });
+}
+
+function renderDashboard() {
+    const totalPoints = state.users.reduce((s, u) => s + (u.points || 0), 0);
+    document.getElementById('dashboardStats').innerHTML = `
+        <div class="stat-card"><h3>Challenges</h3><p>${state.challenges.length}</p></div>
+        <div class="stat-card"><h3>Users</h3><p>${state.users.length}</p></div>
+        <div class="stat-card"><h3>Total Points</h3><p>${totalPoints}</p></div>
+        <div class="stat-card"><h3>Submissions</h3><p>${state.submissions.length}</p></div>`;
+    
+    const topUsers = [...state.users].sort((a, b) => (b.points || 0) - (a.points || 0)).slice(0, 5);
+    document.getElementById('liveScoreboardList').innerHTML = topUsers.map((u, i) => `
+        <div style="display:flex;justify-content:space-between;padding:.5rem;border-bottom:1px solid var(--border-color);">
+            <span>${i+1}. ${escapeHtml(u.username)}</span>
+            <span style="color:var(--neon-green);">${u.points || 0} pts</span>
+        </div>
+    `).join('');
+}
+
+function escapeHtml(str) {
+    if(!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if(m === '&') return '&amp;';
+        if(m === '<') return '&lt;';
+        if(m === '>') return '&gt;';
+        return m;
+    });
+}
+
+function renderChallenges() {
+    const searchTerm = (document.getElementById('searchChallenge')?.value || '').toLowerCase();
+    const filtered = state.challenges.filter(c => c.title.toLowerCase().includes(searchTerm));
+    document.getElementById('challengesList').innerHTML = filtered.map(c => `
+        <tr>
+            <td>${c.id}</td>
+            <td>${escapeHtml(c.title)}</td>
+            <td>${escapeHtml(c.category)}</td>
+            <td>${c.points}</td>
+            <td><span class="status-badge enabled">ACTIVE</span></td>
+            <td class="table-actions">
+                <button class="table-btn edit" onclick="editChallenge(${c.id})"><i class="fas fa-edit"></i></button>
+                <button class="table-btn delete" onclick="deleteChallenge(${c.id})"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderQuizzes() {
+    document.getElementById('quizzesList').innerHTML = state.quizzes.map(q => `
+        <div class="quiz-card">
+            <h3>📖 ${escapeHtml(q.title)}</h3>
+            <p>${escapeHtml(q.description || '')}</p>
+            <p><small>${q.questions || 0} questions | ${q.points || 50} pts</small></p>
+            <div class="table-actions">
+                <button class="table-btn edit" onclick="editQuiz(${q.id})"><i class="fas fa-edit"></i></button>
+                <button class="table-btn delete" onclick="deleteQuiz(${q.id})"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderPuzzles() {
+    document.getElementById('puzzlesList').innerHTML = state.puzzles.map(p => `
+        <div class="quiz-card">
+            <h3>🧩 ${escapeHtml(p.title)}</h3>
+            <p>${escapeHtml(p.description || '')}</p>
+            <p><small>Difficulty: ${escapeHtml(p.difficulty || 'Medium')}</small></p>
+            <div class="table-actions">
+                <button class="table-btn edit" onclick="editPuzzle(${p.id})"><i class="fas fa-edit"></i></button>
+                <button class="table-btn delete" onclick="deletePuzzle(${p.id})"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderLearningMaterials() {
+    document.getElementById('learningMaterialsList').innerHTML = state.learningMaterials.map(m => `
+        <div class="quiz-card">
+            <h3>📘 ${escapeHtml(m.title)}</h3>
+            <p>${escapeHtml(m.description || '')}</p>
+            <p><small>Type: ${escapeHtml(m.type || 'Article')}</small></p>
+            <div class="table-actions">
+                <button class="table-btn edit" onclick="editLearning(${m.id})"><i class="fas fa-edit"></i></button>
+                <button class="table-btn delete" onclick="deleteLearning(${m.id})"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function renderUsers() {
+    document.getElementById('usersList').innerHTML = state.users.map(u => `
+        <tr>
+            <td>${u.id}</td>
+            <td>${escapeHtml(u.username)}</td>
+            <td>${escapeHtml(u.email)}</td>
+            <td><span class="status-badge enabled">${escapeHtml(u.role)}</span></td>
+            <td>${u.points || 0}</td>
+            <td>${u.registered ? new Date(u.registered).toLocaleDateString() : 'N/A'}</td>
+            <td class="table-actions">
+                <button class="table-btn delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+    updateBadges();
+}
+
+function renderSubmissions() {
+    document.getElementById('submissionsList').innerHTML = state.submissions.slice(0, 50).map(s => `
+        <tr>
+            <td>${escapeHtml(s.time)}</td>
+            <td>${escapeHtml(s.userName)}</td>
+            <td>${escapeHtml(s.challenge)}</td>
+            <td><span class="status-badge enabled">${s.correct ? '✅ CORRECT' : '❌ WRONG'}</span></td>
+            <td class="table-actions">
+                <button class="table-btn delete" onclick="deleteSubmission(${s.id})"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// CRUD Operations
+function openChallengeModal(edit = null) {
+    document.getElementById('modalTitle').innerText = edit ? 'EDIT CHALLENGE' : 'ADD CHALLENGE';
+    document.getElementById('modalItemType').value = 'challenge';
+    document.getElementById('modalItemId').value = edit?.id || '';
+    document.getElementById('modalDynamicFields').innerHTML = `
+        <div class="form-group"><label>TITLE</label><input id="chTitle" value="${escapeHtml(edit?.title || '')}" required></div>
+        <div class="form-group"><label>CATEGORY</label><input id="chCategory" value="${escapeHtml(edit?.category || 'Web')}"></div>
+        <div class="form-group"><label>POINTS</label><input id="chPoints" type="number" value="${edit?.points || 100}"></div>
+        <div class="form-group"><label>FLAG</label><input id="chFlag" value="${escapeHtml(edit?.flag || 'flag{test}')}"></div>
+        <div class="form-group"><label>DESCRIPTION</label><textarea id="chDesc">${escapeHtml(edit?.description || '')}</textarea></div>
+    `;
+    document.getElementById('universalModal').style.display = 'flex';
+}
+
+function editChallenge(id) { 
+    const item = state.challenges.find(x => x.id == id);
+    if(item) openChallengeModal(item);
+}
+
+function deleteChallenge(id) { 
+    if(confirm('Delete challenge?')) {
+        state.challenges = state.challenges.filter(c => c.id !== id);
+        syncToDB();
+        renderChallenges();
+        renderDashboard();
+        showToast('Challenge deleted');
+    }
+}
+
+function openQuizModal(edit = null) {
+    document.getElementById('modalTitle').innerText = edit ? 'EDIT QUIZ' : 'ADD QUIZ';
+    document.getElementById('modalItemType').value = 'quiz';
+    document.getElementById('modalItemId').value = edit?.id || '';
+    document.getElementById('modalDynamicFields').innerHTML = `
+        <div class="form-group"><label>TITLE</label><input id="qzTitle" value="${escapeHtml(edit?.title || '')}"></div>
+        <div class="form-group"><label>DESCRIPTION</label><textarea id="qzDesc">${escapeHtml(edit?.description || '')}</textarea></div>
+        <div class="form-group"><label>QUESTIONS COUNT</label><input id="qzQty" type="number" value="${edit?.questions || 5}"></div>
+        <div class="form-group"><label>POINTS</label><input id="qzPoints" type="number" value="${edit?.points || 50}"></div>
+    `;
+    document.getElementById('universalModal').style.display = 'flex';
+}
+
+function editQuiz(id) { 
+    const item = state.quizzes.find(x => x.id == id);
+    if(item) openQuizModal(item);
+}
+
+function deleteQuiz(id) { 
+    state.quizzes = state.quizzes.filter(q => q.id !== id);
+    syncToDB();
+    renderQuizzes();
+    updateBadges();
+    showToast('Quiz deleted');
+}
+
+function openPuzzleModal(edit = null) {
+    document.getElementById('modalTitle').innerText = edit ? 'EDIT PUZZLE' : 'ADD PUZZLE';
+    document.getElementById('modalItemType').value = 'puzzle';
+    document.getElementById('modalItemId').value = edit?.id || '';
+    document.getElementById('modalDynamicFields').innerHTML = `
+        <div class="form-group"><label>TITLE</label><input id="pzTitle" value="${escapeHtml(edit?.title || '')}"></div>
+        <div class="form-group"><label>DIFFICULTY</label><select id="pzDiff"><option ${edit?.difficulty === 'Easy' ? 'selected' : ''}>Easy</option><option ${edit?.difficulty === 'Medium' ? 'selected' : ''}>Medium</option><option ${edit?.difficulty === 'Hard' ? 'selected' : ''}>Hard</option></select></div>
+        <div class="form-group"><label>DESCRIPTION</label><textarea id="pzDesc">${escapeHtml(edit?.description || '')}</textarea></div>
+    `;
+    document.getElementById('universalModal').style.display = 'flex';
+}
+
+function editPuzzle(id) { 
+    const item = state.puzzles.find(x => x.id == id);
+    if(item) openPuzzleModal(item);
+}
+
+function deletePuzzle(id) { 
+    state.puzzles = state.puzzles.filter(p => p.id !== id);
+    syncToDB();
+    renderPuzzles();
+    showToast('Puzzle deleted');
+}
+
+function openLearningModal(edit = null) {
+    document.getElementById('modalTitle').innerText = edit ? 'EDIT LEARNING' : 'ADD LEARNING';
+    document.getElementById('modalItemType').value = 'learning';
+    document.getElementById('modalItemId').value = edit?.id || '';
+    document.getElementById('modalDynamicFields').innerHTML = `
+        <div class="form-group"><label>TITLE</label><input id="lmTitle" value="${escapeHtml(edit?.title || '')}"></div>
+        <div class="form-group"><label>TYPE</label><select id="lmType"><option ${edit?.type === 'Article' ? 'selected' : ''}>Article</option><option ${edit?.type === 'Video' ? 'selected' : ''}>Video</option><option ${edit?.type === 'Tutorial' ? 'selected' : ''}>Tutorial</option></select></div>
+        <div class="form-group"><label>DESCRIPTION</label><textarea id="lmDesc">${escapeHtml(edit?.description || '')}</textarea></div>
+        <div class="form-group"><label>URL</label><input id="lmUrl" value="${escapeHtml(edit?.url || '#')}"></div>
+    `;
+    document.getElementById('universalModal').style.display = 'flex';
+}
+
+function editLearning(id) { 
+    const item = state.learningMaterials.find(x => x.id == id);
+    if(item) openLearningModal(item);
+}
+
+function deleteLearning(id) { 
+    state.learningMaterials = state.learningMaterials.filter(l => l.id !== id);
+    syncToDB();
+    renderLearningMaterials();
+    showToast('Learning material deleted');
+}
+
+function deleteUser(id) { 
+    if(confirm('Delete user permanently?')) {
+        state.users = state.users.filter(u => u.id !== id);
+        state.submissions = state.submissions.filter(s => s.userId !== id);
+        syncToDB();
+        renderUsers();
+        renderDashboard();
+        updateBadges();
+        showToast('User deleted');
+    }
+}
+
+function deleteSubmission(id) { 
+    state.submissions = state.submissions.filter(s => s.id !== id);
+    syncToDB();
+    renderSubmissions();
+    showToast('Submission deleted');
+}
+
+// Form submission handler
+document.getElementById('universalForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const type = document.getElementById('modalItemType').value;
+    const id = parseInt(document.getElementById('modalItemId').value) || Date.now();
+    
+    if(type === 'challenge') {
+        const newItem = {
+            id, title: document.getElementById('chTitle').value,
+            category: document.getElementById('chCategory').value,
+            points: +document.getElementById('chPoints').value,
+            flag: document.getElementById('chFlag').value,
+            description: document.getElementById('chDesc').value,
+            enabled: true
+        };
+        const index = state.challenges.findIndex(c => c.id === id);
+        if(index !== -1) state.challenges[index] = newItem;
+        else state.challenges.push(newItem);
+        syncToDB();
+        renderChallenges();
+        renderDashboard();
+    } else if(type === 'quiz') {
+        const newItem = {
+            id, title: document.getElementById('qzTitle').value,
+            description: document.getElementById('qzDesc').value,
+            questions: +document.getElementById('qzQty').value,
+            points: +document.getElementById('qzPoints').value
+        };
+        const index = state.quizzes.findIndex(q => q.id === id);
+        if(index !== -1) state.quizzes[index] = newItem;
+        else state.quizzes.push(newItem);
+        syncToDB();
+        renderQuizzes();
+    } else if(type === 'puzzle') {
+        const newItem = {
+            id, title: document.getElementById('pzTitle').value,
+            difficulty: document.getElementById('pzDiff').value,
+            description: document.getElementById('pzDesc').value
+        };
+        const index = state.puzzles.findIndex(p => p.id === id);
+        if(index !== -1) state.puzzles[index] = newItem;
+        else state.puzzles.push(newItem);
+        syncToDB();
+        renderPuzzles();
+    } else if(type === 'learning') {
+        const newItem = {
+            id, title: document.getElementById('lmTitle').value,
+            type: document.getElementById('lmType').value,
+            description: document.getElementById('lmDesc').value,
+            url: document.getElementById('lmUrl').value
+        };
+        const index = state.learningMaterials.findIndex(l => l.id === id);
+        if(index !== -1) state.learningMaterials[index] = newItem;
+        else state.learningMaterials.push(newItem);
+        syncToDB();
+        renderLearningMaterials();
+    }
+    closeUniversalModal();
+    updateBadges();
+    showToast('Saved successfully');
+});
+
+function closeUniversalModal() { 
+    document.getElementById('universalModal').style.display = 'none'; 
+}
+
+// Navigation
+function switchSection(section, el) {
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(section + '-section').classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if(el) el.classList.add('active');
+}
+
+// Attach navigation handlers
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        e.preventDefault();
+        const section = this.getAttribute('data-section');
+        if(section) switchSection(section, this);
+    });
+});
+
+// Matrix rain effect (optimized)
+(function matrix() {
+    const cv = document.getElementById('matrixRain');
+    if(!cv) return;
+    const cx = cv.getContext('2d');
+    const CHARS = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%';
+    let cols, drops;
+    
+    function resize() {
+        cv.width = window.innerWidth;
+        cv.height = window.innerHeight;
+        cols = Math.floor(cv.width / 20);
+        drops = Array.from({length: cols}, () => Math.random() * cv.height / 20 | 0);
+    }
+    
+    resize();
+    window.addEventListener('resize', resize);
+    
+    function draw() {
+        cx.fillStyle = 'rgba(10,10,10,.04)';
+        cx.fillRect(0, 0, cv.width, cv.height);
+        cx.fillStyle = '#0f0';
+        cx.font = '14px monospace';
+        for(let i = 0; i < cols; i++) {
+            cx.fillText(CHARS[Math.random() * CHARS.length | 0], i * 20, drops[i] * 20);
+            if(drops[i] * 20 > cv.height && Math.random() > .975) drops[i] = 0;
+            drops[i]++;
         }
-        
-        function renderDashboard() {
-            const totalPoints = users.reduce((s,u)=>s+(u.points||0),0);
-            document.getElementById('dashboardStats').innerHTML = `
-                <div class="stat-card"><h3>Challenges</h3><p>${challenges.length}</p></div>
-                <div class="stat-card"><h3>Users</h3><p>${users.length}</p></div>
-                <div class="stat-card"><h3>Total Points</h3><p>${totalPoints}</p></div>
-                <div class="stat-card"><h3>Submissions</h3><p>${submissions.length}</p></div>
-            `;
-            const topUsers = [...users].sort((a,b)=>(b.points||0)-(a.points||0)).slice(0,5);
-            document.getElementById('liveScoreboardList').innerHTML = topUsers.map((u,i)=>`<div style="display:flex;justify-content:space-between;padding:0.5rem;border-bottom:1px solid var(--border-color);"><span>${i+1}. ${u.username}</span><span style="color:var(--neon-green);">${u.points||0} pts</span></div>`).join('');
-        }
-        
-        function renderChallenges() {
-            const search = document.getElementById('searchChallenge')?.value.toLowerCase() || '';
-            const filtered = challenges.filter(c => c.title.toLowerCase().includes(search));
-            document.getElementById('challengesList').innerHTML = filtered.map(c => `<tr><td>${c.id}</td><td>${c.title}</td><td>${c.category}</td><td>${c.points}</td><td><span class="status-badge enabled">${c.enabled?'ACTIVE':'INACTIVE'}</span></td><td class="table-actions"><button class="table-btn edit" onclick="editChallenge(${c.id})"><i class="fas fa-edit"></i></button><button class="table-btn delete" onclick="deleteChallenge(${c.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-            updateBadges();
-        }
-        
-        function renderQuizzes() {
-            document.getElementById('quizzesList').innerHTML = quizzes.map(q => `<div class="quiz-card"><h3>📖 ${q.title}</h3><p>${q.description || 'No description'}</p><p><small>${q.questions || 0} questions | ${q.points||50} pts</small></p><div><button class="table-btn edit" onclick="editQuiz(${q.id})"><i class="fas fa-edit"></i></button><button class="table-btn delete" onclick="deleteQuiz(${q.id})"><i class="fas fa-trash"></i></button></div></div>`).join('');
-        }
-        
-        function renderPuzzles() {
-            document.getElementById('puzzlesList').innerHTML = puzzles.map(p => `<div class="quiz-card"><h3>🧩 ${p.title}</h3><p>${p.description||''}</p><p><small>Difficulty: ${p.difficulty||'Medium'}</small></p><div><button class="table-btn edit" onclick="editPuzzle(${p.id})"><i class="fas fa-edit"></i></button><button class="table-btn delete" onclick="deletePuzzle(${p.id})"><i class="fas fa-trash"></i></button></div></div>`).join('');
-        }
-        
-        function renderLearningMaterials() {
-            document.getElementById('learningMaterialsList').innerHTML = learningMaterials.map(m => `<div class="quiz-card"><h3>📘 ${m.title}</h3><p>${m.description||'Educational resource'}</p><p><small>Type: ${m.type||'Article'}</small></p><div><button class="table-btn edit" onclick="editLearning(${m.id})"><i class="fas fa-edit"></i></button><button class="table-btn delete" onclick="deleteLearning(${m.id})"><i class="fas fa-trash"></i></button></div></div>`).join('');
-        }
-        
-        function renderUsers() {
-            document.getElementById('usersList').innerHTML = users.map(u => `<tr><td>${u.id}</td><td>${u.username}</td><td>${u.email}</td><td><span class="status-badge enabled">${u.role}</span></td><td>${u.points||0}</td><td>${u.registered ? new Date(u.registered).toLocaleDateString() : 'N/A'}</td><td class="table-actions"><button class="table-btn delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-            updateBadges();
-        }
-        
-        function renderSubmissions() {
-            document.getElementById('submissionsList').innerHTML = submissions.slice(0,30).map(s => `<tr><td>${s.time}</td><td>${s.userName}</td><td>${s.challenge}</td><td><span class="status-badge enabled">${s.correct?'✅ CORRECT':'❌ WRONG'}</span></td><td class="table-actions"><button class="table-btn delete" onclick="deleteSubmission(${s.id})"><i class="fas fa-trash"></i></button></td></tr>`).join('');
-        }
-        
-        // CRUD Operations with database sync
-        function openChallengeModal(editData=null) {
-            document.getElementById('modalTitle').innerText = editData ? 'EDIT CHALLENGE' : 'ADD CHALLENGE';
-            document.getElementById('modalItemType').value = 'challenge';
-            document.getElementById('modalItemId').value = editData?.id || '';
-            document.getElementById('modalDynamicFields').innerHTML = `
-                <div class="form-group"><label>TITLE</label><input id="chTitle" value="${editData?.title || ''}" required></div>
-                <div class="form-group"><label>CATEGORY</label><input id="chCategory" value="${editData?.category || 'Web'}"></div>
-                <div class="form-group"><label>POINTS</label><input id="chPoints" type="number" value="${editData?.points || 100}"></div>
-                <div class="form-group"><label>FLAG</label><input id="chFlag" value="${editData?.flag || 'flag{test}'}"></div>
-                <div class="form-group"><label>DESCRIPTION</label><textarea id="chDesc">${editData?.description || ''}</textarea></div>
-            `;
-            document.getElementById('universalModal').style.display = 'flex';
-        }
-        
-        function editChallenge(id){ const c = challenges.find(x=>x.id==id); if(c) openChallengeModal(c); }
-        function deleteChallenge(id){ if(confirm('Delete challenge from database?')){ challenges = challenges.filter(c=>c.id!==id); syncToDatabase(); renderChallenges(); renderDashboard(); }}
-        
-        function openQuizModal(edit=null){
-            document.getElementById('modalTitle').innerText = edit ? 'EDIT QUIZ' : 'ADD QUIZ';
-            document.getElementById('modalItemType').value = 'quiz';
-            document.getElementById('modalItemId').value = edit?.id || '';
-            document.getElementById('modalDynamicFields').innerHTML = `<div class="form-group"><label>TITLE</label><input id="qzTitle" value="${edit?.title || ''}"></div><div class="form-group"><label>DESCRIPTION</label><textarea id="qzDesc">${edit?.description || ''}</textarea></div><div class="form-group"><label>QUESTIONS COUNT</label><input id="qzQty" type="number" value="${edit?.questions || 5}"></div><div class="form-group"><label>POINTS</label><input id="qzPoints" type="number" value="${edit?.points || 50}"></div>`;
-            document.getElementById('universalModal').style.display = 'flex';
-        }
-        
-        function editQuiz(id){ const q = quizzes.find(x=>x.id==id); if(q) openQuizModal(q); }
-        function deleteQuiz(id){ quizzes = quizzes.filter(q=>q.id!==id); syncToDatabase(); renderQuizzes(); updateBadges(); }
-        
-        function openPuzzleModal(edit=null){
-            document.getElementById('modalTitle').innerText = edit ? 'EDIT PUZZLE' : 'ADD PUZZLE';
-            document.getElementById('modalItemType').value = 'puzzle';
-            document.getElementById('modalItemId').value = edit?.id || '';
-            document.getElementById('modalDynamicFields').innerHTML = `<div class="form-group"><label>TITLE</label><input id="pzTitle" value="${edit?.title || ''}"></div><div class="form-group"><label>DIFFICULTY</label><input id="pzDiff" value="${edit?.difficulty || 'Medium'}"></div><div class="form-group"><label>DESCRIPTION</label><textarea id="pzDesc">${edit?.description || ''}</textarea></div>`;
-            document.getElementById('universalModal').style.display = 'flex';
-        }
-        
-        function editPuzzle(id){ const p = puzzles.find(x=>x.id==id); if(p) openPuzzleModal(p); }
-        function deletePuzzle(id){ puzzles = puzzles.filter(p=>p.id!==id); syncToDatabase(); renderPuzzles(); }
-        
-        function openLearningModal(edit=null){
-            document.getElementById('modalTitle').innerText = edit ? 'EDIT LEARNING MATERIAL' : 'ADD LEARNING MATERIAL';
-            document.getElementById('modalItemType').value = 'learning';
-            document.getElementById('modalItemId').value = edit?.id || '';
-            document.getElementById('modalDynamicFields').innerHTML = `<div class="form-group"><label>TITLE</label><input id="lmTitle" value="${edit?.title || ''}"></div><div class="form-group"><label>TYPE (Article/Video)</label><input id="lmType" value="${edit?.type || 'Article'}"></div><div class="form-group"><label>DESCRIPTION</label><textarea id="lmDesc">${edit?.description || ''}</textarea></div><div class="form-group"><label>URL</label><input id="lmUrl" value="${edit?.url || '#'}"></div>`;
-            document.getElementById('universalModal').style.display = 'flex';
-        }
-        
-        function editLearning(id){ const m = learningMaterials.find(x=>x.id==id); if(m) openLearningModal(m); }
-        function deleteLearning(id){ learningMaterials = learningMaterials.filter(l=>l.id!==id); syncToDatabase(); renderLearningMaterials(); }
-        
-        function deleteUser(id){ 
-            if(confirm('Delete user permanently from database?')){ 
-                users = users.filter(u=>u.id!==id); 
-                submissions = submissions.filter(s=>s.userId!==id); 
-                syncToDatabase(); 
-                renderUsers(); 
-                renderDashboard(); 
-                updateBadges(); 
-            }
-        }
-        
-        function deleteSubmission(id){ 
-            submissions = submissions.filter(s=>s.id!==id); 
-            syncToDatabase(); 
-            renderSubmissions(); 
-        }
-        
-        document.getElementById('universalForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const type = document.getElementById('modalItemType').value;
-            const id = parseInt(document.getElementById('modalItemId').value) || Date.now();
-            
-            if(type === 'challenge'){
-                const newCh = { id, title: document.getElementById('chTitle').value, category: document.getElementById('chCategory').value, points: parseInt(document.getElementById('chPoints').value), flag: document.getElementById('chFlag').value, description: document.getElementById('chDesc').value, enabled: true };
-                const existing = challenges.findIndex(c=>c.id===id);
-                if(existing !== -1) challenges[existing] = newCh;
-                else challenges.push(newCh);
-                syncToDatabase();
-                renderChallenges();
-                renderDashboard();
-            } else if(type === 'quiz'){
-                const newQ = { id, title: document.getElementById('qzTitle').value, description: document.getElementById('qzDesc').value, questions: parseInt(document.getElementById('qzQty').value), points: parseInt(document.getElementById('qzPoints').value) };
-                const idx = quizzes.findIndex(q=>q.id===id);
-                if(idx !== -1) quizzes[idx] = newQ;
-                else quizzes.push(newQ);
-                syncToDatabase();
-                renderQuizzes();
-            } else if(type === 'puzzle'){
-                const newP = { id, title: document.getElementById('pzTitle').value, difficulty: document.getElementById('pzDiff').value, description: document.getElementById('pzDesc').value };
-                const idx = puzzles.findIndex(p=>p.id===id);
-                if(idx !== -1) puzzles[idx] = newP;
-                else puzzles.push(newP);
-                syncToDatabase();
-                renderPuzzles();
-            } else if(type === 'learning'){
-                const newL = { id, title: document.getElementById('lmTitle').value, type: document.getElementById('lmType').value, description: document.getElementById('lmDesc').value, url: document.getElementById('lmUrl').value };
-                const idx = learningMaterials.findIndex(l=>l.id===id);
-                if(idx !== -1) learningMaterials[idx] = newL;
-                else learningMaterials.push(newL);
-                syncToDatabase();
-                renderLearningMaterials();
-            }
-            closeUniversalModal();
-            updateBadges();
-        });
-        
-        function closeUniversalModal(){ document.getElementById('universalModal').style.display = 'none'; }
-        function switchSection(section){
-            document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
-            document.getElementById(`${section}-section`).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-            if(event && event.target) event.target.closest('.nav-item')?.classList?.add('active');
-        }
-        
-        function resetAllData(){ 
-            if(confirm('⚠️ WARNING: This will delete ALL database records! This cannot be undone!')){ 
-                localStorage.clear();
-                Database.initializeDatabase();
-                location.reload();
-            }
-        }
-        
-        // Matrix rain effect
-        const canvas = document.getElementById('matrixRain'), ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const chars = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%";
-        const drops = Array(Math.floor(canvas.width/20)).fill(0).map(()=>Math.random()*canvas.height);
-        function draw(){ 
-            ctx.fillStyle='rgba(10,10,10,0.04)'; 
-            ctx.fillRect(0,0,canvas.width,canvas.height); 
-            ctx.fillStyle='#0f0'; 
-            ctx.font='14px monospace'; 
-            for(let i=0;i<drops.length;i++){ 
-                ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*20, drops[i]*20); 
-                if(drops[i]*20>canvas.height && Math.random()>0.975) drops[i]=0; 
-                drops[i]++; 
-            } 
-        }
-        setInterval(draw,35);
-        window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
-    </script>
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
+
+// Initialize
+Database.init();
+syncFromDB();
+refreshAllViews();
+
+// Check if we're already logged out
+if(sessionStorage.getItem('forcedLogout') === 'true') {
+    sessionStorage.removeItem('forcedLogout');
+}
+</script>
 </body>
 </html>
