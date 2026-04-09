@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - UTech CTF Hub | Cyberpunk Portal</title>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* ===== CYBERPUNK LOGIN THEME ===== */
-        
         * {
             margin: 0;
             padding: 0;
@@ -22,7 +21,6 @@
             overflow-x: hidden;
         }
 
-        /* Matrix Rain Effect */
         #matrixCanvas {
             position: fixed;
             top: 0;
@@ -34,7 +32,6 @@
             pointer-events: none;
         }
 
-        /* Navigation */
         .navbar {
             background: rgba(10, 14, 26, 0.95);
             backdrop-filter: blur(10px);
@@ -55,6 +52,11 @@
             color: #50fa7b;
             text-shadow: 0 0 10px rgba(80, 250, 123, 0.3);
             cursor: pointer;
+            transition: text-shadow 0.3s ease;
+        }
+
+        .logo:hover {
+            text-shadow: 0 0 20px rgba(80, 250, 123, 0.5);
         }
 
         .logo i {
@@ -97,7 +99,6 @@
             color: #50fa7b;
         }
 
-        /* Login Container */
         .login-container {
             min-height: calc(100vh - 80px);
             display: flex;
@@ -118,6 +119,18 @@
             border: 1px solid rgba(80, 250, 123, 0.2);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(80, 250, 123, 0.1);
             position: relative;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .login-wrapper::before {
@@ -136,7 +149,6 @@
             100% { left: 100%; }
         }
 
-        /* Left Side - Info */
         .login-info {
             flex: 1;
             background: linear-gradient(145deg, #0f2b3d, #0a1a2a);
@@ -246,9 +258,15 @@
             font-family: monospace;
             color: #50fa7b;
             border: 1px solid #2a3550;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        /* Right Side - Form */
+        .test-credentials code:hover {
+            background: rgba(80, 250, 123, 0.2);
+            border-color: #50fa7b;
+        }
+
         .login-form-wrapper {
             flex: 1;
             padding: 3rem 2rem;
@@ -405,6 +423,7 @@
         .login-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
 
         .register-link {
@@ -479,7 +498,6 @@
             box-shadow: 0 0 20px rgba(62, 158, 255, 0.3);
         }
 
-        /* Alert Messages */
         .alert {
             padding: 0.8rem 1rem;
             border-radius: 8px;
@@ -519,7 +537,6 @@
             margin-top: 0.25rem;
         }
 
-        /* Forgot Password Modal (kept, registration removed) */
         .modal {
             display: none;
             position: fixed;
@@ -597,6 +614,31 @@
             to { transform: rotate(360deg); }
         }
 
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #141b2b;
+            border: 1px solid #50fa7b;
+            color: #50fa7b;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 10001;
+            animation: slideInRight 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
         @media (max-width: 768px) {
             .login-wrapper {
                 flex-direction: column;
@@ -611,12 +653,25 @@
             .nav-links {
                 justify-content: center;
             }
+            .login-info {
+                padding: 2rem 1.5rem;
+            }
+            .login-form-wrapper {
+                padding: 2rem 1.5rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Matrix Rain Canvas -->
     <canvas id="matrixCanvas"></canvas>
 
     <nav class="navbar">
@@ -651,7 +706,7 @@
 
                     <div class="test-credentials">
                         <p><i class="fas fa-flask"></i> DEMO ACCESS</p>
-                        <code>student / ctf123</code>
+                        <code onclick="fillDemo('student', 'ctf123')">student / ctf123</code>
                     </div>
                 </div>
             </div>
@@ -665,17 +720,17 @@
                 <div id="errorMessage" class="alert alert-danger"></div>
                 <div id="successMessage" class="alert alert-success"></div>
 
-                <form id="loginForm">
+                <form id="loginForm" novalidate>
                     <div class="form-group">
                         <label><i class="fas fa-user"></i> USERNAME</label>
-                        <input type="text" id="username" placeholder="Enter your username" autocomplete="username">
+                        <input type="text" id="username" placeholder="Enter your username" autocomplete="username" required>
                         <small class="error-text" id="usernameError"></small>
                     </div>
 
                     <div class="form-group">
                         <label><i class="fas fa-lock"></i> PASSWORD</label>
                         <div class="password-input-wrapper">
-                            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password">
+                            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required>
                             <button type="button" class="toggle-password" onclick="togglePassword()">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -711,7 +766,6 @@
         </div>
     </main>
 
-    <!-- Forgot Password Modal (only modal kept) -->
     <div id="forgotModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeForgotModal()">&times;</span>
@@ -728,40 +782,151 @@
     </div>
 
     <script>
-        // ==================== PERSISTENT USER DATABASE (localStorage) ====================
-        
-        // Secret admin credentials (hidden backdoor - not shown on frontend)
-        // Username: admin, Password: nimda
-        const SECRET_ADMIN_USERNAME = "admin";
-        const SECRET_ADMIN_PASSWORD = "nimda";
-        
-        // Initialize user database if not exists
+        // ==================== CONFIGURATION ====================
+        const CONFIG = {
+            ADMIN_USERNAME: "admin",
+            ADMIN_PASSWORD: "nimda",
+            DB_KEY: 'ctf_users',
+            SESSION_KEY: 'user',
+            STORAGE_TYPE: {
+                SESSION: 'session',
+                LOCAL: 'local'
+            }
+        };
+
+        // ==================== HELPER FUNCTIONS ====================
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.style.borderColor = isError ? '#ff5555' : '#50fa7b';
+            toast.style.color = isError ? '#ff5555' : '#50fa7b';
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function validateInput(username, password) {
+            if (!username || username.length < 3) {
+                showToast('Username must be at least 3 characters', true);
+                return false;
+            }
+            if (!password || password.length < 4) {
+                showToast('Password must be at least 4 characters', true);
+                return false;
+            }
+            return true;
+        }
+
+        // ==================== USER DATABASE MANAGEMENT ====================
         function initUserDatabase() {
-            if (!localStorage.getItem('ctf_users')) {
+            if (!localStorage.getItem(CONFIG.DB_KEY)) {
                 const defaultUsers = {
-                    'student': { username: 'student', password: 'ctf123', email: 'student@ctf.com', role: 'student', name: 'CTF Student', points: 1250, solves: 15, registeredAt: Date.now() }
+                    'student': { 
+                        username: 'student', 
+                        password: 'ctf123', 
+                        email: 'student@ctf.com', 
+                        role: 'student', 
+                        name: 'CTF Student', 
+                        points: 1250, 
+                        solves: 15, 
+                        registeredAt: Date.now() 
+                    }
                 };
-                localStorage.setItem('ctf_users', JSON.stringify(defaultUsers));
+                localStorage.setItem(CONFIG.DB_KEY, JSON.stringify(defaultUsers));
             }
         }
-        
-        initUserDatabase();
-        
-        // Get all users
+
         function getAllUsers() {
-            return JSON.parse(localStorage.getItem('ctf_users') || '{}');
+            try {
+                return JSON.parse(localStorage.getItem(CONFIG.DB_KEY) || '{}');
+            } catch (e) {
+                console.error('Failed to parse users:', e);
+                return {};
+            }
         }
-        
-        // Save users
+
         function saveUsers(users) {
-            localStorage.setItem('ctf_users', JSON.stringify(users));
+            localStorage.setItem(CONFIG.DB_KEY, JSON.stringify(users));
         }
-        
-        // Login handler with secret admin credentials and persistent database
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+
+        function authenticateUser(username, password) {
+            // Check for admin credentials first
+            if (username === CONFIG.ADMIN_USERNAME && password === CONFIG.ADMIN_PASSWORD) {
+                return {
+                    username: CONFIG.ADMIN_USERNAME,
+                    role: 'admin',
+                    name: 'System Administrator',
+                    points: 0,
+                    solves: 0,
+                    email: 'admin@ctf.local'
+                };
+            }
+
+            // Check regular users
+            const users = getAllUsers();
+            const user = users[username];
             
-            const username = document.getElementById('username').value.trim();
+            if (user && user.password === password) {
+                return user;
+            }
+            
+            return null;
+        }
+
+        // ==================== SESSION MANAGEMENT ====================
+        function createUserSession(user, rememberMe) {
+            const userData = {
+                id: Date.now(),
+                username: user.username,
+                name: user.name || user.username,
+                role: user.role || 'student',
+                points: user.points || 0,
+                solves: user.solves || 0,
+                email: user.email,
+                loginTime: new Date().toISOString()
+            };
+
+            if (rememberMe) {
+                localStorage.setItem(CONFIG.SESSION_KEY, JSON.stringify(userData));
+            } else {
+                sessionStorage.setItem(CONFIG.SESSION_KEY, JSON.stringify(userData));
+            }
+            
+            return userData;
+        }
+
+        function checkExistingSession() {
+            // Check if coming from logout
+            if (sessionStorage.getItem('forcedLogout') === 'true') {
+                sessionStorage.removeItem('forcedLogout');
+                sessionStorage.removeItem(CONFIG.SESSION_KEY);
+                localStorage.removeItem(CONFIG.SESSION_KEY);
+                return false;
+            }
+
+            // Check for existing session
+            const userData = localStorage.getItem(CONFIG.SESSION_KEY) || sessionStorage.getItem(CONFIG.SESSION_KEY);
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    if (user.role === 'admin') {
+                        window.location.href = 'AdminPanel.html';
+                    } else {
+                        window.location.href = 'homepage.html';
+                    }
+                    return true;
+                } catch (e) {
+                    console.error('Session parse error:', e);
+                }
+            }
+            return false;
+        }
+
+        // ==================== LOGIN HANDLER ====================
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('username').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('rememberMe').checked;
             
@@ -771,100 +936,55 @@
             const spinner = loginBtn.querySelector('.spinner');
             const btnText = loginBtn.querySelector('span:first-child');
             
+            // Reset messages
             errorDiv.style.display = 'none';
             successDiv.style.display = 'none';
             
-            if (!username || !password) {
-                errorDiv.textContent = '⚠️ Please enter username and password';
-                errorDiv.style.display = 'block';
+            // Validate input
+            if (!validateInput(username, password)) {
                 return;
             }
             
+            // Show loading state
             btnText.style.display = 'none';
             spinner.style.display = 'inline-block';
             loginBtn.disabled = true;
             
+            // Simulate async operation for better UX
             setTimeout(() => {
-                let user = null;
-                let isSecretAdmin = false;
-                
-                // Check for secret admin credentials first (hidden backdoor)
-                // Username: admin, Password: nimda
-                if (username === SECRET_ADMIN_USERNAME && password === SECRET_ADMIN_PASSWORD) {
-                    isSecretAdmin = true;
-                    user = {
-                        username: SECRET_ADMIN_USERNAME,
-                        role: 'admin',
-                        name: 'System Administrator',
-                        points: 0,
-                        solves: 0,
-                        email: 'admin@ctf.local'
-                    };
-                } else {
-                    // Check regular user database
-                    const users = getAllUsers();
-                    const foundUser = users[username];
-                    if (foundUser && foundUser.password === password) {
-                        user = foundUser;
-                    }
-                }
+                const user = authenticateUser(username, password);
                 
                 if (user) {
-                    const userData = {
-                        id: Date.now(),
-                        username: user.username,
-                        name: user.name || user.username,
-                        role: isSecretAdmin ? 'admin' : (user.role || 'student'),
-                        points: user.points || 0,
-                        solves: user.solves || 0,
-                        email: user.email
-                    };
-                    
-                    if (rememberMe) {
-                        localStorage.setItem('user', JSON.stringify(userData));
-                    } else {
-                        sessionStorage.setItem('user', JSON.stringify(userData));
-                    }
+                    const userData = createUserSession(user, rememberMe);
                     
                     successDiv.textContent = '✓ Login successful! Redirecting...';
                     successDiv.style.display = 'block';
                     
                     setTimeout(() => {
                         if (userData.role === 'admin') {
-                            // Redirect to admin dashboard page
                             window.location.href = 'AdminPanel.html';
                         } else {
                             window.location.href = 'homepage.html';
                         }
-                    }, 1000);
+                    }, 800);
                 } else {
                     errorDiv.textContent = '✗ Invalid credentials. Access denied.';
                     errorDiv.style.display = 'block';
                     btnText.style.display = 'inline';
                     spinner.style.display = 'none';
                     loginBtn.disabled = false;
+                    
+                    // Clear password field for security
+                    document.getElementById('password').value = '';
                 }
-            }, 800);
-        });
-        
-        // Check if already logged in
-        const currentUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-        if (currentUser) {
-            try {
-                const userData = JSON.parse(currentUser);
-                if (userData.role === 'admin') {
-                    window.location.href = 'AdminPanel.html';
-                } else {
-                    window.location.href = 'homepage.html';
-                }
-            } catch(e) {}
+            }, 600);
         }
-        
-        // ==================== HELPER FUNCTIONS ====================
-        
+
+        // ==================== UI HELPER FUNCTIONS ====================
         function togglePassword() {
             const password = document.getElementById('password');
             const icon = document.querySelector('.toggle-password i');
+            
             if (password.type === 'password') {
                 password.type = 'text';
                 icon.classList.remove('fa-eye');
@@ -879,20 +999,25 @@
         function fillDemo(username, password) {
             document.getElementById('username').value = username;
             document.getElementById('password').value = password;
-            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            handleLogin(new Event('submit'));
         }
         
-        // Redirect to registration.html instead of modal
         function goToRegistration() {
             window.location.href = 'registration.html';
         }
         
+        function navigateTo(page) {
+            window.location.href = page;
+        }
+        
+        // ==================== FORGOT PASSWORD MODAL ====================
         function showForgotPassword() {
             document.getElementById('forgotModal').style.display = 'flex';
         }
         
         function closeForgotModal() {
             document.getElementById('forgotModal').style.display = 'none';
+            document.getElementById('resetEmail').value = '';
         }
         
         function sendResetLink() {
@@ -901,60 +1026,124 @@
             const userExists = Object.values(users).some(u => u.email === email);
             
             if (!email) {
-                alert('Please enter your email');
+                showToast('Please enter your email address', true);
+                return;
+            }
+            
+            if (!email.includes('@') || !email.includes('.')) {
+                showToast('Please enter a valid email address', true);
                 return;
             }
             
             if (userExists) {
-                alert(`📧 Password reset instructions sent to ${email}\n\nDemo mode: Use your registered password to login.`);
+                showToast(`📧 Password reset instructions sent to ${email}`);
             } else {
-                alert('❌ Email not found in our database. Please register first.');
+                showToast('❌ Email not found in our database. Please register first.', true);
             }
+            
             closeForgotModal();
-            document.getElementById('resetEmail').value = '';
         }
         
-        function navigateTo(page) {
-            window.location.href = page;
-        }
-        
-        // Matrix Rain Effect
-        const canvas = document.getElementById('matrixCanvas');
-        if (canvas) {
+        // ==================== MATRIX RAIN EFFECT (OPTIMIZED) ====================
+        function initMatrixRain() {
+            const canvas = document.getElementById('matrixCanvas');
+            if (!canvas) return;
+            
             const ctx = canvas.getContext('2d');
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()";
+            let drops = [];
+            let animationId = null;
             
             function resizeCanvas() {
                 canvas.width = window.innerWidth;
                 canvas.height = window.innerHeight;
+                drops = Array.from({ length: Math.floor(canvas.width / 20) }, () => Math.random() * canvas.height);
             }
-            resizeCanvas();
-            
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()";
-            const drops = [];
-            for (let i = 0; i < canvas.width / 20; i++) drops[i] = Math.random() * canvas.height;
             
             function drawMatrix() {
                 if (!ctx) return;
+                
                 ctx.fillStyle = 'rgba(10, 10, 10, 0.04)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = '#50fa7b';
                 ctx.font = '14px monospace';
+                
                 for (let i = 0; i < drops.length; i++) {
-                    ctx.fillText(chars[Math.floor(Math.random() * chars.length)], i * 20, drops[i] * 20);
-                    if (drops[i] * 20 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    const char = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(char, i * 20, drops[i] * 20);
+                    
+                    if (drops[i] * 20 > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
                     drops[i]++;
                 }
+                
+                animationId = requestAnimationFrame(drawMatrix);
             }
             
-            setInterval(drawMatrix, 35);
-            window.addEventListener('resize', resizeCanvas);
+            window.addEventListener('resize', () => {
+                resizeCanvas();
+            });
+            
+            resizeCanvas();
+            drawMatrix();
+            
+            // Cleanup function (optional)
+            return () => {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+            };
         }
         
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const forgotModal = document.getElementById('forgotModal');
-            if (event.target === forgotModal) closeForgotModal();
+        // ==================== CLOSE MODAL ON OUTSIDE CLICK ====================
+        function initModalClose() {
+            window.onclick = function(event) {
+                const forgotModal = document.getElementById('forgotModal');
+                if (event.target === forgotModal) {
+                    closeForgotModal();
+                }
+            };
         }
+        
+        // ==================== INITIALIZATION ====================
+        function init() {
+            initUserDatabase();
+            
+            // Check for existing session before anything else
+            if (checkExistingSession()) {
+                return; // Stop execution if redirect happened
+            }
+            
+            // Set up event listeners
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            
+            // Add input validation on blur
+            document.getElementById('username').addEventListener('blur', function() {
+                const errorSpan = document.getElementById('usernameError');
+                if (this.value.trim().length < 3 && this.value.trim().length > 0) {
+                    errorSpan.textContent = 'Username must be at least 3 characters';
+                } else {
+                    errorSpan.textContent = '';
+                }
+            });
+            
+            document.getElementById('password').addEventListener('blur', function() {
+                const errorSpan = document.getElementById('passwordError');
+                if (this.value.length < 4 && this.value.length > 0) {
+                    errorSpan.textContent = 'Password must be at least 4 characters';
+                } else {
+                    errorSpan.textContent = '';
+                }
+            });
+            
+            // Initialize visual effects
+            initMatrixRain();
+            initModalClose();
+        }
+        
+        // Start the application
+        init();
     </script>
 </body>
 </html>
