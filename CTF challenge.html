@@ -800,6 +800,30 @@
             grid-column: 1 / -1;
         }
 
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 10001;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
         @media (max-width: 768px) {
             .challenges-container { padding: 0 var(--spacing-md); }
             .filter-grid { grid-template-columns: 1fr; }
@@ -966,6 +990,14 @@
         setInterval(drawMatrix,35);
         window.addEventListener('resize',()=>{ resizeCanvas(); initDrops(); });
 
+        // ========== DATABASE CONFIGURATION ==========
+        const DB_KEYS = {
+            USERS: 'ctf_users',
+            SUBMISSIONS: 'ctf_db_submissions',
+            CHALLENGES: 'ctf_db_challenges',
+            USER_POINTS: 'ctf_user_points'
+        };
+
         // ========== AUTH STATE MANAGEMENT ==========
         function getCurrentUser() {
             const user = localStorage.getItem('user') || sessionStorage.getItem('user');
@@ -978,8 +1010,8 @@
         function logout() {
             localStorage.removeItem('user');
             sessionStorage.removeItem('user');
-            alert('🔐 You have been logged out. Redirecting to login page...');
-            window.location.href = 'login.html';
+            showToast('🔐 You have been logged out!', true);
+            setTimeout(() => { window.location.href = 'login.html'; }, 1000);
         }
 
         function isLoggedIn() {
@@ -988,6 +1020,16 @@
 
         function navigateTo(page) {
             window.location.href = page;
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderColor = isError ? 'var(--neon-red)' : 'var(--neon-green)';
+            toast.style.color = isError ? 'var(--neon-red)' : 'var(--neon-green)';
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         function updateAuthUI() {
@@ -1038,9 +1080,161 @@
             { id: 18, title: "Golden Ticket", category: "network", difficulty: "Advanced", points: 500, solves: 5, description: "Forge Kerberos ticket.", scenario: "You have krbtgt hash.", flag: "flag{golden_ticket}", hint: "Use Mimikatz kerberos::golden", whatLearned: "Golden tickets grant domain admin." }
         ];
 
-        let solvedChallenges = JSON.parse(localStorage.getItem("solvedChallenges") || "[]");
-        let userPoints = parseInt(localStorage.getItem("userPoints") || "0");
-        let revealedFlags = JSON.parse(localStorage.getItem("revealedFlags") || "[]");
+        // ========== PROGRESS TRACKING ==========
+        let solvedChallenges = [];
+        let userPoints = 0;
+        let revealedFlags = [];
+
+        function loadUserProgress() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return;
+            
+            const username = currentUser.username;
+            
+            // Load solved challenges from submissions
+            const submissions = JSON.parse(localStorage.getItem(DB_KEYS.SUBMISSIONS) || '[]');
+            const userSubmissions = submissions.filter(s => s.userName === username && s.correct === true);
+            
+            solvedChallenges = userSubmissions.map(s => s.challengeId);
+            
+            // Calculate total points
+            userPoints = userSubmissions.reduce((sum, s) => sum + (s.points || 0), 0);
+            
+            // Load revealed flags
+            revealedFlags = JSON.parse(localStorage.getItem(`revealed_flags_${username}`) || '[]');
+            
+            // Update localStorage for compatibility
+            localStorage.setItem("solvedChallenges", JSON.stringify(solvedChallenges));
+            localStorage.setItem("userPoints", userPoints);
+            localStorage.setItem("revealedFlags", JSON.stringify(revealedFlags));
+        }
+
+        function saveUserProgress() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return;
+            
+            const username = currentUser.username;
+            
+            // Save revealed flags
+            localStorage.setItem(`revealed_flags_${username}`, JSON.stringify(revealedFlags));
+            
+            // Save solved challenges (already saved via submissions)
+            localStorage.setItem("solvedChallenges", JSON.stringify(solvedChallenges));
+            localStorage.setItem("userPoints", userPoints);
+            localStorage.setItem("revealedFlags", JSON.stringify(revealedFlags));
+        }
+
+        // ========== ACTIVITY TRACKING FUNCTIONS ==========
+        function recordChallengeCompletion(username, challengeId, challengeTitle, pointsEarned, flagSubmitted) {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return false;
+            
+            // Get existing submissions
+            let submissions = JSON.parse(localStorage.getItem(DB_KEYS.SUBMISSIONS) || '[]');
+            
+            // Check if already solved
+            const alreadySolved = submissions.some(s => 
+                s.userName === username && 
+                s.challengeId === challengeId && 
+                s.correct === true
+            );
+            
+            if (alreadySolved) {
+                showToast('Challenge already solved!', true);
+                return false;
+            }
+            
+            // Create submission record
+            const submission = {
+                id: Date.now(),
+                userId: currentUser.id || Date.now(),
+                userName: username,
+                challengeId: challengeId,
+                challenge: challengeTitle,
+                points: pointsEarned,
+                correct: true,
+                flag: flagSubmitted,
+                time: new Date().toISOString(),
+                timestamp: Date.now()
+            };
+            
+            submissions.push(submission);
+            localStorage.setItem(DB_KEYS.SUBMISSIONS, JSON.stringify(submissions));
+            
+            // Update user points
+            updateUserPoints(username, pointsEarned, challengeId);
+            
+            // Update user stats
+            updateUserStats(username, pointsEarned);
+            
+            // Update local progress
+            solvedChallenges.push(challengeId);
+            userPoints += pointsEarned;
+            saveUserProgress();
+            
+            // Trigger storage event for other tabs
+            window.dispatchEvent(new Event('storage'));
+            
+            showToast(`+${pointsEarned} points earned!`, false);
+            return true;
+        }
+
+        function updateUserPoints(username, points, challengeId) {
+            let pointsData = JSON.parse(localStorage.getItem(DB_KEYS.USER_POINTS) || '{}');
+            
+            if (!pointsData[username]) {
+                pointsData[username] = {
+                    total: 0,
+                    challenges: {},
+                    quizzes: {},
+                    puzzles: {},
+                    lastUpdated: Date.now()
+                };
+            }
+            
+            // Check if already earned points for this challenge
+            if (pointsData[username].challenges[challengeId]) {
+                return false;
+            }
+            
+            // Add points
+            pointsData[username].total += points;
+            pointsData[username].challenges[challengeId] = {
+                points: points,
+                completedAt: Date.now()
+            };
+            pointsData[username].lastUpdated = Date.now();
+            
+            localStorage.setItem(DB_KEYS.USER_POINTS, JSON.stringify(pointsData));
+            return true;
+        }
+
+        function updateUserStats(username, pointsEarned) {
+            const users = JSON.parse(localStorage.getItem(DB_KEYS.USERS) || '{}');
+            
+            if (users[username]) {
+                users[username].points = (users[username].points || 0) + pointsEarned;
+                users[username].solves = (users[username].solves || 0) + 1;
+                users[username].lastActivity = Date.now();
+                
+                localStorage.setItem(DB_KEYS.USERS, JSON.stringify(users));
+                
+                // Update current session
+                const currentSession = sessionStorage.getItem('user') || localStorage.getItem('user');
+                if (currentSession) {
+                    const sessionUser = JSON.parse(currentSession);
+                    if (sessionUser.username === username) {
+                        sessionUser.points = users[username].points;
+                        sessionUser.solves = users[username].solves;
+                        if (sessionStorage.getItem('user')) {
+                            sessionStorage.setItem('user', JSON.stringify(sessionUser));
+                        } else {
+                            localStorage.setItem('user', JSON.stringify(sessionUser));
+                        }
+                    }
+                }
+            }
+        }
 
         function updateSliderDisplay() {
             var slider = document.getElementById("pointsRange");
@@ -1061,14 +1255,38 @@
         }
 
         function resetAllProgress() {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return;
+            
+            const username = currentUser.username;
+            
+            // Clear submissions for this user
+            let submissions = JSON.parse(localStorage.getItem(DB_KEYS.SUBMISSIONS) || '[]');
+            submissions = submissions.filter(s => s.userName !== username);
+            localStorage.setItem(DB_KEYS.SUBMISSIONS, JSON.stringify(submissions));
+            
+            // Clear user points
+            let pointsData = JSON.parse(localStorage.getItem(DB_KEYS.USER_POINTS) || '{}');
+            if (pointsData[username]) {
+                delete pointsData[username];
+                localStorage.setItem(DB_KEYS.USER_POINTS, JSON.stringify(pointsData));
+            }
+            
+            // Update user stats in users database
+            const users = JSON.parse(localStorage.getItem(DB_KEYS.USERS) || '{}');
+            if (users[username]) {
+                users[username].points = 0;
+                users[username].solves = 0;
+                localStorage.setItem(DB_KEYS.USERS, JSON.stringify(users));
+            }
+            
+            // Reset local progress
             solvedChallenges = [];
             userPoints = 0;
             revealedFlags = [];
+            saveUserProgress();
             
-            localStorage.setItem("solvedChallenges", JSON.stringify(solvedChallenges));
-            localStorage.setItem("userPoints", userPoints);
-            localStorage.setItem("revealedFlags", JSON.stringify(revealedFlags));
-            
+            // Reset filters
             document.getElementById("categoryFilter").value = "all";
             document.getElementById("difficultyFilter").value = "all";
             document.getElementById("pointsRange").value = 500;
@@ -1076,7 +1294,8 @@
             
             renderChallenges(getFilteredChallenges());
             closeResetModal();
-            alert("All progress has been reset! Your score is now 0.");
+            updateStats();
+            showToast("All progress has been reset!", false);
         }
 
         function renderChallenges(filtered) {
@@ -1134,15 +1353,9 @@
         }
 
         function updateStats() {
-            var totalPoints = 0;
-            for (var i = 0; i < solvedChallenges.length; i++) {
-                var c = challenges.find(function(ch) { return ch.id === solvedChallenges[i]; });
-                if (c) totalPoints += c.points;
-            }
             document.getElementById("totalCount").textContent = challenges.length;
             document.getElementById("completedCount").textContent = solvedChallenges.length;
-            document.getElementById("pointsEarned").textContent = totalPoints;
-            localStorage.setItem("userPoints", totalPoints);
+            document.getElementById("pointsEarned").textContent = userPoints;
         }
 
         function openChallenge(id) {
@@ -1209,26 +1422,22 @@
             if (!challenge) return;
             
             if (solvedChallenges.indexOf(id) !== -1) {
-                alert("Challenge already solved!");
+                showToast("Challenge already solved!", true);
                 return;
             }
             
             if (revealedFlags.indexOf(id) !== -1) {
-                alert("Flag already revealed for this challenge!");
+                showToast("Flag already revealed for this challenge!", true);
                 return;
             }
             
-            var currentPoints = parseInt(localStorage.getItem("userPoints") || "0");
-            currentPoints = Math.max(0, currentPoints - 10);
-            localStorage.setItem("userPoints", currentPoints);
-            userPoints = currentPoints;
-            
+            userPoints = Math.max(0, userPoints - 10);
             revealedFlags.push(id);
-            localStorage.setItem("revealedFlags", JSON.stringify(revealedFlags));
+            saveUserProgress();
             
             updateStats();
             openChallenge(id);
-            alert("⚠️ 10 points deducted. The flag has been revealed.");
+            showToast("⚠️ 10 points deducted. The flag has been revealed.", true);
         }
 
         function submitFlag(id) {
@@ -1238,23 +1447,26 @@
             
             if (flagInput.value.trim().toLowerCase() === challenge.flag.toLowerCase()) {
                 if (solvedChallenges.indexOf(id) === -1) {
-                    solvedChallenges.push(id);
-                    localStorage.setItem("solvedChallenges", JSON.stringify(solvedChallenges));
-                    
-                    var currentPoints = parseInt(localStorage.getItem("userPoints") || "0");
-                    currentPoints += challenge.points;
-                    localStorage.setItem("userPoints", currentPoints);
-                    userPoints = currentPoints;
-                    
-                    celebrateSuccess();
-                    alert("✓ Correct! You earned " + challenge.points + " points!");
-                    closeModal();
-                    applyFilters();
+                    const currentUser = getCurrentUser();
+                    if (currentUser) {
+                        recordChallengeCompletion(
+                            currentUser.username,
+                            challenge.id,
+                            challenge.title,
+                            challenge.points,
+                            flagInput.value.trim()
+                        );
+                        
+                        celebrateSuccess();
+                        closeModal();
+                        applyFilters();
+                        updateStats();
+                    }
                 } else {
-                    alert("Challenge already completed!");
+                    showToast("Challenge already completed!", true);
                 }
             } else {
-                alert("✗ Incorrect flag. Try again!");
+                showToast("✗ Incorrect flag. Try again!", true);
             }
         }
 
@@ -1286,12 +1498,22 @@
         }
 
         function initChallenges() {
+            loadUserProgress();
             var slider = document.getElementById("pointsRange");
             if (slider) slider.addEventListener("input", updateSliderDisplay);
             updateSliderDisplay();
             renderChallenges(challenges);
             updateStats();
         }
+
+        // Listen for storage events from other tabs
+        window.addEventListener('storage', function(e) {
+            if (e.key === DB_KEYS.SUBMISSIONS || e.key === DB_KEYS.USER_POINTS) {
+                loadUserProgress();
+                renderChallenges(getFilteredChallenges());
+                updateStats();
+            }
+        });
 
         // Initialize on DOM load
         document.addEventListener("DOMContentLoaded", function() {
