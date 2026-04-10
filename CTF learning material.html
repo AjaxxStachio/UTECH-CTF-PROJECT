@@ -238,6 +238,24 @@
             padding: 0 2rem;
         }
 
+        .section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+        }
+
         /* Difficulty Section Headers */
         .difficulty-section-header {
             margin: 3rem 0 1.5rem;
@@ -365,7 +383,7 @@
         /* Topics Grid */
         .topics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
             gap: 2rem;
             margin-bottom: 3rem;
         }
@@ -388,6 +406,7 @@
             height: 200%;
             background: radial-gradient(circle, rgba(255, 215, 0, 0.1), transparent 70%);
             animation: legendaryPulse 4s ease-in-out infinite;
+            pointer-events: none;
         }
         
         @keyframes legendaryPulse {
@@ -416,6 +435,7 @@
             overflow: hidden;
             transition: all var(--transition-normal);
             position: relative;
+            display: block;
         }
         
         .topic-card:hover {
@@ -444,6 +464,21 @@
         
         .topic-card .card-body {
             padding: 1.5rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .topic-card .card-body::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .topic-card .card-body::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        
+        .topic-card .card-body::-webkit-scrollbar-thumb {
+            background: var(--neon-green);
+            border-radius: 3px;
         }
         
         /* Difficulty Badges */
@@ -462,8 +497,27 @@
         .difficulty.advanced { background: rgba(255, 85, 85, 0.2); border: 1px solid var(--neon-red); color: var(--neon-red); }
         .difficulty.legendary { background: rgba(255, 215, 0, 0.2); border: 1px solid var(--legendary-gold); color: var(--legendary-gold); }
         
+        /* Points Badge */
+        .points-badge {
+            display: inline-block;
+            background: rgba(80, 250, 123, 0.2);
+            border: 1px solid var(--neon-green);
+            border-radius: var(--radius-2xl);
+            padding: 0.2rem 0.6rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+            color: var(--neon-green);
+        }
+        
+        .topic-card.legendary .points-badge {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: var(--legendary-gold);
+            color: var(--legendary-gold);
+        }
+        
         /* Learning Points */
-        .learning-points h4, .examples h4, .self-check h4, .next-challenges h4 {
+        .learning-points h4, .self-check h4, .next-challenges h4 {
             color: var(--neon-blue);
             font-size: 0.9rem;
             text-transform: uppercase;
@@ -484,6 +538,7 @@
         .learning-points ul {
             list-style: none;
             padding-left: 0;
+            margin-bottom: 1.5rem;
         }
         
         .learning-points li {
@@ -492,6 +547,7 @@
             position: relative;
             line-height: 1.5;
             color: var(--text-secondary);
+            font-size: 0.9rem;
         }
         
         .learning-points li::before {
@@ -505,46 +561,11 @@
             color: var(--legendary-gold);
         }
         
-        /* Example Boxes */
-        .example-box {
-            background: var(--bg-primary);
-            border-left: 4px solid var(--neon-green);
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border-radius: var(--radius-md);
-        }
-        
-        .topic-card.legendary .example-box {
-            border-left-color: var(--legendary-gold);
-        }
-        
-        .example-box code {
-            background: rgba(80, 250, 123, 0.1);
-            color: var(--neon-green);
-            padding: 0.2rem 0.5rem;
-            border-radius: var(--radius-sm);
-            font-family: monospace;
-            font-size: 0.85rem;
-            display: inline-block;
-            margin-bottom: 0.5rem;
-        }
-        
-        .topic-card.legendary .example-box code {
-            background: rgba(255, 215, 0, 0.1);
-            color: var(--legendary-gold);
-        }
-        
-        .example-box p {
-            margin: 0;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-        
         /* Self-Check Questions */
         .question {
             background: var(--bg-primary);
             padding: 1rem;
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
             border-radius: var(--radius-md);
             cursor: pointer;
             transition: all var(--transition-normal);
@@ -573,6 +594,7 @@
             border-radius: var(--radius-md);
             color: var(--neon-green);
             font-size: 0.85rem;
+            line-height: 1.5;
         }
         
         .topic-card.legendary .answer {
@@ -586,7 +608,7 @@
         
         /* Next Challenges Links */
         .next-challenges {
-            margin: 1rem 0;
+            margin: 1.5rem 0;
         }
         
         .next-challenges a {
@@ -601,6 +623,7 @@
             margin-right: 0.5rem;
             margin-bottom: 0.5rem;
             transition: all var(--transition-normal);
+            cursor: pointer;
         }
         
         .topic-card.legendary .next-challenges a {
@@ -632,6 +655,12 @@
             transition: all 0.3s ease;
             font-family: monospace;
             margin-top: 1rem;
+            margin-right: 0.5rem;
+        }
+        
+        .topic-card.legendary .btn-primary {
+            background: linear-gradient(135deg, var(--legendary-gold), #ffaa00);
+            color: var(--bg-primary);
         }
         
         .btn-primary:hover {
@@ -640,8 +669,9 @@
         }
         
         .completed-status {
-            margin-left: 1rem;
+            margin-left: 0.5rem;
             font-weight: 600;
+            display: inline-block;
         }
         
         /* Responsive */
@@ -664,6 +694,30 @@
         .topic-card {
             animation: fadeInUp 0.5s ease forwards;
             opacity: 0;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 10001;
+            animation: slideInRight 0.3s ease;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
     </style>
 </head>
@@ -711,8 +765,8 @@
                     <p id="completedCount">0 / 12</p>
                 </div>
                 <div class="stat-card">
-                    <h3><i class="fas fa-tags"></i> Categories</h3>
-                    <p>8</p>
+                    <h3><i class="fas fa-star"></i> Total Points Earned</h3>
+                    <p id="totalPoints">0</p>
                 </div>
                 <div class="stat-card">
                     <h3><i class="fas fa-flag"></i> Linked Challenges</h3>
@@ -735,7 +789,7 @@
                 <button class="filter-btn" data-category="legendary">Legendary</button>
             </div>
 
-            <!-- The rest of the learning content remains the same -->
+            <!-- Learning Content Sections -->
             <div id="learningContent"></div>
         </main>
     </div>
@@ -778,8 +832,8 @@
         function logout() {
             localStorage.removeItem('user');
             sessionStorage.removeItem('user');
-            alert('🔐 You have been logged out. Redirecting to login page...');
-            window.location.href = 'login.html';
+            showToast('🔐 You have been logged out!', true);
+            setTimeout(() => { window.location.href = 'login.html'; }, 1000);
         }
 
         function isLoggedIn() {
@@ -788,6 +842,16 @@
 
         function navigateTo(page) {
             window.location.href = page;
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderColor = isError ? 'var(--neon-red)' : 'var(--neon-green)';
+            toast.style.color = isError ? 'var(--neon-red)' : 'var(--neon-green)';
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         function updateAuthUI() {
@@ -801,7 +865,7 @@
             
             if(loggedIn && user.username) {
                 authContainer.innerHTML = `
-                    <span class="user-greeting"><i class="fas fa-user-astronaut"></i> ${user.username}</span>
+                    <span class="user-greeting"><i class="fas fa-user-astronaut"></i> ${escapeHtml(user.username)}</span>
                     <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> LOGOUT</button>
                 `;
                 if(loginOverlay) loginOverlay.style.display = 'none';
@@ -816,151 +880,350 @@
             }
         }
 
-        // ========== LEARNING CONTENT (Compressed for brevity - full content preserved) ==========
-        // All 12 topics with complete learning material
-        const learningHTML = `
-            <!-- BEGINNER SECTION -->
-            <div class="difficulty-section-header beginner">
-                <h2><i class="fas fa-seedling"></i> Beginner Level <span class="badge-count">3 topics</span></h2>
-            </div>
-            <div class="topics-grid" id="beginnerGrid"></div>
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
 
-            <!-- INTERMEDIATE SECTION -->
-            <div class="difficulty-section-header intermediate">
-                <h2><i class="fas fa-fire"></i> Intermediate Level <span class="badge-count">3 topics</span></h2>
-            </div>
-            <div class="topics-grid" id="intermediateGrid"></div>
-
-            <!-- ADVANCED SECTION -->
-            <div class="difficulty-section-header advanced">
-                <h2><i class="fas fa-skull"></i> Advanced Level <span class="badge-count">3 topics</span></h2>
-            </div>
-            <div class="topics-grid" id="advancedGrid"></div>
-
-            <!-- LEGENDARY SECTION -->
-            <div class="difficulty-section-header legendary">
-                <h2><i class="fas fa-crown"></i> Legendary Level <span class="badge-count">3 topics</span></h2>
-            </div>
-            <div class="topics-grid" id="legendaryGrid"></div>
-        `;
-
-        document.getElementById('learningContent').innerHTML = learningHTML;
-
-        // Topic data
+        // ========== LEARNING CONTENT WITH 10 POINTS PER TOPIC ==========
+        
+        // Topic data with 10 learning points and 2 self-check questions each
         const beginnerTopics = [
-            { id: 'sql-injection', title: 'SQL Injection Basics', icon: 'fa-database', category: 'web', difficulty: 'beginner', points: ['SQL injection occurs when user input is inserted into SQL queries without proper sanitization', 'The single quote \' is the primary test character', 'Attackers use \' OR \'1\'=\'1\' -- to bypass authentication', 'Union-based injection appends malicious SELECT statements', 'Parameterized queries are the gold-standard defense'] },
-            { id: 'network-pcap', title: 'Network Security & PCAP Analysis', icon: 'fa-network-wired', category: 'network', difficulty: 'beginner', points: ['PCAP files record network traffic', 'Critical ports: HTTP=80, HTTPS=443, FTP=21, SSH=22', 'Follow TCP Stream in Wireshark reconstructs conversations', 'Plaintext protocols transmit credentials in clear', 'Wireshark filter http contains "flag" locates hidden strings'] },
-            { id: 'crypto-essentials', title: 'Cryptography Essentials', icon: 'fa-lock', category: 'crypto', difficulty: 'beginner', points: ['Encoding (Base64, Hex) is NOT encryption', 'Base64 converts binary to printable ASCII', 'ROT13 shifts letters 13 places', 'Hashing is one-way', 'Salting defeats rainbow table attacks'] }
+            { 
+                id: 'sql-injection', title: 'SQL Injection Basics', icon: 'fa-database', category: 'web', difficulty: 'beginner', points: 10,
+                learningPoints: [
+                    'SQL injection occurs when user input is inserted into SQL queries without proper sanitization',
+                    'The single quote (\') is the primary test character for SQL injection vulnerabilities',
+                    'Attackers use \' OR \'1\'=\'1\' -- to bypass authentication and login as any user',
+                    'Union-based injection appends malicious SELECT statements to extract data from other tables',
+                    'Error-based injection reveals database structure through verbose error messages',
+                    'Blind SQL injection extracts data bit-by-bit using boolean or time-based responses',
+                    'Parameterized queries (prepared statements) are the gold-standard defense against SQL injection',
+                    'Input validation should use whitelisting, not blacklisting, for maximum security',
+                    'Stored procedures can also be vulnerable if not written securely',
+                    'Always apply the principle of least privilege to database accounts'
+                ],
+                questions: [
+                    { q: "What is the primary test character to check for SQL injection vulnerabilities?", a: "The single quote (') is the primary test character because it breaks string delimiters in SQL queries." },
+                    { q: "What is the most effective defense against SQL injection attacks?", a: "Parameterized queries / prepared statements are the most effective defense, as they separate SQL logic from data." }
+                ]
+            },
+            { 
+                id: 'network-pcap', title: 'Network Security & PCAP Analysis', icon: 'fa-network-wired', category: 'network', difficulty: 'beginner', points: 10,
+                learningPoints: [
+                    'PCAP (Packet Capture) files record network traffic for offline analysis and forensics',
+                    'Wireshark is the industry-standard tool for analyzing PCAP files interactively',
+                    'Critical ports: HTTP=80, HTTPS=443, FTP=21, SSH=22, DNS=53, SMTP=25, POP3=110',
+                    'Follow TCP Stream in Wireshark reconstructs entire conversations between hosts',
+                    'Plaintext protocols (HTTP, FTP, Telnet) transmit credentials in clear text - easily sniffed',
+                    'Wireshark display filters like "http contains flag" locate specific patterns in traffic',
+                    'TShark command-line version enables scripted PCAP analysis and automation',
+                    'TCP flags: SYN (start), ACK (acknowledge), RST (reset), FIN (finish) indicate connection states',
+                    'ARP spoofing and DNS poisoning are common network attacks to intercept traffic',
+                    'TLS/HTTPS encrypts traffic but metadata (IP addresses, ports) remains visible'
+                ],
+                questions: [
+                    { q: "What tool is commonly used to analyze PCAP files interactively?", a: "Wireshark is the most common interactive tool for PCAP analysis." },
+                    { q: "What does the TCP SYN flag indicate in a network connection?", a: "SYN (Synchronize) initiates a TCP connection as part of the three-way handshake." }
+                ]
+            },
+            { 
+                id: 'crypto-essentials', title: 'Cryptography Essentials', icon: 'fa-lock', category: 'crypto', difficulty: 'beginner', points: 10,
+                learningPoints: [
+                    'Encoding (Base64, Hex) is NOT encryption - it is reversible without any key',
+                    'Base64 converts binary data to printable ASCII characters using 64-character alphabet',
+                    'ROT13 shifts letters by 13 positions and is its own inverse (applying twice returns original)',
+                    'Hashing is one-way - you cannot reverse a hash to get the original input',
+                    'Common hash algorithms: MD5 (broken), SHA1 (weak), SHA256 (secure), bcrypt (password hashing)',
+                    'Salting adds random data before hashing to defeat rainbow table attacks',
+                    'Symmetric encryption uses the same key for encryption and decryption (AES, ChaCha20)',
+                    'Asymmetric encryption uses public/private key pairs (RSA, ECC) for different operations',
+                    'Digital signatures provide authenticity and non-repudiation using private key signing',
+                    'Never roll your own crypto - always use well-audited libraries and algorithms'
+                ],
+                questions: [
+                    { q: "What is the difference between encoding and encryption?", a: "Encoding is reversible without a key (like Base64), while encryption requires a key to decrypt." },
+                    { q: "Why is salting important when storing passwords?", a: "Salting prevents rainbow table attacks by making each hash unique even for identical passwords." }
+                ]
+            }
         ];
 
         const intermediateTopics = [
-            { id: 'xss-attacks', title: 'XSS & Web Application Attacks', icon: 'fa-code', category: 'web', difficulty: 'intermediate', points: ['XSS injects malicious scripts into web pages', 'Stored XSS permanently stores payload in database', 'Reflected XSS delivers via URL parameters', 'CSP restricts script sources', 'CSRF tricks authenticated users'] },
-            { id: 'reverse-engineering', title: 'Reverse Engineering & Binary Analysis', icon: 'fa-microchip', category: 'binary', difficulty: 'intermediate', points: ['strings command extracts printable ASCII', 'Static analysis without execution', 'Dynamic analysis observes runtime', 'Assembly: MOV, CMP, JMP instructions', 'XOR is its own inverse'] },
-            { id: 'auth-security', title: 'Authentication & Session Security', icon: 'fa-id-card', category: 'web', difficulty: 'intermediate', points: ['Session tokens must be cryptographically random', 'Session fixation attacks set victim session ID', 'JWT vulnerabilities: alg:none', 'MFA reduces credential theft damage', 'bcrypt for password hashing'] }
+            { 
+                id: 'xss-attacks', title: 'XSS & Web Application Attacks', icon: 'fa-code', category: 'web', difficulty: 'intermediate', points: 10,
+                learningPoints: [
+                    'XSS (Cross-Site Scripting) injects malicious scripts into web pages viewed by other users',
+                    'Stored XSS permanently stores payload in database - affects all users viewing the data',
+                    'Reflected XSS delivers via URL parameters - requires victim to click malicious link',
+                    'DOM-based XSS manipulates client-side JavaScript without touching the server',
+                    'CSP (Content Security Policy) restricts script sources and mitigates XSS impact',
+                    'CSRF (Cross-Site Request Forgery) tricks authenticated users into unwanted actions',
+                    'Anti-CSRF tokens validate that requests originate from legitimate forms',
+                    'SameSite cookie attribute prevents CSRF by restricting cookie sending to same site',
+                    'XSS payloads can steal cookies, capture keystrokes, deface pages, or redirect users',
+                    'Output encoding and input validation are key defenses against XSS vulnerabilities'
+                ],
+                questions: [
+                    { q: "What is the difference between Stored XSS and Reflected XSS?", a: "Stored XSS saves payloads in the database, affecting all users, while Reflected XSS requires victims to click a malicious link." },
+                    { q: "What security header helps prevent XSS attacks?", a: "Content Security Policy (CSP) restricts which scripts can execute on a page." }
+                ]
+            },
+            { 
+                id: 'reverse-engineering', title: 'Reverse Engineering & Binary Analysis', icon: 'fa-microchip', category: 'binary', difficulty: 'intermediate', points: 10,
+                learningPoints: [
+                    'The strings command extracts printable ASCII sequences from binary files',
+                    'Static analysis examines code without execution using disassemblers (IDA, Ghidra, Radare2)',
+                    'Dynamic analysis observes runtime behavior using debuggers (GDB, x64dbg, OllyDbg)',
+                    'Assembly instructions: MOV (move data), CMP (compare), JMP (jump), XOR (exclusive OR)',
+                    'XOR is its own inverse - useful for simple encryption and obfuscation',
+                    'The stack grows downward (high to low addresses) and stores local variables and return addresses',
+                    'Registers: EAX (return value), ESP (stack pointer), EBP (base pointer), EIP (instruction pointer)',
+                    'Function prologue: push ebp; mov ebp, esp - sets up stack frame',
+                    'Calling conventions determine how arguments are passed (cdecl, stdcall, fastcall)',
+                    'Patching binaries can bypass license checks or modify program behavior'
+                ],
+                questions: [
+                    { q: "What command extracts readable strings from a binary file?", a: "The 'strings' command extracts printable ASCII sequences from binaries." },
+                    { q: "What is the difference between static and dynamic analysis?", a: "Static analysis examines code without execution, while dynamic analysis observes runtime behavior." }
+                ]
+            },
+            { 
+                id: 'auth-security', title: 'Authentication & Session Security', icon: 'fa-id-card', category: 'web', difficulty: 'intermediate', points: 10,
+                learningPoints: [
+                    'Session tokens must be cryptographically random and unpredictable to prevent guessing',
+                    'Session fixation attacks set victim session ID before authentication - logout invalidates old sessions',
+                    'JWT vulnerabilities: alg:none header bypasses signature verification entirely',
+                    'MFA (Multi-Factor Authentication) combines something you know, have, and are',
+                    'bcrypt/argon2 for password hashing (NOT MD5 or SHA1 which are too fast)',
+                    'Password complexity requirements should not restrict usability (allow paste, long passwords)',
+                    'Rate limiting prevents brute force attacks on login endpoints',
+                    'Account lockout policies deter automated attacks but enable DoS possibilities',
+                    'Secure cookie flags: HttpOnly (prevents JS access), Secure (HTTPS only), SameSite',
+                    'OAuth and OpenID Connect provide delegated authentication without sharing passwords'
+                ],
+                questions: [
+                    { q: "What are the three factors of Multi-Factor Authentication (MFA)?", a: "Something you know (password), something you have (token), something you are (biometric)." },
+                    { q: "What does the HttpOnly cookie flag protect against?", a: "HttpOnly prevents JavaScript from accessing the cookie, mitigating XSS-based session theft." }
+                ]
+            }
         ];
 
         const advancedTopics = [
-            { id: 'binary-exploitation', title: 'Binary Exploitation & Memory Corruption', icon: 'fa-bug', category: 'binary', difficulty: 'advanced', points: ['Buffer overflow overwrites adjacent memory', 'ROP chains existing code snippets', 'ASLR randomizes memory addresses', 'Stack canaries detect overflow', 'Format string vulnerabilities expose stack data'] },
-            { id: 'cloud-security', title: 'Cloud Security & Container Exploitation', icon: 'fa-cloud', category: 'cloud', difficulty: 'advanced', points: ['SSRF reaches metadata endpoint', 'Misconfigured S3 buckets expose data', 'IAM over-permissive policies', 'Docker container escape', 'IMDSv2 requires PUT token'] },
-            { id: 'active-directory', title: 'Active Directory & Kerberos Attacks', icon: 'fa-network-wired', category: 'network', difficulty: 'advanced', points: ['Golden Ticket forges TGT with krbtgt hash', 'Silver Ticket forges service tickets', 'Kerberoasting cracks service tickets', 'Pass-the-Hash uses NTLM hash', 'BloodHound maps AD attack paths'] }
+            { 
+                id: 'binary-exploitation', title: 'Binary Exploitation & Memory Corruption', icon: 'fa-bug', category: 'binary', difficulty: 'advanced', points: 10,
+                learningPoints: [
+                    'Buffer overflow overwrites adjacent memory on the stack when input exceeds buffer size',
+                    'Return address overwrite redirects execution to attacker-controlled code',
+                    'ROP (Return Oriented Programming) chains existing code snippets (gadgets) ending in RET',
+                    'ASLR (Address Space Layout Randomization) randomizes memory addresses at load time',
+                    'Stack canaries detect buffer overflow before function return - terminate on mismatch',
+                    'NX bit (No-eXecute) marks stack as non-executable, preventing shellcode execution',
+                    'Format string vulnerabilities expose stack data via %p, %x, and write via %n specifiers',
+                    'Heap exploitation techniques: use-after-free, double-free, heap spraying',
+                    'PIE (Position Independent Executable) randomizes code segment addresses',
+                    'Full RELRO (Relocation Read-Only) prevents GOT (Global Offset Table) overwrite attacks'
+                ],
+                questions: [
+                    { q: "What security mitigation prevents execution of code on the stack?", a: "The NX (No-eXecute) bit marks stack memory as non-executable, preventing shellcode execution." },
+                    { q: "What is ROP (Return Oriented Programming)?", a: "ROP chains existing code snippets (gadgets) ending in RET to bypass NX protections." }
+                ]
+            },
+            { 
+                id: 'cloud-security', title: 'Cloud Security & Container Exploitation', icon: 'fa-cloud', category: 'cloud', difficulty: 'advanced', points: 10,
+                learningPoints: [
+                    'SSRF (Server-Side Request Forgery) reaches cloud metadata endpoint 169.254.169.254',
+                    'Misconfigured S3 buckets expose sensitive data publicly - check bucket policies',
+                    'IAM over-permissive policies violate least privilege principle - audit with tools like ScoutSuite',
+                    'Docker container escape requires privileged access or kernel vulnerabilities (CVE-2019-5736)',
+                    'IMDSv2 requires PUT token first - more secure than IMDSv1 which is open to SSRF',
+                    'Kubernetes RBAC misconfigurations allow namespace escape and cluster compromise',
+                    'CloudTrail logs all API calls for security auditing and incident response',
+                    'Secrets should never be hardcoded - use secret managers (AWS Secrets Manager, HashiCorp Vault)',
+                    'Container images should be scanned for vulnerabilities before deployment (Trivy, Clair)',
+                    'Infrastructure as Code (IaC) should be version-controlled and reviewed for security'
+                ],
+                questions: [
+                    { q: "What IP address is the AWS metadata service typically reachable at?", a: "169.254.169.254 is the AWS metadata service endpoint." },
+                    { q: "What is the difference between IMDSv1 and IMDSv2?", a: "IMDSv2 requires a PUT token first, preventing SSRF-based metadata access unlike IMDSv1." }
+                ]
+            },
+            { 
+                id: 'active-directory', title: 'Active Directory & Kerberos Attacks', icon: 'fa-network-wired', category: 'network', difficulty: 'advanced', points: 10,
+                learningPoints: [
+                    'Golden Ticket forges TGT with krbtgt hash - provides full domain compromise',
+                    'Silver Ticket forges service tickets for specific services without domain admin',
+                    'Kerberoasting cracks service tickets offline - targets service accounts with weak passwords',
+                    'Pass-the-Hash uses NTLM hash without needing plaintext password',
+                    'BloodHound maps AD attack paths visually using graph theory',
+                    'DCSync abuses replication rights to extract password hashes from DC',
+                    'AS-REP roasting cracks users without pre-authentication enabled',
+                    'SMB signing prevents NTLM relay attacks between servers',
+                    'LAPS (Local Administrator Password Solution) rotates local admin passwords',
+                    'Delegation (constrained/unconstrained) can be abused for lateral movement'
+                ],
+                questions: [
+                    { q: "What is a Golden Ticket attack?", a: "A Golden Ticket forges a TGT using the krbtgt hash, granting full domain access." },
+                    { q: "What tool visually maps Active Directory attack paths?", a: "BloodHound maps AD attack paths using graph theory and visual analysis." }
+                ]
+            }
         ];
 
         const legendaryTopics = [
-            { id: 'rootkit-evasion', title: 'Advanced Evasion & Rootkit Techniques', icon: 'fa-ghost', category: 'legendary', difficulty: 'legendary', points: ['Rootkits modify OS components', 'DKOM hides processes', 'Direct syscalls bypass EDR hooks', 'Reflective DLL injection', 'Process hollowing'] },
-            { id: 'crypto-attacks', title: 'Cryptographic Protocol Attacks', icon: 'fa-unlock-alt', category: 'crypto', difficulty: 'legendary', points: ['Padding Oracle attacks decrypt without key', 'Bleichenbacher attack against RSA', 'Heartbleed leaked server memory', 'POODLE forces SSL 3.0 downgrade', 'Timing side-channel attacks'] },
-            { id: 'ai-security', title: 'AI/ML Security & Adversarial ML', icon: 'fa-robot', category: 'legendary', difficulty: 'legendary', points: ['Adversarial examples fool ML models', 'FGSM adds noise in gradient direction', 'Model inversion reconstructs training data', 'Prompt injection manipulates LLMs', 'Model poisoning embeds backdoors'] }
+            { 
+                id: 'rootkit-evasion', title: 'Advanced Evasion & Rootkit Techniques', icon: 'fa-ghost', category: 'legendary', difficulty: 'legendary', points: 10,
+                learningPoints: [
+                    'Rootkits modify OS components (kernel modules, system calls) to hide presence',
+                    'DKOM (Direct Kernel Object Manipulation) hides processes by unlinking from EPROCESS list',
+                    'Direct syscalls bypass EDR user-mode hooks by calling kernel syscalls directly',
+                    'Reflective DLL injection loads libraries from memory without touching disk',
+                    'Process hollowing replaces legitimate process memory with malicious code',
+                    'Hooking techniques: IAT hooking, inline hooking, SSDT hooks, IRP hooks',
+                    'Anti-debugging techniques: IsDebuggerPresent, NtQueryInformationProcess, timing checks',
+                    'Virtual Machine detection checks for VM artifacts, instructions, or hardware strings',
+                    'Obfuscation and packing (UPX, Themida) complicates static analysis',
+                    'Living off the land (LotL) uses built-in OS tools (PowerShell, WMIC, certutil)'
+                ],
+                questions: [
+                    { q: "What is DKOM and what does it hide?", a: "Direct Kernel Object Manipulation (DKOM) hides processes by unlinking them from the EPROCESS list." },
+                    { q: "Why do attackers use direct syscalls instead of Windows API?", a: "Direct syscalls bypass EDR user-mode hooks placed on Windows API functions." }
+                ]
+            },
+            { 
+                id: 'crypto-attacks', title: 'Cryptographic Protocol Attacks', icon: 'fa-unlock-alt', category: 'legendary', difficulty: 'legendary', points: 10,
+                learningPoints: [
+                    'Padding Oracle attacks decrypt ciphertext without the key using CBC padding errors',
+                    'Bleichenbacher attack against RSA PKCS#1 padding adaptively queries decryption oracle',
+                    'Heartbleed (CVE-2014-0160) leaked server memory via TLS heartbeat extension',
+                    'POODLE forces SSL 3.0 downgrade attack exploiting CBC padding',
+                    'Timing side-channel attacks leak key bits through varying operation times',
+                    'Lucky13 attack combines timing with CBC padding oracle in TLS',
+                    'CRIME/BREACH compression attacks steal secrets from HTTPS responses',
+                    'Logjam forces weak Diffie-Hellman parameters (export-grade cryptography)',
+                    'ROBOT (Return Of Bleichenbacher\'s Oracle Threat) revisits RSA padding oracles',
+                    'FREAK (Factoring Attack on RSA-EXPORT Keys) forces export-grade RSA'
+                ],
+                questions: [
+                    { q: "What vulnerability did Heartbleed exploit in TLS?", a: "Heartbleed exploited missing bounds checking in TLS heartbeat extension, leaking server memory." },
+                    { q: "What is a side-channel attack?", a: "Side-channel attacks exploit physical characteristics like timing, power consumption, or electromagnetic emissions." }
+                ]
+            },
+            { 
+                id: 'ai-security', title: 'AI/ML Security & Adversarial ML', icon: 'fa-robot', category: 'legendary', difficulty: 'legendary', points: 10,
+                learningPoints: [
+                    'Adversarial examples fool ML models with imperceptible perturbations to input data',
+                    'FGSM (Fast Gradient Sign Method) adds noise in gradient direction to cause misclassification',
+                    'Model inversion reconstructs training data from model outputs - privacy violation',
+                    'Prompt injection manipulates LLM behavior with carefully crafted inputs',
+                    'Model poisoning embeds backdoors during training - triggers on specific inputs',
+                    'Membership inference determines if specific data was in training set',
+                    'Evasion attacks modify inputs at inference time to cause misclassification',
+                    'Trojan attacks insert backdoors that activate with specific trigger patterns',
+                    'Data poisoning corrupts training data to degrade model performance',
+                    'Differential privacy adds noise to training to prevent membership inference'
+                ],
+                questions: [
+                    { q: "What are adversarial examples in machine learning?", a: "Adversarial examples are inputs with imperceptible perturbations that cause ML models to misclassify." },
+                    { q: "What is model poisoning vs model evasion?", a: "Model poisoning corrupts training data to embed backdoors, while evasion attacks modify inputs at inference time." }
+                ]
+            }
         ];
 
-        function renderTopicCard(topic, difficultyLevel) {
-            const pointsHtml = topic.points.map(p => `<li>${p}</li>`).join('');
-            const statusId = `status-${topic.id}`;
-            const completed = completedTopics.includes(topic.id);
-            const btnText = completed ? '<i class="fas fa-undo"></i> Mark Incomplete' : '<i class="fas fa-check"></i> Mark Complete';
-            const statusDisplay = completed ? '' : 'hidden';
-            
-            return `
-                <div class="topic-card ${difficultyLevel === 'legendary' ? 'legendary' : ''}" data-category="${topic.category}" data-topic-id="${topic.id}">
-                    <div class="card-header">
-                        <span class="difficulty ${topic.difficulty}">${topic.difficulty}</span>
-                        <h3><i class="fas ${topic.icon}"></i> ${topic.title}</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="learning-points">
-                            <h4><i class="fas fa-terminal"></i> Key Learning Points</h4>
-                            <ul>${pointsHtml}</ul>
-                        </div>
-                        <div class="self-check">
-                            <h4><i class="fas fa-question-circle"></i> Quick Self-Check</h4>
-                            <div class="question" onclick="toggleAnswer(this)">
-                                <p>Q: What is the most important takeaway from this topic?</p>
-                                <p class="answer hidden">A: Practice is essential — apply these concepts in CTF challenges to solidify understanding.</p>
-                            </div>
-                        </div>
-                        <div class="next-challenges">
-                            <h4><i class="fas fa-flag"></i> Recommended Challenges</h4>
-                            <a onclick="navigateTo('CTF challenge.html')">Related Challenge →</a>
-                        </div>
-                        <button class="btn-primary" onclick="markComplete('${topic.id}', this)">${btnText}</button>
-                        <span id="${statusId}" class="completed-status ${statusDisplay}" style="color:${difficultyLevel === 'legendary' ? 'var(--legendary-gold)' : 'var(--neon-green)'};">✓ Completed</span>
-                    </div>
-                </div>
-            `;
-        }
-
         let completedTopics = JSON.parse(localStorage.getItem('learnCompletedTopics') || '[]');
+        let totalEarnedPoints = 0;
         const TOTAL_TOPICS = 12;
+        const POINTS_PER_TOPIC = 10;
+        const MAX_POINTS = TOTAL_TOPICS * POINTS_PER_TOPIC;
+
+        function calculateTotalPoints() {
+            totalEarnedPoints = completedTopics.length * POINTS_PER_TOPIC;
+            return totalEarnedPoints;
+        }
 
         function updateCompletedCount() {
             document.getElementById('completedCount').textContent = completedTopics.length + ' / ' + TOTAL_TOPICS;
+            document.getElementById('totalPoints').textContent = calculateTotalPoints() + ' / ' + MAX_POINTS;
+            
+            // Save points to user's learning progress
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+                let learningProgress = JSON.parse(localStorage.getItem('learningProgress_' + currentUser.username) || '{}');
+                learningProgress.completedTopics = completedTopics;
+                learningProgress.totalPoints = calculateTotalPoints();
+                learningProgress.lastUpdated = Date.now();
+                localStorage.setItem('learningProgress_' + currentUser.username, JSON.stringify(learningProgress));
+            }
         }
 
-        window.markComplete = function(id, btn) {
+        function markComplete(id, btn) {
             const statusEl = document.getElementById('status-' + id);
             if (completedTopics.includes(id)) {
                 completedTopics = completedTopics.filter(t => t !== id);
                 if (statusEl) statusEl.classList.add('hidden');
                 btn.innerHTML = '<i class="fas fa-check"></i> Mark Complete';
+                showToast('Topic marked as incomplete (-10 points)', false);
             } else {
                 completedTopics.push(id);
                 if (statusEl) statusEl.classList.remove('hidden');
                 btn.innerHTML = '<i class="fas fa-undo"></i> Mark Incomplete';
+                showToast('✓ +10 points earned! Topic completed!', false);
             }
             localStorage.setItem('learnCompletedTopics', JSON.stringify(completedTopics));
             updateCompletedCount();
-        };
-
-        window.toggleAnswer = function(el) {
-            const answer = el.querySelector('.answer');
-            if (answer) answer.classList.toggle('hidden');
-        };
-
-        function renderLearningContent() {
-            // Render beginner topics
-            document.getElementById('beginnerGrid').innerHTML = beginnerTopics.map(t => renderTopicCard(t, 'beginner')).join('');
-            document.getElementById('intermediateGrid').innerHTML = intermediateTopics.map(t => renderTopicCard(t, 'intermediate')).join('');
-            document.getElementById('advancedGrid').innerHTML = advancedTopics.map(t => renderTopicCard(t, 'advanced')).join('');
-            document.getElementById('legendaryGrid').innerHTML = legendaryTopics.map(t => renderTopicCard(t, 'legendary')).join('');
-            
-            updateCompletedCount();
-            
-            // Restore completed states
-            allTopics.forEach(id => {
-                const statusEl = document.getElementById('status-' + id);
-                if (completedTopics.includes(id) && statusEl) {
-                    statusEl.classList.remove('hidden');
-                    const card = document.querySelector(`[data-topic-id="${id}"]`);
-                    if (card) {
-                        const btn = card.querySelector('.btn-primary');
-                        if (btn) btn.innerHTML = '<i class="fas fa-undo"></i> Mark Incomplete';
-                    }
-                }
-            });
-            
-            // Setup filters
-            setupFilters();
         }
 
-        const allTopics = [...beginnerTopics, ...intermediateTopics, ...advancedTopics, ...legendaryTopics].map(t => t.id);
+        function toggleAnswer(el) {
+            const answer = el.querySelector('.answer');
+            if (answer) answer.classList.toggle('hidden');
+        }
+
+        function renderTopicCard(topic, difficultyLevel) {
+            const pointsHtml = topic.learningPoints.map(p => `<li>${escapeHtml(p)}</li>`).join('');
+            const questionsHtml = topic.questions.map((q, idx) => `
+                <div class="question" onclick="toggleAnswer(this)">
+                    <p>Q${idx + 1}: ${escapeHtml(q.q)}</p>
+                    <p class="answer hidden">A: ${escapeHtml(q.a)}</p>
+                </div>
+            `).join('');
+            
+            const statusId = `status-${topic.id}`;
+            const completed = completedTopics.includes(topic.id);
+            const btnText = completed ? '<i class="fas fa-undo"></i> Mark Incomplete' : '<i class="fas fa-check"></i> Mark Complete';
+            const statusDisplay = completed ? '' : 'hidden';
+            const legendaryClass = difficultyLevel === 'legendary' ? 'legendary' : '';
+            
+            return `
+                <div class="topic-card ${legendaryClass}" data-category="${topic.category}" data-topic-id="${topic.id}">
+                    <div class="card-header">
+                        <div>
+                            <span class="difficulty ${topic.difficulty}">${topic.difficulty.toUpperCase()}</span>
+                            <span class="points-badge"><i class="fas fa-star"></i> ${topic.points} pts</span>
+                        </div>
+                        <h3><i class="fas ${topic.icon}"></i> ${escapeHtml(topic.title)}</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="learning-points">
+                            <h4><i class="fas fa-terminal"></i> 10 Key Learning Points</h4>
+                            <ul>${pointsHtml}</ul>
+                        </div>
+                        <div class="self-check">
+                            <h4><i class="fas fa-question-circle"></i> Self-Check Questions (2)</h4>
+                            ${questionsHtml}
+                        </div>
+                        <div class="next-challenges">
+                            <h4><i class="fas fa-flag"></i> Recommended Challenges</h4>
+                            <a onclick="navigateTo('CTF challenge.html')"><i class="fas fa-arrow-right"></i> Related Challenge →</a>
+                        </div>
+                        <button class="btn-primary" onclick="markComplete('${topic.id}', this)">${btnText}</button>
+                        <span id="${statusId}" class="completed-status ${statusDisplay}" style="color: ${difficultyLevel === 'legendary' ? 'var(--legendary-gold)' : 'var(--neon-green)'};">✓ Completed (+10 pts)</span>
+                    </div>
+                </div>
+            `;
+        }
 
         function setupFilters() {
             document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -973,15 +1236,89 @@
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             const category = this.dataset.category;
+            
             document.querySelectorAll('.topic-card').forEach(card => {
                 const cardCategory = card.dataset.category;
-                card.style.display = (category === 'all' || cardCategory === category || 
-                    (category === 'legendary' && card.classList.contains('legendary'))) ? 'block' : 'none';
+                if (category === 'all') {
+                    card.style.display = 'block';
+                } else if (category === 'legendary') {
+                    card.style.display = card.classList.contains('legendary') ? 'block' : 'none';
+                } else {
+                    card.style.display = cardCategory === category ? 'block' : 'none';
+                }
             });
         }
 
-        // Initialize on DOM load
+        function loadUserLearningProgress() {
+            const currentUser = getCurrentUser();
+            if (currentUser) {
+                const savedProgress = localStorage.getItem('learnCompletedTopics');
+                if (savedProgress) {
+                    completedTopics = JSON.parse(savedProgress);
+                }
+            }
+            updateCompletedCount();
+        }
+
+        function renderLearningContent() {
+            const learningHTML = `
+                <!-- BEGINNER SECTION -->
+                <div class="difficulty-section-header beginner">
+                    <h2><i class="fas fa-seedling"></i> Beginner Level <span class="badge-count">3 topics (30 pts)</span></h2>
+                </div>
+                <div class="topics-grid" id="beginnerGrid"></div>
+
+                <!-- INTERMEDIATE SECTION -->
+                <div class="difficulty-section-header intermediate">
+                    <h2><i class="fas fa-fire"></i> Intermediate Level <span class="badge-count">3 topics (30 pts)</span></h2>
+                </div>
+                <div class="topics-grid" id="intermediateGrid"></div>
+
+                <!-- ADVANCED SECTION -->
+                <div class="difficulty-section-header advanced">
+                    <h2><i class="fas fa-skull"></i> Advanced Level <span class="badge-count">3 topics (30 pts)</span></h2>
+                </div>
+                <div class="topics-grid" id="advancedGrid"></div>
+
+                <!-- LEGENDARY SECTION -->
+                <div class="difficulty-section-header legendary">
+                    <h2><i class="fas fa-crown"></i> Legendary Level <span class="badge-count">3 topics (30 pts)</span></h2>
+                </div>
+                <div class="topics-grid" id="legendaryGrid"></div>
+            `;
+            
+            document.getElementById('learningContent').innerHTML = learningHTML;
+            
+            document.getElementById('beginnerGrid').innerHTML = beginnerTopics.map(t => renderTopicCard(t, 'beginner')).join('');
+            document.getElementById('intermediateGrid').innerHTML = intermediateTopics.map(t => renderTopicCard(t, 'intermediate')).join('');
+            document.getElementById('advancedGrid').innerHTML = advancedTopics.map(t => renderTopicCard(t, 'advanced')).join('');
+            document.getElementById('legendaryGrid').innerHTML = legendaryTopics.map(t => renderTopicCard(t, 'legendary')).join('');
+            
+            updateCompletedCount();
+            
+            const allTopicsList = [...beginnerTopics, ...intermediateTopics, ...advancedTopics, ...legendaryTopics];
+            allTopicsList.forEach(topic => {
+                const statusEl = document.getElementById('status-' + topic.id);
+                if (completedTopics.includes(topic.id) && statusEl) {
+                    statusEl.classList.remove('hidden');
+                    const card = document.querySelector(`.topic-card[data-topic-id="${topic.id}"]`);
+                    if (card) {
+                        const btn = card.querySelector('.btn-primary');
+                        if (btn) btn.innerHTML = '<i class="fas fa-undo"></i> Mark Incomplete';
+                    }
+                }
+            });
+            
+            setupFilters();
+        }
+
+        window.markComplete = markComplete;
+        window.toggleAnswer = toggleAnswer;
+        window.navigateTo = navigateTo;
+        window.renderLearningContent = renderLearningContent;
+
         document.addEventListener('DOMContentLoaded', () => {
+            loadUserLearningProgress();
             updateAuthUI();
         });
     </script>
