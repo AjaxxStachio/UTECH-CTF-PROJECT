@@ -4,1490 +4,1339 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quizzes - CTF Hub</title>
-    <link rel="stylesheet" href="Theme.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* ===== CYBERPUNK THEME ===== */
+        :root {
+            --neon-green: #50fa7b;
+            --neon-blue: #3e9eff;
+            --neon-cyan: #8be9fd;
+            --neon-purple: #bd93f9;
+            --neon-yellow: #f1fa8c;
+            --neon-red: #ff5555;
+            --neon-orange: #ffb86b;
+            --neon-pink: #ff79c6;
+            --legendary-gold: #ffd700;
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141b2b;
+            --bg-panel: #0f1322;
+            --bg-deep: #05080f;
+            --border-color: #2a3550;
+            --text-primary: #e0e0e0;
+            --text-secondary: #8892b0;
+            --diff-beginner: #50fa7b;
+            --diff-intermediate: #ffb86b;
+            --diff-advanced: #ff5555;
+            --glow-green: rgba(80, 250, 123, 0.3);
+        }
 
-/* ═══════════════════════════════════════════════════════════
-   QUIZ SHELL
-═══════════════════════════════════════════════════════════ */
-.quiz-shell {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 2rem;
-    min-height: calc(100vh - 80px);
-    display: flex;
-    flex-direction: column;
-}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: 'Segoe UI', 'Share Tech Mono', monospace; overflow-x: hidden; }
 
-/* ── SCREENS ── */
-.screen { display: none; }
-.screen.active { display: block; animation: fade-in 0.35s ease; }
-@keyframes fade-in {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
+        #matrixCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+            pointer-events: none;
+        }
 
-/* ═══════════════════════════════════════════════════════════
-   HOME SCREEN
-═══════════════════════════════════════════════════════════ */
-.home-header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-}
+        .navbar {
+            background: rgba(10, 14, 26, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--neon-green);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-.home-header .tagline {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-top: 0.25rem;
-}
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px rgba(80, 250, 123, 0.3);
+            cursor: pointer;
+        }
 
-/* reset button */
-.reset-all-btn {
-    background: transparent;
-    border: 2px solid var(--neon-orange);
-    color: var(--neon-orange);
-    padding: 0.5rem 1.2rem;
-    font-family: 'Orbitron', monospace;
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 1rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+        .logo i { margin-right: 0.5rem; }
 
-.reset-all-btn:hover {
-    background: var(--neon-orange);
-    color: var(--bg-deep);
-    box-shadow: 0 0 20px var(--neon-orange);
-}
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
-/* global stats strip */
-.global-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 2.5rem;
-}
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
 
-.g-stat {
-    background: var(--bg-panel);
-    border: 1px solid rgba(0,255,157,0.18);
-    padding: 1rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.25s;
-}
-.g-stat:hover { border-color: var(--neon-green); }
-.g-stat::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-        45deg, transparent, transparent 12px,
-        rgba(0,255,157,0.03) 12px, rgba(0,255,157,0.03) 24px
-    );
-}
-.g-stat .g-val {
-    display: block;
-    font-family: 'Orbitron', monospace;
-    font-size: 1.7rem;
-    color: var(--neon-green);
-    text-shadow: 0 0 12px var(--neon-green);
-    position: relative;
-}
-.g-stat .g-lbl {
-    display: block;
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--text-secondary);
-    margin-top: 0.2rem;
-    position: relative;
-}
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--neon-green);
+            transition: width 0.3s ease;
+        }
 
-/* quiz category cards - 3x3 grid */
-.quiz-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1.25rem;
-}
+        .nav-links a:hover::before,
+        .nav-links a.active::before {
+            width: 100%;
+        }
 
-.quiz-card {
-    background: var(--bg-panel);
-    border: 1px solid rgba(0,255,157,0.2);
-    border-radius: 2px;
-    padding: 0;
-    cursor: pointer;
-    transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
-    overflow: hidden;
-    position: relative;
-}
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--neon-green);
+        }
 
-.quiz-card::before {          /* animated left accent bar */
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--accent, var(--neon-green));
-    transition: width 0.25s ease;
-}
-.quiz-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 20px rgba(0,255,157,0.15); border-color: var(--accent, var(--neon-green)); }
-.quiz-card:hover::before { width: 5px; }
+        .logout-btn {
+            background: rgba(255, 85, 85, 0.15);
+            border: 1px solid var(--neon-red);
+            color: var(--neon-red);
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
 
-.qc-top {
-    padding: 1.5rem 1.5rem 1rem;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-.qc-icon {
-    font-size: 2.2rem;
-    margin-bottom: 0.85rem;
-    display: block;
-}
-.qc-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-primary);
-    margin-bottom: 0.35rem;
-}
-.qc-desc {
-    font-size: 0.78rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
-}
+        .logout-btn:hover {
+            background: var(--neon-red);
+            color: var(--bg-primary);
+            box-shadow: 0 0 15px rgba(255, 85, 85, 0.4);
+        }
 
-.qc-bottom {
-    padding: 0.75rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-.qc-meta {
-    font-size: 0.7rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-.qc-progress-wrap {
-    flex: 1;
-    margin: 0 0.85rem;
-    height: 4px;
-    background: rgba(255,255,255,0.07);
-    border-radius: 2px;
-    overflow: hidden;
-}
-.qc-progress-fill {
-    height: 100%;
-    border-radius: 2px;
-    background: var(--accent, var(--neon-green));
-    transition: width 0.6s ease;
-    box-shadow: 0 0 6px var(--accent, var(--neon-green));
-}
-.qc-pct {
-    font-size: 0.72rem;
-    font-family: 'Orbitron', monospace;
-    color: var(--accent, var(--neon-green));
-}
+        .user-greeting {
+            color: var(--neon-green);
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            background: rgba(80, 250, 123, 0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            border: 1px solid rgba(80, 250, 123, 0.3);
+        }
 
-/* star rating row */
-.qc-stars {
-    display: flex;
-    gap: 3px;
-}
-.qc-stars i { font-size: 0.75rem; color: rgba(255,255,255,0.15); }
-.qc-stars i.lit { color: var(--neon-yellow); text-shadow: 0 0 6px var(--neon-yellow); }
+        .quiz-shell {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: calc(100vh - 80px);
+        }
 
-/* badge for completed */
-.qc-badge {
-    position: absolute;
-    top: 0.7rem; right: 0.7rem;
-    font-size: 0.62rem;
-    font-family: 'Orbitron', monospace;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 0.18rem 0.55rem;
-    border: 1px solid;
-    border-radius: 1px;
-}
-.qc-badge.done { color: var(--diff-beginner); border-color: var(--diff-beginner); }
-.qc-badge.lock { color: var(--text-secondary); border-color: rgba(255,255,255,0.1); }
+        .screen { display: none; }
+        .screen.active { display: block; animation: fade-in 0.35s ease; }
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
+        /* HOME SCREEN */
+        .home-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
 
-/* ═══════════════════════════════════════════════════════════
-   QUIZ SCREEN
-═══════════════════════════════════════════════════════════ */
-.quiz-topbar {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.75rem;
-}
+        .home-header .tagline {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
 
-.quit-btn {
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.12);
-    color: var(--text-secondary);
-    padding: 0.4rem 0.75rem;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.78rem;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: all 0.2s;
-    flex-shrink: 0;
-}
-.quit-btn:hover { border-color: var(--neon-red); color: var(--neon-red); }
+        .reset-my-btn {
+            background: transparent;
+            border: 2px solid var(--neon-orange);
+            color: var(--neon-orange);
+            padding: 0.5rem 1.2rem;
+            font-family: monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-right: 0.5rem;
+            border-radius: 8px;
+        }
 
-/* top progress bar */
-.top-progress-track {
-    flex: 1;
-    height: 7px;
-    background: rgba(255,255,255,0.07);
-    border-radius: 4px;
-    overflow: hidden;
-}
-.top-progress-fill {
-    height: 100%;
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan));
-    transition: width 0.55s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: 0 0 8px rgba(0,255,157,0.5);
-}
+        .reset-my-btn:hover {
+            background: var(--neon-orange);
+            color: var(--bg-deep);
+            box-shadow: 0 0 20px var(--neon-orange);
+        }
 
-.q-counter {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    white-space: nowrap;
-}
+        .global-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
 
-/* streak + lives row */
-.quiz-meta-row {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 1.75rem;
-}
+        .g-stat {
+            background: var(--bg-panel);
+            border: 1px solid rgba(0,255,157,0.18);
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.25s;
+            border-radius: 12px;
+        }
+        .g-stat:hover { border-color: var(--neon-green); }
+        .g-stat .g-val {
+            display: block;
+            font-family: monospace;
+            font-size: 1.7rem;
+            color: var(--neon-green);
+            text-shadow: 0 0 12px var(--neon-green);
+            position: relative;
+        }
+        .g-stat .g-lbl {
+            display: block;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+            margin-top: 0.2rem;
+            position: relative;
+        }
 
-.streak-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: 'Orbitron', monospace;
-    font-size: 0.82rem;
-}
-.streak-badge i { color: var(--neon-yellow); }
-.streak-badge span { color: var(--neon-yellow); text-shadow: 0 0 8px var(--neon-yellow); }
+        /* 3-COLUMN GRID */
+        .quiz-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
 
-.lives-row {
-    display: flex;
-    gap: 0.3rem;
-    margin-left: auto;
-}
-.life-dot {
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background: var(--neon-red);
-    box-shadow: 0 0 8px var(--neon-red);
-    transition: all 0.3s;
-}
-.life-dot.lost {
-    background: rgba(255,255,255,0.1);
-    box-shadow: none;
-}
+        @media (max-width: 1024px) {
+            .quiz-cards { grid-template-columns: repeat(2, 1fr); }
+        }
 
-/* category label */
-.q-category-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-size: 0.68rem;
-    font-family: 'Orbitron', monospace;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    padding: 0.25rem 0.75rem;
-    border: 1px solid;
-    margin-bottom: 1.25rem;
-}
+        @media (max-width: 768px) {
+            .quiz-cards { grid-template-columns: 1fr; }
+            .global-stats { grid-template-columns: 1fr 1fr; }
+        }
 
-/* QUESTION CARD */
-.question-card {
-    background: var(--bg-panel);
-    border: 1px solid rgba(0,255,157,0.15);
-    padding: 2rem;
-    margin-bottom: 1.25rem;
-    position: relative;
-    overflow: hidden;
-    animation: card-in 0.3s ease;
-}
-@keyframes card-in {
-    from { opacity:0; transform: scale(0.97) translateY(8px); }
-    to   { opacity:1; transform: scale(1) translateY(0); }
-}
+        .quiz-card {
+            background: var(--bg-panel);
+            border: 1px solid rgba(0,255,157,0.2);
+            border-radius: 12px;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.28s ease;
+            overflow: hidden;
+            position: relative;
+        }
 
-/* top-left question number glyph */
-.question-card::before {
-    content: attr(data-num);
-    position: absolute;
-    top: -0.5rem; left: -0.5rem;
-    font-family: 'Orbitron', monospace;
-    font-size: 5rem;
-    font-weight: 900;
-    color: rgba(0,255,157,0.04);
-    line-height: 1;
-    pointer-events: none;
-    user-select: none;
-}
+        .quiz-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: var(--accent, var(--neon-green));
+            transition: width 0.25s ease;
+        }
+        .quiz-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 20px rgba(0,255,157,0.15); border-color: var(--accent, var(--neon-green)); }
+        .quiz-card:hover::before { width: 5px; }
 
-.question-text {
-    font-size: 1.12rem;
-    color: var(--text-primary);
-    line-height: 1.7;
-    font-family: 'Share Tech Mono', monospace;
-    margin: 0;
-}
+        .quiz-card.completed { border-color: var(--neon-green); background: rgba(80,250,123,0.05); }
 
-/* code snippet inside question */
-.question-text code {
-    background: var(--bg-deep);
-    border: 1px solid rgba(0,243,255,0.3);
-    color: var(--neon-cyan);
-    padding: 0.15rem 0.45rem;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.95em;
-    border-radius: 2px;
-}
+        .qc-top {
+            padding: 1.5rem 1.5rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .qc-icon { font-size: 2.2rem; margin-bottom: 0.85rem; display: block; }
+        .qc-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+            margin-bottom: 0.35rem;
+        }
+        .qc-desc {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
 
-/* OPTIONS */
-.options-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-}
+        .qc-bottom {
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .qc-meta {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .qc-progress-wrap {
+            flex: 1;
+            margin: 0 0.85rem;
+            height: 4px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .qc-progress-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: var(--accent, var(--neon-green));
+            transition: width 0.6s ease;
+            box-shadow: 0 0 6px var(--accent, var(--neon-green));
+        }
+        .qc-pct {
+            font-size: 0.72rem;
+            font-family: monospace;
+            color: var(--accent, var(--neon-green));
+        }
 
-.option-btn {
-    background: var(--bg-terminal);
-    border: 2px solid rgba(0,243,255,0.2);
-    color: var(--text-primary);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.92rem;
-    padding: 1rem 1.1rem;
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.22s ease;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    line-height: 1.45;
-    position: relative;
-    overflow: hidden;
-}
+        .qc-stars { display: flex; gap: 3px; }
+        .qc-stars i { font-size: 0.75rem; color: rgba(255,255,255,0.15); }
+        .qc-stars i.lit { color: var(--neon-yellow); text-shadow: 0 0 6px var(--neon-yellow); }
 
-.option-btn::before {        /* hover shimmer */
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0,243,255,0.06);
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-.option-btn:hover:not(:disabled)::before { opacity: 1; }
-.option-btn:hover:not(:disabled) {
-    border-color: var(--neon-cyan);
-    color: var(--neon-cyan);
-    transform: translateX(3px);
-    box-shadow: -3px 0 0 var(--neon-cyan);
-}
+        .qc-badge {
+            position: absolute;
+            top: 0.7rem; right: 0.7rem;
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.18rem 0.55rem;
+            border: 1px solid;
+            border-radius: 4px;
+        }
+        .qc-badge.done { color: var(--diff-beginner); border-color: var(--diff-beginner); }
 
-.opt-letter {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.72rem;
-    font-weight: 700;
-    width: 24px; height: 24px;
-    border: 1.5px solid;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-    transition: all 0.2s;
-}
+        /* QUIZ SCREEN */
+        .quiz-container {
+            max-width: 860px;
+            margin: 0 auto;
+        }
 
-/* answer states */
-.option-btn.correct {
-    border-color: var(--diff-beginner) !important;
-    background: rgba(80,250,123,0.12) !important;
-    color: var(--diff-beginner) !important;
-    animation: correct-pop 0.45s ease;
-}
-.option-btn.correct .opt-letter {
-    background: var(--diff-beginner);
-    border-color: var(--diff-beginner);
-    color: var(--bg-deep);
-}
-@keyframes correct-pop {
-    0%   { transform: scale(1); }
-    30%  { transform: scale(1.03); }
-    100% { transform: scale(1); }
-}
+        .quiz-topbar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
 
-.option-btn.wrong {
-    border-color: var(--diff-advanced) !important;
-    background: rgba(255,85,85,0.10) !important;
-    color: var(--diff-advanced) !important;
-    animation: wrong-shake 0.4s ease;
-}
-.option-btn.wrong .opt-letter {
-    background: var(--diff-advanced);
-    border-color: var(--diff-advanced);
-    color: var(--bg-deep);
-}
-@keyframes wrong-shake {
-    0%,100% { transform: translateX(0); }
-    20%     { transform: translateX(-6px); }
-    40%     { transform: translateX(6px); }
-    60%     { transform: translateX(-4px); }
-    80%     { transform: translateX(4px); }
-}
+        .quit-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.75rem;
+            font-size: 0.78rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            border-radius: 6px;
+        }
+        .quit-btn:hover { border-color: var(--neon-red); color: var(--neon-red); }
 
-.option-btn.reveal-correct {
-    border-color: rgba(80,250,123,0.4) !important;
-    background: rgba(80,250,123,0.06) !important;
-    color: var(--diff-beginner) !important;
-}
+        .top-progress-track {
+            flex: 1;
+            height: 7px;
+            background: rgba(255,255,255,0.07);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .top-progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan));
+            transition: width 0.55s ease;
+            box-shadow: 0 0 8px rgba(0,255,157,0.5);
+        }
 
-.option-btn:disabled { cursor: default; transform: none !important; box-shadow: none !important; }
-.option-btn:disabled::before { display: none; }
+        .q-counter {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
 
-/* FEEDBACK BANNER */
-.feedback-banner {
-    display: none;
-    padding: 1.1rem 1.5rem;
-    border-left: 4px solid;
-    margin-bottom: 1rem;
-    animation: banner-slide 0.3s ease;
-}
-@keyframes banner-slide {
-    from { opacity:0; transform: translateY(-8px); }
-    to   { opacity:1; transform: translateY(0); }
-}
-.feedback-banner.show { display: block; }
-.feedback-banner.correct-fb {
-    background: rgba(80,250,123,0.08);
-    border-color: var(--diff-beginner);
-}
-.feedback-banner.wrong-fb {
-    background: rgba(255,85,85,0.08);
-    border-color: var(--diff-advanced);
-}
+        .quiz-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.75rem;
+        }
 
-.fb-heading {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 0.35rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-.feedback-banner.correct-fb .fb-heading { color: var(--diff-beginner); }
-.feedback-banner.wrong-fb  .fb-heading  { color: var(--diff-advanced); }
-.fb-text {
-    font-size: 0.88rem;
-    color: var(--text-secondary);
-    line-height: 1.6;
-}
-.fb-text strong { color: var(--text-primary); }
+        .streak-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+        }
+        .streak-badge i { color: var(--neon-yellow); }
+        .streak-badge span { color: var(--neon-yellow); text-shadow: 0 0 8px var(--neon-yellow); }
 
-/* NEXT BUTTON */
-.next-btn {
-    width: 100%;
-    padding: 1rem;
-    background: var(--neon-green);
-    border: none;
-    color: var(--bg-deep);
-    font-family: 'Orbitron', monospace;
-    font-size: 0.88rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    cursor: pointer;
-    display: none;
-    transition: all 0.25s;
-    position: relative;
-    overflow: hidden;
-}
-.next-btn.show { display: block; animation: fade-in 0.25s ease; }
-.next-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 0; height: 0;
-    background: rgba(255,255,255,0.25);
-    border-radius: 50%;
-    transform: translate(-50%,-50%);
-    transition: width 0.5s, height 0.5s;
-}
-.next-btn:hover::before { width: 300px; height: 300px; }
-.next-btn:hover { box-shadow: 0 0 30px var(--neon-green); }
+        .lives-row {
+            display: flex;
+            gap: 0.3rem;
+            margin-left: auto;
+        }
+        .life-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: var(--neon-red);
+            box-shadow: 0 0 8px var(--neon-red);
+            transition: all 0.3s;
+        }
+        .life-dot.lost {
+            background: rgba(255,255,255,0.1);
+            box-shadow: none;
+        }
 
+        .q-category-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding: 0.25rem 0.75rem;
+            border: 1px solid;
+            margin-bottom: 1.25rem;
+            border-radius: 20px;
+        }
 
-/* ═══════════════════════════════════════════════════════════
-   RESULTS SCREEN
-═══════════════════════════════════════════════════════════ */
-.results-card {
-    background: var(--bg-panel);
-    border: 2px solid var(--neon-green);
-    box-shadow: 0 0 60px rgba(0,255,157,0.15);
-    padding: 2.5rem 2rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    margin-bottom: 2rem;
-}
+        .question-card {
+            background: var(--bg-panel);
+            border: 1px solid rgba(0,255,157,0.15);
+            padding: 2rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            animation: card-in 0.3s ease;
+            border-radius: 12px;
+        }
+        @keyframes card-in {
+            from { opacity:0; transform: scale(0.97) translateY(8px); }
+            to { opacity:1; transform: scale(1) translateY(0); }
+        }
 
-/* animated corner glows */
-.results-card::before, .results-card::after {
-    content: '';
-    position: absolute;
-    width: 120px; height: 120px;
-    border-radius: 50%;
-    filter: blur(40px);
-    opacity: 0.25;
-}
-.results-card::before { top:-30px; left:-30px; background: var(--neon-green); }
-.results-card::after  { bottom:-30px; right:-30px; background: var(--neon-cyan); }
+        .question-text {
+            font-size: 1.12rem;
+            color: var(--text-primary);
+            line-height: 1.7;
+            margin: 0;
+        }
 
-.result-emoji {
-    font-size: 3.5rem;
-    margin-bottom: 0.5rem;
-    animation: pop-in 0.5s cubic-bezier(0.34,1.56,0.64,1);
-    display: block;
-}
-@keyframes pop-in {
-    from { transform: scale(0); opacity:0; }
-    to   { transform: scale(1); opacity:1; }
-}
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
 
-.result-grade {
-    font-family: 'Orbitron', monospace;
-    font-size: 3.5rem;
-    font-weight: 900;
-    line-height: 1;
-    margin-bottom: 0.25rem;
-    background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: none;
-    animation: fade-in 0.5s 0.1s both ease;
-}
+        .option-btn {
+            background: var(--bg-deep);
+            border: 2px solid rgba(0,243,255,0.2);
+            color: var(--text-primary);
+            font-size: 0.92rem;
+            padding: 1rem 1.1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.22s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            line-height: 1.45;
+            border-radius: 8px;
+        }
 
-.result-label {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    margin-bottom: 2rem;
-    animation: fade-in 0.5s 0.2s both ease;
-}
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            transform: translateX(3px);
+        }
 
-/* big score circle */
-.score-ring-wrap {
-    position: relative;
-    width: 140px;
-    height: 140px;
-    margin: 0 auto 2rem;
-    animation: fade-in 0.5s 0.2s both ease;
-}
-.score-ring-svg { transform: rotate(-90deg); }
-.score-ring-bg { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 10; }
-.score-ring-fill {
-    fill: none;
-    stroke: url(#ringGrad);
-    stroke-width: 10;
-    stroke-linecap: round;
-    stroke-dasharray: 408;
-    stroke-dashoffset: 408;
-    transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1);
-}
-.score-ring-text {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-.score-ring-text .score-num {
-    font-family: 'Orbitron', monospace;
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: var(--neon-green);
-    text-shadow: 0 0 15px var(--neon-green);
-    line-height: 1;
-}
-.score-ring-text .score-den {
-    font-size: 0.72rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
+        .opt-letter {
+            font-size: 0.72rem;
+            font-weight: 700;
+            width: 24px; height: 24px;
+            border: 1.5px solid;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+            transition: all 0.2s;
+        }
 
-/* result stats grid */
-.result-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    margin-bottom: 2rem;
-    animation: fade-in 0.5s 0.3s both ease;
-}
+        .option-btn.correct {
+            border-color: var(--diff-beginner) !important;
+            background: rgba(80,250,123,0.12) !important;
+            color: var(--diff-beginner) !important;
+        }
+        .option-btn.correct .opt-letter {
+            background: var(--diff-beginner);
+            border-color: var(--diff-beginner);
+            color: var(--bg-deep);
+        }
 
-.r-stat {
-    background: var(--bg-deep);
-    border: 1px solid rgba(255,255,255,0.07);
-    padding: 0.9rem 0.5rem;
-}
-.r-stat .r-val {
-    display: block;
-    font-family: 'Orbitron', monospace;
-    font-size: 1.4rem;
-    margin-bottom: 0.2rem;
-}
-.r-stat .r-lbl {
-    display: block;
-    font-size: 0.65rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-.r-stat.correct .r-val { color: var(--diff-beginner); text-shadow: 0 0 10px var(--diff-beginner); }
-.r-stat.wrong   .r-val { color: var(--diff-advanced);  text-shadow: 0 0 10px var(--diff-advanced); }
-.r-stat.acc     .r-val { color: var(--neon-cyan);      text-shadow: 0 0 10px var(--neon-cyan); }
+        .option-btn.wrong {
+            border-color: var(--diff-advanced) !important;
+            background: rgba(255,85,85,0.10) !important;
+            color: var(--diff-advanced) !important;
+        }
+        .option-btn.wrong .opt-letter {
+            background: var(--diff-advanced);
+            border-color: var(--diff-advanced);
+            color: var(--bg-deep);
+        }
 
-/* per-question review list */
-.review-list {
-    text-align: left;
-    margin-bottom: 2rem;
-    animation: fade-in 0.5s 0.4s both ease;
-}
+        .option-btn:disabled { cursor: default; transform: none !important; opacity: 0.7; }
 
-.review-title {
-    font-family: 'Orbitron', monospace;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--neon-cyan);
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
+        .feedback-banner {
+            display: none;
+            padding: 1.1rem 1.5rem;
+            border-left: 4px solid;
+            margin-bottom: 1rem;
+            animation: banner-slide 0.3s ease;
+            border-radius: 8px;
+        }
+        @keyframes banner-slide {
+            from { opacity:0; transform: translateY(-8px); }
+            to { opacity:1; transform: translateY(0); }
+        }
+        .feedback-banner.show { display: block; }
+        .feedback-banner.correct-fb {
+            background: rgba(80,250,123,0.08);
+            border-color: var(--diff-beginner);
+        }
+        .feedback-banner.wrong-fb {
+            background: rgba(255,85,85,0.08);
+            border-color: var(--diff-advanced);
+        }
 
-.review-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.65rem 0.85rem;
-    border-left: 3px solid;
-    margin-bottom: 0.5rem;
-    background: var(--bg-deep);
-    font-size: 0.83rem;
-    line-height: 1.4;
-}
-.review-item.r-correct { border-color: var(--diff-beginner); }
-.review-item.r-wrong   { border-color: var(--diff-advanced); }
-.review-item .r-icon   { flex-shrink: 0; margin-top: 1px; }
-.review-item .r-q      { color: var(--text-secondary); }
-.review-item .r-a      { color: var(--text-primary); font-size:0.78rem; margin-top:0.2rem; }
+        .fb-heading {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .feedback-banner.correct-fb .fb-heading { color: var(--diff-beginner); }
+        .feedback-banner.wrong-fb .fb-heading { color: var(--diff-advanced); }
+        .fb-text {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
 
-/* result action buttons */
-.result-actions {
-    display: flex;
-    gap: 0.85rem;
-    animation: fade-in 0.5s 0.5s both ease;
-}
+        .next-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--neon-green);
+            border: none;
+            color: var(--bg-deep);
+            font-size: 0.88rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            display: none;
+            transition: all 0.25s;
+            border-radius: 8px;
+        }
+        .next-btn.show { display: block; animation: fade-in 0.25s ease; }
+        .next-btn:hover { box-shadow: 0 0 30px var(--neon-green); }
 
-.ra-btn {
-    flex: 1;
-    padding: 0.85rem;
-    font-family: 'Orbitron', monospace;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: all 0.25s;
-    border: 2px solid;
-    background: transparent;
-}
-.ra-btn.primary {
-    border-color: var(--neon-green);
-    color: var(--neon-green);
-}
-.ra-btn.primary:hover {
-    background: var(--neon-green);
-    color: var(--bg-deep);
-    box-shadow: 0 0 25px var(--neon-green);
-}
-.ra-btn.secondary {
-    border-color: var(--neon-cyan);
-    color: var(--neon-cyan);
-}
-.ra-btn.secondary:hover {
-    background: var(--neon-cyan);
-    color: var(--bg-deep);
-    box-shadow: 0 0 25px var(--neon-cyan);
-}
+        /* RESULTS SCREEN */
+        .results-card {
+            background: var(--bg-panel);
+            border: 2px solid var(--neon-green);
+            box-shadow: 0 0 60px rgba(0,255,157,0.15);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            border-radius: 16px;
+        }
 
-/* ═══════════════════════════════════════════════════════════
-   UTILITIES
-═══════════════════════════════════════════════════════════ */
-@media (max-width: 620px) {
-    .options-grid  { grid-template-columns: 1fr; }
-    .global-stats  { grid-template-columns: 1fr 1fr; }
-    .result-stats  { grid-template-columns: 1fr; }
-    .result-actions { flex-direction: column; }
-    .quiz-shell    { padding: 1rem; }
-}
+        .result-emoji {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            animation: pop-in 0.5s ease;
+            display: block;
+        }
+        @keyframes pop-in {
+            from { transform: scale(0); opacity:0; }
+            to { transform: scale(1); opacity:1; }
+        }
 
+        .result-grade {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .result-label {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 2rem;
+        }
+
+        .score-ring-wrap {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 2rem;
+        }
+        .score-ring-svg { transform: rotate(-90deg); }
+        .score-ring-bg { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 10; }
+        .score-ring-fill {
+            fill: none;
+            stroke: url(#ringGrad);
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 408;
+            stroke-dashoffset: 408;
+            transition: stroke-dashoffset 1.2s ease;
+        }
+        .score-ring-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .score-ring-text .score-num {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--neon-green);
+            text-shadow: 0 0 15px var(--neon-green);
+            line-height: 1;
+        }
+        .score-ring-text .score-den {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .r-stat {
+            background: var(--bg-deep);
+            border: 1px solid rgba(255,255,255,0.07);
+            padding: 0.9rem 0.5rem;
+            border-radius: 8px;
+        }
+        .r-stat .r-val {
+            display: block;
+            font-size: 1.4rem;
+            margin-bottom: 0.2rem;
+        }
+        .r-stat .r-lbl {
+            display: block;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .r-stat.correct .r-val { color: var(--diff-beginner); }
+        .r-stat.wrong .r-val { color: var(--diff-advanced); }
+        .r-stat.acc .r-val { color: var(--neon-cyan); }
+
+        .review-list {
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+
+        .review-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--neon-cyan);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .review-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.65rem 0.85rem;
+            border-left: 3px solid;
+            margin-bottom: 0.5rem;
+            background: var(--bg-deep);
+            font-size: 0.83rem;
+            line-height: 1.4;
+            border-radius: 8px;
+        }
+        .review-item.r-correct { border-color: var(--diff-beginner); }
+        .review-item.r-wrong { border-color: var(--diff-advanced); }
+        .review-item .r-icon { flex-shrink: 0; margin-top: 1px; }
+        .review-item .r-q { color: var(--text-secondary); }
+        .review-item .r-a { color: var(--text-primary); font-size:0.78rem; margin-top:0.2rem; }
+
+        .result-actions {
+            display: flex;
+            gap: 0.85rem;
+        }
+
+        .ra-btn {
+            flex: 1;
+            padding: 0.85rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.25s;
+            border: 2px solid;
+            background: transparent;
+            border-radius: 8px;
+        }
+        .ra-btn.primary {
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+        }
+        .ra-btn.primary:hover {
+            background: var(--neon-green);
+            color: var(--bg-deep);
+            box-shadow: 0 0 25px var(--neon-green);
+        }
+        .ra-btn.secondary {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+        .ra-btn.secondary:hover {
+            background: var(--neon-cyan);
+            color: var(--bg-deep);
+            box-shadow: 0 0 25px var(--neon-cyan);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 10001;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
     </style>
 </head>
-<body class="dark-theme">
+<body>
 
-<!-- Navigation -->
+<canvas id="matrixCanvas"></canvas>
+
 <nav class="navbar">
-    <div class="logo">
+    <div class="logo" onclick="navigateTo('homepage.html')">
         <i class="fas fa-shield-alt"></i>
         UTECH CTF HUB
     </div>
     <ul class="nav-links">
-        <li><a href="homepage.html">Home</a></li>
-        <li><a href="CTF learning material.html">Learn</a></li>
-        <li><a href="CTF challenge.html">Challenges</a></li>
-        <li><a href="CTF scoreboard.html">Scoreboard</a></li>
-        <li><a href="login.html" id="auth-link">Login</a></li>
+        <li><a onclick="navigateTo('homepage.html')">Home</a></li>
+        <li><a onclick="navigateTo('CTF learning material.html')">Learn</a></li>
+        <li><a onclick="navigateTo('CTF challenge.html')">Challenges</a></li>
+        <li><a class="active">Quizzes</a></li>
+        <li><a onclick="navigateTo('CTF scoreboard.html')">Scoreboard</a></li>
+        <li id="authContainer" style="display: flex; align-items: center; gap: 0.8rem;"></li>
     </ul>
 </nav>
 
 <main class="quiz-shell">
-
-    <!-- ══════════════════════════════════════════════
-         HOME SCREEN
-    ══════════════════════════════════════════════ -->
+    <!-- HOME SCREEN -->
     <div class="screen active" id="screenHome">
-
         <div class="home-header">
             <h1><i class="fas fa-brain"></i> Interactive Quizzes</h1>
             <p class="tagline">Test your ethical hacking knowledge — 10 questions per topic</p>
-            <button class="reset-all-btn" onclick="resetAllProgress()">
-                <i class="fas fa-trash-alt"></i> RESET ALL QUIZ PROGRESS
+            <button class="reset-my-btn" onclick="resetMyProgress()">
+                <i class="fas fa-user-slash"></i> RESET MY PROGRESS
             </button>
         </div>
 
         <div class="global-stats">
-            <div class="g-stat">
-                <span class="g-val" id="gsTotal">0</span>
-                <span class="g-lbl">Total Score</span>
-            </div>
-            <div class="g-stat">
-                <span class="g-val" id="gsCompleted">0</span>
-                <span class="g-lbl">Quizzes Done</span>
-            </div>
-            <div class="g-stat">
-                <span class="g-val" id="gsStreak">0🔥</span>
-                <span class="g-lbl">Best Streak</span>
-            </div>
-            <div class="g-stat">
-                <span class="g-val" id="gsAcc">-</span>
-                <span class="g-lbl">Avg Accuracy</span>
-            </div>
+            <div class="g-stat"><span class="g-val" id="gsTotal">0</span><span class="g-lbl">My Score</span></div>
+            <div class="g-stat"><span class="g-val" id="gsCompleted">0</span><span class="g-lbl">Quizzes Done</span></div>
+            <div class="g-stat"><span class="g-val" id="gsStreak">0🔥</span><span class="g-lbl">Best Streak</span></div>
+            <div class="g-stat"><span class="g-val" id="gsAcc">-</span><span class="g-lbl">Avg Accuracy</span></div>
         </div>
 
-        <div class="quiz-cards" id="quizCardGrid">
-            <!-- rendered by JS -->
-        </div>
+        <div class="quiz-cards" id="quizCardGrid"></div>
     </div>
 
-    <!-- ══════════════════════════════════════════════
-         QUIZ SCREEN
-    ══════════════════════════════════════════════ -->
+    <!-- QUIZ SCREEN -->
     <div class="screen" id="screenQuiz">
-
-        <div class="quiz-topbar">
-            <button class="quit-btn" onclick="quitQuiz()">
-                <i class="fas fa-times"></i> Quit
-            </button>
-            <div class="top-progress-track">
-                <div class="top-progress-fill" id="topProgress" style="width:0%"></div>
+        <div class="quiz-container">
+            <div class="quiz-topbar">
+                <button class="quit-btn" onclick="quitQuiz()"><i class="fas fa-times"></i> Quit</button>
+                <div class="top-progress-track"><div class="top-progress-fill" id="topProgress" style="width:0%"></div></div>
+                <span class="q-counter" id="qCounter">1 / 10</span>
             </div>
-            <span class="q-counter" id="qCounter">1 / 10</span>
-        </div>
-
-        <div class="quiz-meta-row">
-            <div class="streak-badge">
-                <i class="fas fa-fire"></i>
-                <span id="streakDisplay">0</span>
+            <div class="quiz-meta-row">
+                <div class="streak-badge"><i class="fas fa-fire"></i><span id="streakDisplay">0</span></div>
+                <div class="lives-row" id="livesRow"></div>
             </div>
-            <div class="lives-row" id="livesRow"></div>
+            <div class="q-category-tag" id="qCatTag"></div>
+            <div class="question-card" id="questionCard">
+                <p class="question-text" id="questionText"></p>
+            </div>
+            <div class="options-grid" id="optionsGrid"></div>
+            <div class="feedback-banner" id="feedbackBanner">
+                <div class="fb-heading" id="fbHeading"></div>
+                <p class="fb-text" id="fbText"></p>
+            </div>
+            <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Continue <i class="fas fa-arrow-right"></i></button>
         </div>
-
-        <div class="q-category-tag" id="qCatTag"></div>
-
-        <div class="question-card" id="questionCard" data-num="1">
-            <p class="question-text" id="questionText"></p>
-        </div>
-
-        <div class="options-grid" id="optionsGrid"></div>
-
-        <div class="feedback-banner" id="feedbackBanner">
-            <div class="fb-heading" id="fbHeading"></div>
-            <p class="fb-text" id="fbText"></p>
-        </div>
-
-        <button class="next-btn" id="nextBtn" onclick="nextQuestion()">
-            Continue <i class="fas fa-arrow-right"></i>
-        </button>
     </div>
 
-    <!-- ══════════════════════════════════════════════
-         RESULTS SCREEN
-    ══════════════════════════════════════════════ -->
+    <!-- RESULTS SCREEN -->
     <div class="screen" id="screenResults">
-
         <div class="results-card">
             <span class="result-emoji" id="resultEmoji">🏆</span>
             <div class="result-grade" id="resultGrade">S</div>
             <div class="result-label" id="resultLabel">Perfect Score</div>
-
-            <!-- SVG ring -->
             <div class="score-ring-wrap">
                 <svg class="score-ring-svg" width="140" height="140" viewBox="0 0 140 140">
-                    <defs>
-                        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%"   stop-color="var(--neon-green)" />
-                            <stop offset="100%" stop-color="var(--neon-cyan)"  />
-                        </linearGradient>
-                    </defs>
-                    <circle class="score-ring-bg"   cx="70" cy="70" r="65" />
+                    <defs><linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="var(--neon-green)"/><stop offset="100%" stop-color="var(--neon-cyan)"/></linearGradient></defs>
+                    <circle class="score-ring-bg" cx="70" cy="70" r="65" />
                     <circle class="score-ring-fill" id="ringFill" cx="70" cy="70" r="65" />
                 </svg>
-                <div class="score-ring-text">
-                    <span class="score-num" id="scoreNum">0</span>
-                    <span class="score-den" id="scoreDen">/ 10</span>
-                </div>
+                <div class="score-ring-text"><span class="score-num" id="scoreNum">0</span><span class="score-den" id="scoreDen">/ 10</span></div>
             </div>
-
             <div class="result-stats">
-                <div class="r-stat correct">
-                    <span class="r-val" id="rCorrect">0</span>
-                    <span class="r-lbl">Correct</span>
-                </div>
-                <div class="r-stat wrong">
-                    <span class="r-val" id="rWrong">0</span>
-                    <span class="r-lbl">Wrong</span>
-                </div>
-                <div class="r-stat acc">
-                    <span class="r-val" id="rAcc">0%</span>
-                    <span class="r-lbl">Accuracy</span>
-                </div>
+                <div class="r-stat correct"><span class="r-val" id="rCorrect">0</span><span class="r-lbl">Correct</span></div>
+                <div class="r-stat wrong"><span class="r-val" id="rWrong">0</span><span class="r-lbl">Wrong</span></div>
+                <div class="r-stat acc"><span class="r-val" id="rAcc">0%</span><span class="r-lbl">Accuracy</span></div>
             </div>
         </div>
-
-        <div class="review-list">
-            <div class="review-title">
-                <i class="fas fa-clipboard-list"></i> Question Review
-            </div>
-            <div id="reviewItems"></div>
-        </div>
-
+        <div class="review-list"><div class="review-title"><i class="fas fa-clipboard-list"></i> Question Review</div><div id="reviewItems"></div></div>
         <div class="result-actions">
-            <button class="ra-btn primary" onclick="retryQuiz()">
-                <i class="fas fa-redo"></i> Try Again
-            </button>
-            <button class="ra-btn secondary" onclick="goHome()">
-                <i class="fas fa-th"></i> All Quizzes
-            </button>
+            <button class="ra-btn primary" onclick="retryQuiz()"><i class="fas fa-redo"></i> Try Again</button>
+            <button class="ra-btn secondary" onclick="goHome()"><i class="fas fa-th"></i> All Quizzes</button>
         </div>
     </div>
-
 </main>
 
 <script>
-// ════════════════════════════════════════════════════════════
-// QUIZ DATA  —  9 categories × 10 questions each
-// ════════════════════════════════════════════════════════════
-const QUIZZES = [
+// Matrix Rain Effect
+const canvas = document.getElementById('matrixCanvas');
+const ctx = canvas.getContext('2d');
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*";
+let drops = [];
+function initDrops() { drops = []; for(let i=0; i<canvas.width/14; i++) drops[i]=Math.random()*canvas.height; }
+initDrops();
+function drawMatrix() {
+    if(!ctx) return;
+    ctx.fillStyle = 'rgba(10,10,10,0.04)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#50fa7b';
+    ctx.font = '14px monospace';
+    for(let i=0;i<drops.length;i++) {
+        ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*14, drops[i]*14);
+        if(drops[i]*14 > canvas.height && Math.random()>0.975) drops[i]=0;
+        drops[i]++;
+    }
+}
+setInterval(drawMatrix,35);
+window.addEventListener('resize',()=>{ resizeCanvas(); initDrops(); });
 
-  // 1. Cryptography
-  {
-    id: 'crypto',
-    title: 'Cryptography',
-    icon: '🔐',
-    accent: 'var(--neon-purple)',
-    desc: 'Ciphers, hashing, public-key crypto and encoding',
-    questions: [
-      { q: 'What does Base64 encoding produce from binary data?', opts: ['Encrypted ciphertext', 'A hex string', 'A printable ASCII string using 64 characters', 'A compressed archive'], ans: 2, exp: '<strong>Base64</strong> converts binary data into printable ASCII using 64 characters (A-Z, a-z, 0-9, +, /).' },
-      { q: 'ROT13 is applied to the text "synth". What is the result?', opts: ['fffff', 'flags', 'flagu', 'found'], ans: 1, exp: 'ROT13 shifts each letter by 13: s→f, y→l, n→a, t→g, h→s → <strong>"flags"</strong>.' },
-      { q: 'Which hashing algorithm is considered cryptographically broken?', opts: ['SHA-256', 'bcrypt', 'MD5', 'Argon2'], ans: 2, exp: '<strong>MD5</strong> is broken due to known collision attacks.' },
-      { q: 'In asymmetric encryption, which key does Alice use to encrypt for Bob?', opts: ["Alice's private", "Alice's public", "Bob's public", "Bob's private"], ans: 2, exp: 'Encrypt with the <strong>recipient\'s public key</strong>.' },
-      { q: 'What is the primary security guarantee of a cryptographic hash?', opts: ['It can be decrypted', 'Same output for any input', 'One-way function', 'Compresses data'], ans: 2, exp: 'A <strong>cryptographic hash</strong> is a one-way function.' },
-      { q: 'XOR: 0x41 XOR 0x1F = ?', opts: ['0x5E', '0x60', '0x22', '0x4A'], ans: 0, exp: '0x41 XOR 0x1F = 0x5E. XOR is its own inverse.' },
-      { q: '$2b$ prefix indicates which algorithm?', opts: ['SHA-256', 'MD5', 'bcrypt', 'AES-256'], ans: 2, exp: '<strong>$2b$</strong> identifies bcrypt.' },
-      { q: 'RSA security relies on?', opts: ['XOR speed', 'Factoring large primes', 'Shared secret', 'Message length'], ans: 1, exp: 'RSA relies on the <strong>integer factorization problem</strong>.' },
-      { q: 'What is the purpose of a salt in password hashing?', opts: ['Speed up hashing', 'Make each hash unique', 'Add encryption', 'Shorten output'], ans: 1, exp: 'A <strong>salt</strong> defeats rainbow table attacks.' },
-      { q: 'Caesar cipher: "HACK" shift 3 = ?', opts: ['IBEKD', 'KDFL', 'KDFN', 'JBDL'], ans: 2, exp: 'H(7)+3=K, A(0)+3=D, C(2)+3=F, K(10)+3=N → <strong>KDFN</strong>.' }
-    ]
-  },
-
-  // 2. Steganography
-  {
-    id: 'steg',
-    title: 'Steganography',
-    icon: '🖼️',
-    accent: 'var(--neon-yellow)',
-    desc: 'Hiding data inside images, audio and files',
-    questions: [
-      { q: 'What is steganography?', opts: ['Study of ciphers', 'Hiding existence of a message', 'Encrypting files', 'Compressing data'], ans: 1, exp: '<strong>Steganography</strong> hides the existence of a message.' },
-      { q: 'Most common image steganography technique modifies?', opts: ['MSB', 'File header', 'Least Significant Bit (LSB)', 'Colour palette'], ans: 2, exp: '<strong>LSB</strong> steganography changes the last bit of each colour channel.' },
-      { q: 'What does `strings image.jpg` reveal?', opts: ['Corrupted image', 'Appended hidden text', 'Encrypted data', 'Not a JPEG'], ans: 1, exp: 'Text appended after JPEG end marker is ignored by viewers but visible to strings.' },
-      { q: 'Which tool embeds/extracts data from JPEG with a passphrase?', opts: ['Wireshark', 'steghide', 'Nmap', 'John'], ans: 1, exp: '<strong>steghide</strong> embeds and extracts with AES-128 encryption.' },
-      { q: 'What does `zsteg` do to PNG files?', opts: ['Compresses', 'Tests bit planes for hidden data', 'Converts to JPEG', 'Encrypts'], ans: 1, exp: '<strong>zsteg</strong> tests all bit planes and colour channels for hidden data.' },
-      { q: 'Spectrogram steganography is visible in which tool?', opts: ['Photoshop', 'Audacity', 'VLC', 'Notepad'], ans: 1, exp: 'Audacity spectrogram view reveals images encoded as audio frequencies.' },
-      { q: 'Which tool cracks steghide passphrases with a wordlist?', opts: ['stegseek', 'binwalk', 'exiftool', 'hexdump'], ans: 0, exp: '<strong>stegseek</strong> is optimised for steghide brute-force.' },
-      { q: 'Which command extracts embedded files from binaries?', opts: ['file', 'binwalk', 'strings', 'xxd'], ans: 1, exp: '<strong>binwalk -e</strong> extracts embedded files.' },
-      { q: 'Which tool reads/removes EXIF metadata?', opts: ['steghide', 'exiftool', 'stegseek', 'zsteg'], ans: 1, exp: '<strong>exiftool</strong> reads and removes metadata.' },
-      { q: 'zsteg output "b1,b,lsb,xy" means?', opts: ['Bit 1, blue channel, LSB, xy scan', 'Binary layer 1', 'Byte 1', 'Bit 1, brightness'], ans: 0, exp: 'b1=bit plane 1, b=blue channel, lsb=least significant bit, xy=scan order.' }
-    ]
-  },
-
-  // 3. Digital Forensics
-  {
-    id: 'forensic',
-    title: 'Digital Forensics',
-    icon: '🔍',
-    accent: 'var(--neon-magenta)',
-    desc: 'PCAP analysis, evidence handling and investigation',
-    questions: [
-      { q: 'What is a PCAP file?', opts: ['Compressed archive', 'Binary recording of network packets', 'Malware payload', 'Certificate file'], ans: 1, exp: 'A <strong>PCAP</strong> stores raw network traffic.' },
-      { q: 'Wireshark "Follow TCP Stream" does what?', opts: ['Filters SYN packets', 'Reassembles TCP conversation', 'Sends test packets', 'Decrypts TLS'], ans: 1, exp: 'Reassembles full client-server TCP conversation.' },
-      { q: 'Filter for POST requests containing "login"?', opts: ['tcp.port==80 && login', 'http.request.method=="POST" && http contains "login"', 'http.post.login', 'tcp.payload contains login'], ans: 1, exp: 'Correct display filter syntax.' },
-      { q: 'How to verify disk image integrity?', opts: ['Check file date', 'Compare SHA-256 hash', 'Open in hex editor', 'Run antivirus'], ans: 1, exp: 'Matching cryptographic hashes prove forensic soundness.' },
-      { q: 'Command to find SetUID files?', opts: ['ls -la | grep s', 'find / -perm -4000', 'locate setuid', 'chmod -s'], ans: 1, exp: 'find / -perm -4000 finds SUID binaries.' },
-      { q: 'Thousands of SYN packets with no ACK indicates?', opts: ['DNS amplification', 'ARP poisoning', 'SYN flood DDoS', 'SQL injection'], ans: 2, exp: 'SYN flood exhausts TCP connection table.' },
-      { q: 'Extract HTTP files from PCAP?', opts: ['Edit → Paste', 'File → Export Objects → HTTP', 'Analyze → Decode As', 'Statistics → Save'], ans: 1, exp: 'Wireshark can export all HTTP objects.' },
-      { q: 'Which protocol transmits credentials in plaintext?', opts: ['SSH', 'SFTP', 'HTTPS', 'FTP'], ans: 3, exp: 'FTP sends USER and PASS as plain ASCII.' },
-      { q: 'Order of volatility: collect what first?', opts: ['Disk', 'RAM', 'Network', 'Backups'], ans: 1, exp: 'Most volatile (RAM) first before power loss.' },
-      { q: '`file suspicious.bin` returns "PE32 executable". What is it?', opts: ['Linux ELF', '32-bit Windows executable', 'Encrypted archive', 'PDF'], ans: 1, exp: 'PE32 = Windows Portable Executable format.' }
-    ]
-  },
-
-  // 4. SQL Injection
-  {
-    id: 'sql',
-    title: 'SQL Injection',
-    icon: '💉',
-    accent: 'var(--neon-cyan)',
-    desc: 'Query manipulation, bypass techniques and defences',
-    questions: [
-      { q: 'First test character for SQL injection?', opts: ['"', "'", ';', '&'], ans: 1, exp: 'Single quote breaks string literals.' },
-      { q: 'What does `\' OR \'1\'=\'1\' --` achieve?', opts: ['Deletes table', 'Bypasses login', 'Crashes DB', 'Creates admin'], ans: 1, exp: 'Makes WHERE clause always TRUE, comments out password check.' },
-      { q: 'Best defense against SQL injection?', opts: ['Input limits', 'Client validation', 'Parameterized queries', 'HTML encoding'], ans: 2, exp: 'Parameterized queries separate code from data.' },
-      { q: 'UNION injection requires?', opts: ['MySQL only', 'Same column count', 'Admin password', 'PHP installed'], ans: 1, exp: 'Both queries must return same number of columns.' },
-      { q: 'Boolean-based blind SQL injection uses?', opts: ['UNION', 'True/False page differences', 'Time delays', 'Error messages'], ans: 1, exp: 'Infers data from two distinct page responses.' },
-      { q: 'Time-based blind payload?', opts: ["' OR '1'='1", "'; DROP TABLE", "' AND SLEEP(5)--", "' UNION SELECT"], ans: 2, exp: 'SLEEP(5) pauses database, confirming injection.' },
-      { q: 'What does sqlmap --dump do?', opts: ['Dumps logs', 'Extracts table data', 'Deletes database', 'Creates backup'], ans: 1, exp: 'Retrieves all data from identified tables.' },
-      { q: 'Concatenating user_id into SQL is vulnerable because?', opts: ['SELECT is unsafe', 'OR 1=1 changes logic', 'Wildcard issue', 'Numbers crash'], ans: 1, exp: 'User input can alter query logic.' },
-      { q: 'OWASP ranks SQL injection under?', opts: ['A01', 'A02', 'A03', 'A05'], ans: 2, exp: 'A03: Injection in OWASP Top 10 2021.' },
-      { q: 'Extracting admin password character by character is?', opts: ['Boolean-based blind SQLi', 'Union injection', 'Error-based', 'Out-of-band'], ans: 0, exp: 'Uses SUBSTRING() and boolean inference.' }
-    ]
-  },
-
-  // 5. Ethical Hacking
-  {
-    id: 'ethack',
-    title: 'Ethical Hacking',
-    icon: '🛡️',
-    accent: 'var(--neon-green)',
-    desc: 'Core concepts, tools, and terminology',
-    questions: [
-      { q: 'Black vs White vs Grey box testing?', opts: ['Internal/external/wireless', 'No knowledge/full knowledge/partial knowledge', 'Malware/scanning/social', 'All same'], ans: 1, exp: 'Black=no prior info, White=full access, Grey=partial.' },
-      { q: 'What does CVE stand for?', opts: ['Common Vulnerability Exposure', 'Common Vulnerabilities and Exposures', 'Certified Vulnerability Expert', 'Cyber Vulnerability Enumeration'], ans: 1, exp: 'CVE is a public dictionary of known security flaws.' },
-      { q: 'Purpose of a reverse shell?', opts: ['Encrypt connection', 'Target connects back to attacker', 'Reverse engineer binary', 'Read shell history'], ans: 1, exp: 'Bypasses inbound firewalls by initiating outbound connection.' },
-      { q: 'Nmap SYN stealth scan flag?', opts: ['-sV', '-sS', '-sU', '-O'], ans: 1, exp: 'nmap -sS performs half-open SYN scan.' },
-      { q: 'Privilege escalation means?', opts: ['Initial access', 'Increasing permissions (user → admin)', 'DoS attack', 'Ransomware'], ans: 1, exp: 'Moving from limited to elevated access.' },
-      { q: 'OSINT stands for?', opts: ['Open Source Intelligence', 'Operational Security Intelligence', 'Offensive Security Integration', 'Online System ID'], ans: 0, exp: 'OSINT collects publicly available information.' },
-      { q: 'MITRE ATT&CK framework?', opts: ['Certification', 'Knowledge base of TTPs', 'Scanning tool', 'Scoring system'], ans: 1, exp: 'Tactics, Techniques, and Procedures from real-world attacks.' },
-      { q: 'Zero-day vulnerability means?', opts: ['Patched yesterday', 'Unknown to vendor, no patch', 'Only works on day zero', 'Zero-second exploit'], ans: 1, exp: 'Flaw unknown to vendor with no available patch.' },
-      { q: 'Lateral movement describes?', opts: ['Moving files', 'Expanding access across network', 'Horizontal scanning', 'TLS downgrade'], ans: 1, exp: 'Spreading from initial foothold to other systems.' },
-      { q: 'GPU-accelerated password cracker?', opts: ['Metasploit', 'Wireshark', 'Hashcat', 'Burp Suite'], ans: 2, exp: 'Hashcat supports 300+ hash types with GPU acceleration.' }
-    ]
-  },
-
-  // 6. Brute Force Attack
-  {
-    id: 'bruteforce',
-    title: 'Brute Force Attack',
-    icon: '💣',
-    accent: 'var(--neon-red)',
-    desc: 'Password cracking, dictionary attacks, and mitigation',
-    questions: [
-      { q: 'What is a brute force attack?', opts: ['Encrypting data', 'Trying all possible password combinations', 'Injecting SQL code', 'Network scanning'], ans: 1, exp: 'Systematically trying every possible combination until correct.' },
-      { q: 'What is a dictionary attack?', opts: ['Cracking with wordlist of common passwords', 'Attacking dictionary websites', 'Encrypting dictionary files', 'DOS attack'], ans: 0, exp: 'Uses pre-compiled wordlist of common passwords.' },
-      { q: 'What is a rainbow table?', opts: ['Colourful password list', 'Precomputed hash-to-plaintext lookup table', 'Encryption algorithm', 'Password manager'], ans: 1, exp: 'Precomputed table for reversing cryptographic hash functions.' },
-      { q: 'How does salting defeat rainbow tables?', opts: ['Makes passwords longer', 'Adds random data making each hash unique', 'Encrypts the password twice', 'Deletes the table'], ans: 1, exp: 'Random salt creates unique hash for identical passwords.' },
-      { q: 'Which tool is commonly used for offline password cracking?', opts: ['Nmap', 'Wireshark', 'John the Ripper', 'Metasploit'], ans: 2, exp: 'John the Ripper is a popular password cracking tool.' },
-      { q: 'What is a hybrid attack?', opts: ['Combining dictionary with mutations', 'Two computers attacking together', 'Mixed encryption types', 'Network and local attack'], ans: 0, exp: 'Appends/prepends numbers/symbols to dictionary words.' },
-      { q: 'What is credential stuffing?', opts: ['Filling credentials manually', 'Using stolen username/password pairs from one breach on other sites', 'Creating new credentials', 'Encrypting credentials'], ans: 1, exp: 'Automated injection of breached username/password pairs.' },
-      { q: 'How does account lockout prevent brute force?', opts: ['Locks keyboard', 'Disables account after failed attempts', 'Changes password', 'Encrypts login'], ans: 1, exp: 'Temporarily or permanently disables account after threshold.' },
-      { q: 'What is rate limiting?', opts: ['Limiting internet speed', 'Restricting number of login attempts per time period', 'Limiting file downloads', 'Bandwidth control'], ans: 1, exp: 'Restricts request frequency to slow automated attacks.' },
-      { q: 'Which hash type is deliberately slow to resist brute force?', opts: ['MD5', 'SHA-1', 'bcrypt', 'CRC32'], ans: 2, exp: 'bcrypt has configurable work factor making it computationally expensive.' }
-    ]
-  },
-
-  // 7. Malware Analysis
-  {
-    id: 'malware',
-    title: 'Malware Analysis',
-    icon: '🦠',
-    accent: 'var(--neon-purple)',
-    desc: 'Types, analysis techniques, and detection',
-    questions: [
-      { q: 'What is static malware analysis?', opts: ['Running malware in debugger', 'Examining code without executing', 'Network traffic analysis', 'Memory forensics'], ans: 1, exp: 'Analyzing binary without executing it.' },
-      { q: 'What is dynamic analysis?', opts: ['Examining code without running', 'Executing malware in sandbox', 'Source code review', 'Signature scanning'], ans: 1, exp: 'Observing behaviour in controlled environment.' },
-      { q: 'What is a sandbox in malware analysis?', opts: ['Beach container', 'Isolated environment for safe execution', 'Encryption tool', 'Network scanner'], ans: 1, exp: 'Isolated environment to execute malware safely.' },
-      { q: 'What is a trojan horse?', opts: ['Ancient weapon', 'Malware disguised as legitimate software', 'Virus replicating itself', 'Network worm'], ans: 1, exp: 'Disguises malicious functionality within legitimate-looking software.' },
-      { q: 'What is a ransomware?', opts: ['Random encryption', 'Malware that encrypts files for ransom', 'Network scanner', 'Password cracker'], ans: 1, exp: 'Encrypts victim files and demands payment for decryption.' },
-      { q: 'What is a keylogger?', opts: ['Logging network keys', 'Recording keystrokes', 'Encrypting keys', 'Key generator'], ans: 1, exp: 'Captures and records user keystrokes.' },
-      { q: 'What is packer/obfuscator used for?', opts: ['Compressing code', 'Hiding malware from signature detection', 'Encrypting files', 'Network packing'], ans: 1, exp: 'Obfuscates code to evade signature-based detection.' },
-      { q: 'Which tool unpacks UPX-packed binaries?', opts: ['upx -d', 'unzip', 'tar -x', 'gzip -d'], ans: 0, exp: 'upx -d decompresses UPX-packed executables.' },
-      { q: 'What is a rootkit?', opts: ['Network toolkit', 'Malware hiding its presence from OS', 'Password cracker', 'Encryption tool'], ans: 1, exp: 'Modifies OS to conceal malicious activity.' },
-      { q: 'What is IAT hooking?', opts: ['Fishing technique', 'Modifying Import Address Table to redirect API calls', 'Network hooking', 'Registry modification'], ans: 1, exp: 'Redirects API calls to attacker-controlled code.' }
-    ]
-  },
-
-  // 8. Vulnerability Assessment
-  {
-    id: 'vuln',
-    title: 'Vulnerability Assessment',
-    icon: '🔎',
-    accent: 'var(--neon-cyan)',
-    desc: 'Scanning, CVSS, and vulnerability management',
-    questions: [
-      { q: 'What is a vulnerability scanner?', opts: ['Network monitor', 'Automated tool finding security weaknesses', 'Password cracker', 'Encryption tool'], ans: 1, exp: 'Identifies known vulnerabilities in systems and applications.' },
-      { q: 'What does CVSS score represent?', opts: ['Company value', 'Vulnerability severity rating', 'Scan speed', 'Network bandwidth'], ans: 1, exp: 'Common Vulnerability Scoring System (0-10 scale).' },
-      { q: 'What is a false positive in vulnerability scanning?', opts: ['Missed vulnerability', 'Reported vulnerability that doesn\'t exist', 'Critical finding', 'Network error'], ans: 1, exp: 'Scanner reports vulnerability that is not actually present.' },
-      { q: 'What is a false negative?', opts: ['Incorrect report', 'Missed vulnerability that exists', 'Scanner error', 'Network issue'], ans: 1, exp: 'Scanner fails to detect an actual vulnerability.' },
-      { q: 'What is the difference between VA and PT?', opts: ['Same thing', 'VA identifies vulnerabilities, PT actively exploits them', 'PT identifies, VA exploits', 'Different tools'], ans: 1, exp: 'Vulnerability Assessment finds weaknesses; Penetration Testing exploits them.' },
-      { q: 'What is credentialed scanning?', opts: ['Scanning with login credentials for deeper assessment', 'Certificate-based scan', 'Encrypted scan', 'Anonymous scan'], ans: 0, exp: 'Authenticated scan with valid credentials for thorough assessment.' },
-      { q: 'What is CVE?', opts: ['Company vulnerability', 'Common Vulnerabilities and Exposures identifier', 'CVSS score', 'Patch level'], ans: 1, exp: 'Unique identifier for known security vulnerabilities.' },
-      { q: 'What is patch management?', opts: ['Network patching', 'Process of applying software updates to fix vulnerabilities', 'Encryption patching', 'Firewall rules'], ans: 1, exp: 'Systematic process of deploying software updates.' },
-      { q: 'What is vulnerability prioritisation?', opts: ['Random selection', 'Ranking vulnerabilities by risk for remediation order', 'Ignoring low risk', 'Fixing all'], ans: 1, exp: 'Prioritising based on severity, exploitability, and asset criticality.' },
-      { q: 'What is a zero-day vulnerability?', opts: ['Patched yesterday', 'Unknown to vendor with no patch', 'Low severity', 'Network issue'], ans: 1, exp: 'Vulnerability with no available patch when discovered.' }
-    ]
-  },
-
-  // 9. Social Engineering
-  {
-    id: 'social',
-    title: 'Social Engineering',
-    icon: '🎭',
-    accent: 'var(--neon-orange)',
-    desc: 'Phishing, pretexting, and human manipulation',
-    questions: [
-      { q: 'What is phishing?', opts: ['Fishing in cyber sea', 'Fraudulent attempt to obtain sensitive information via email', 'Network scanning', 'Password cracking'], ans: 1, exp: 'Deceptive emails tricking victims into revealing information.' },
-      { q: 'What is spear phishing?', opts: ['Generic phishing', 'Targeted phishing at specific individuals', 'Fast phishing', 'Slow phishing'], ans: 1, exp: 'Personalised phishing using victim-specific information.' },
-      { q: 'What is vishing?', opts: ['Video phishing', 'Voice phishing (phone calls)', 'Virtual phishing', 'Virus phishing'], ans: 1, exp: 'Phishing conducted via phone calls.' },
-      { q: 'What is smishing?', opts: ['SMS phishing', 'Small phishing', 'Smart phishing', 'Secure phishing'], ans: 0, exp: 'Phishing attacks via SMS text messages.' },
-      { q: 'What is pretexting?', opts: ['Pretending to be someone else', 'Text message attack', 'Email attack', 'Network attack'], ans: 0, exp: 'Creating fabricated scenario to obtain information.' },
-      { q: 'What is tailgating?', opts: ['Following car', 'Unauthorized person following authorized into secure area', 'Following network traffic', 'Email following'], ans: 1, exp: 'Physical security breach by following authorized person.' },
-      { q: 'What is baiting?', opts: ['Fishing bait', 'Leaving infected USB drives in public', 'Email bait', 'Network bait'], ans: 1, exp: 'Tempting victims with physical media containing malware.' },
-      { q: 'What is pretexting in social engineering?', opts: ['Text message attack', 'Fabricated scenario to extract information', 'Email attack', 'Phone attack'], ans: 1, exp: 'Creating believable story to manipulate victim.' },
-      { q: 'How to identify phishing email?', opts: ['Check sender domain', 'Look for urgency', 'Hover over links', 'All of above'], ans: 3, exp: 'Multiple red flags: mismatched domains, urgency, suspicious links.' },
-      { q: 'What is MFA and how does it help?', opts: ['Multi-Factor Authentication - requires additional verification', 'Main Frame Access', 'Manual Authentication', 'Maximum Authentication'], ans: 0, exp: 'Requires second factor (OTP, biometric) even if password stolen.' }
-    ]
-  }
-
-];
-
-// ════════════════════════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════════════════════════
-let state = {
-    quizId:    null,
-    questions: [],
-    index:     0,
-    correct:   0,
-    streak:    0,
-    bestStreak:0,
-    lives:     5,
-    log:       [],      // { q, correct, chosen, expln }
-    results:   {},      // { quizId: { correct, pct, stars } }
+// Database Keys
+const DB_KEYS = {
+    USERS: 'ctf_users',
+    SUBMISSIONS: 'ctf_db_submissions',
+    USER_POINTS: 'ctf_user_points',
+    STUDENT_QUIZ_RESULTS: (username) => `student_quiz_results_${username}`,
+    STUDENT_QUIZ_STREAK: (username) => `student_quiz_streak_${username}`
 };
 
-const MAX_LIVES = 5;
-
-function loadPersist() {
-    try {
-        const s = JSON.parse(localStorage.getItem('quizState') || '{}');
-        state.results    = s.results    || {};
-        state.bestStreak = s.bestStreak || 0;
-    } catch(_) {}
+// Auth Functions
+function getCurrentUser() {
+    const user = localStorage.getItem('user') || sessionStorage.getItem('user');
+    if(user) { try { return JSON.parse(user); } catch(e) { return null; } }
+    return null;
 }
 
-function savePersist() {
-    const total   = Object.values(state.results).reduce((a,r) => a + (r.correct || 0), 0) * 10;
-    const done    = Object.keys(state.results).length;
-    const allPct  = done ? Math.round(Object.values(state.results).reduce((a,r) => a + (r.pct || 0), 0) / done) : null;
-    localStorage.setItem('quizState', JSON.stringify({
-        results:    state.results,
-        bestStreak: state.bestStreak,
-        totalScore: total,
-        done,
-        avgPct:     allPct,
-    }));
+function navigateTo(page) { window.location.href = page; }
+
+function showToast(message, isError = false) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.style.borderColor = isError ? '#ff5555' : '#50fa7b';
+    toast.style.color = isError ? '#ff5555' : '#50fa7b';
+    toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${message}`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
 }
 
-// Reset all quiz progress
-function resetAllProgress() {
-    if (confirm('⚠️ WARNING: This will reset ALL quiz progress, scores, and best streaks. This action cannot be undone!')) {
-        state.results = {};
-        state.bestStreak = 0;
-        savePersist();
-        renderHome();
-        alert('All quiz progress has been reset!');
+function updateAuthUI() {
+    const authContainer = document.getElementById('authContainer');
+    if(!authContainer) return;
+    const user = getCurrentUser();
+    if(user && user.username) {
+        authContainer.innerHTML = `<span class="user-greeting"><i class="fas fa-user-astronaut"></i> ${escapeHtml(user.username)}</span><button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> LOGOUT</button>`;
+    } else {
+        authContainer.innerHTML = `<a href="login.html" style="display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-sign-in-alt"></i> Login</a>`;
     }
 }
 
-// ════════════════════════════════════════════════════════════
-// HOME SCREEN
-// ════════════════════════════════════════════════════════════
-function renderHome() {
-    loadPersist();
+function logout() {
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('user');
+    showToast('Logged out successfully');
+    setTimeout(() => window.location.href = 'login.html', 1000);
+}
 
-    // global stats
-    const done    = Object.keys(state.results).length;
-    const allPcts = Object.values(state.results).map(r => r.pct || 0);
-    const avgAcc  = allPcts.length ? Math.round(allPcts.reduce((a,b)=>a+b,0)/allPcts.length) : null;
-    const total   = Object.values(state.results).reduce((a,r)=>a+(r.correct||0),0) * 10;
-
-    document.getElementById('gsTotal').textContent     = total;
-    document.getElementById('gsCompleted').textContent = done + ' / ' + QUIZZES.length;
-    document.getElementById('gsStreak').textContent    = state.bestStreak + '🔥';
-    document.getElementById('gsAcc').textContent       = avgAcc !== null ? avgAcc + '%' : '—';
-
-    // quiz cards
-    const grid = document.getElementById('quizCardGrid');
-    grid.innerHTML = '';
-
-    QUIZZES.forEach(quiz => {
-        const res  = state.results[quiz.id];
-        const pct  = res ? res.pct   : 0;
-        const stars = res ? res.stars : 0;
-
-        const card = document.createElement('div');
-        card.className = 'quiz-card';
-        card.style.setProperty('--accent', quiz.accent);
-
-        const starHtml = [1,2,3].map(i =>
-            `<i class="fas fa-star${i <= stars ? ' lit' : ''}"></i>`
-        ).join('');
-
-        card.innerHTML = `
-            ${res ? '<span class="qc-badge done">✓ Done</span>' : ''}
-            <div class="qc-top">
-                <span class="qc-icon">${quiz.icon}</span>
-                <div class="qc-title">${quiz.title}</div>
-                <div class="qc-desc">${quiz.desc}</div>
-            </div>
-            <div class="qc-bottom">
-                <span class="qc-meta">10 Qs</span>
-                <div class="qc-progress-wrap">
-                    <div class="qc-progress-fill" style="width:${pct}%"></div>
-                </div>
-                <span class="qc-pct">${pct ? pct + '%' : '—'}</span>
-            </div>
-            <div style="padding: 0.5rem 1.5rem 1rem; display:flex; justify-content:space-between; align-items:center;">
-                <div class="qc-stars">${starHtml}</div>
-                <span style="font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;">
-                    ${res ? 'Best: ' + res.correct + '/10' : 'Not started'}
-                </span>
-            </div>
-        `;
-        card.addEventListener('click', () => startQuiz(quiz.id));
-        grid.appendChild(card);
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
     });
 }
 
-// ════════════════════════════════════════════════════════════
-// START QUIZ
-// ════════════════════════════════════════════════════════════
-function startQuiz(id) {
-    const quiz = QUIZZES.find(q => q.id === id);
-    if (!quiz) return;
-
-    // shuffle questions
-    const shuffled = [...quiz.questions].sort(() => Math.random() - 0.5);
-
-    state.quizId    = id;
-    state.questions = shuffled;
-    state.index     = 0;
-    state.correct   = 0;
-    state.streak    = 0;
-    state.lives     = MAX_LIVES;
-    state.log       = [];
-
-    showScreen('screenQuiz');
-    renderLives();
-    showQuestion();
+// Student-Isolated Progress Functions
+function getStudentResults() {
+    const user = getCurrentUser();
+    if (!user) return {};
+    const key = DB_KEYS.STUDENT_QUIZ_RESULTS(user.username);
+    try { return JSON.parse(localStorage.getItem(key)) || {}; } catch(e) { return {}; }
 }
 
-// ════════════════════════════════════════════════════════════
-// QUESTION RENDER
-// ════════════════════════════════════════════════════════════
+function saveStudentResults(results) {
+    const user = getCurrentUser();
+    if (!user) return;
+    const key = DB_KEYS.STUDENT_QUIZ_RESULTS(user.username);
+    localStorage.setItem(key, JSON.stringify(results));
+}
+
+function getStudentStreak() {
+    const user = getCurrentUser();
+    if (!user) return 0;
+    const key = DB_KEYS.STUDENT_QUIZ_STREAK(user.username);
+    return parseInt(localStorage.getItem(key)) || 0;
+}
+
+function saveStudentStreak(streak) {
+    const user = getCurrentUser();
+    if (!user) return;
+    const key = DB_KEYS.STUDENT_QUIZ_STREAK(user.username);
+    localStorage.setItem(key, streak.toString());
+}
+
+// 10 UNIQUE QUESTIONS PER TOPIC
+const QUIZ_QUESTIONS = {
+    crypto: [
+        { q: 'What does Base64 encoding produce from binary data?', opts: ['Encrypted ciphertext', 'A hex string', 'A printable ASCII string using 64 characters', 'A compressed archive'], ans: 2, exp: 'Base64 converts binary data into printable ASCII using 64 characters (A-Z, a-z, 0-9, +, /).' },
+        { q: 'ROT13 is applied to the text "synth". What is the result?', opts: ['fffff', 'flags', 'flagu', 'found'], ans: 1, exp: 'ROT13 shifts each letter by 13: s→f, y→l, n→a, t→g, h→s → "flags".' },
+        { q: 'Which hashing algorithm is considered cryptographically broken?', opts: ['SHA-256', 'bcrypt', 'MD5', 'Argon2'], ans: 2, exp: 'MD5 is broken due to known collision attacks.' },
+        { q: 'In asymmetric encryption, which key does Alice use to encrypt for Bob?', opts: ["Alice's private", "Alice's public", "Bob's public", "Bob's private"], ans: 2, exp: 'Encrypt with the recipient\'s public key.' },
+        { q: 'What is the primary security guarantee of a cryptographic hash?', opts: ['It can be decrypted', 'Same output for any input', 'One-way function', 'Compresses data'], ans: 2, exp: 'A cryptographic hash is a one-way function.' },
+        { q: 'XOR: 0x41 XOR 0x1F = ?', opts: ['0x5E', '0x60', '0x22', '0x4A'], ans: 0, exp: '0x41 XOR 0x1F = 0x5E. XOR is its own inverse.' },
+        { q: '$2b$ prefix indicates which algorithm?', opts: ['SHA-256', 'MD5', 'bcrypt', 'AES-256'], ans: 2, exp: '$2b$ identifies bcrypt password hashing.' },
+        { q: 'RSA security relies on?', opts: ['XOR speed', 'Factoring large primes', 'Shared secret', 'Message length'], ans: 1, exp: 'RSA relies on the integer factorization problem.' },
+        { q: 'What is the purpose of a salt in password hashing?', opts: ['Speed up hashing', 'Make each hash unique', 'Add encryption', 'Shorten output'], ans: 1, exp: 'A salt defeats rainbow table attacks.' },
+        { q: 'Caesar cipher: "HACK" shift 3 = ?', opts: ['IBEKD', 'KDFL', 'KDFN', 'JBDL'], ans: 2, exp: 'H(7)+3=K, A(0)+3=D, C(2)+3=F, K(10)+3=N → KDFN.' }
+    ],
+    steg: [
+        { q: 'What is steganography?', opts: ['Study of ciphers', 'Hiding existence of a message', 'Encrypting files', 'Compressing data'], ans: 1, exp: 'Steganography hides the existence of a message.' },
+        { q: 'Most common image steganography technique modifies?', opts: ['MSB', 'File header', 'Least Significant Bit (LSB)', 'Colour palette'], ans: 2, exp: 'LSB steganography changes the last bit of each colour channel.' },
+        { q: 'What does `strings image.jpg` reveal?', opts: ['Corrupted image', 'Appended hidden text', 'Encrypted data', 'Not a JPEG'], ans: 1, exp: 'Text appended after JPEG end marker is visible to strings.' },
+        { q: 'Which tool embeds/extracts data from JPEG with a passphrase?', opts: ['Wireshark', 'steghide', 'Nmap', 'John'], ans: 1, exp: 'steghide embeds and extracts with AES-128 encryption.' },
+        { q: 'What does `zsteg` do to PNG files?', opts: ['Compresses', 'Tests bit planes for hidden data', 'Converts to JPEG', 'Encrypts'], ans: 1, exp: 'zsteg tests all bit planes and colour channels for hidden data.' },
+        { q: 'Spectrogram steganography is visible in which tool?', opts: ['Photoshop', 'Audacity', 'VLC', 'Notepad'], ans: 1, exp: 'Audacity spectrogram view reveals images encoded as audio frequencies.' },
+        { q: 'Which tool cracks steghide passphrases with a wordlist?', opts: ['stegseek', 'binwalk', 'exiftool', 'hexdump'], ans: 0, exp: 'stegseek is optimised for steghide brute-force.' },
+        { q: 'Which command extracts embedded files from binaries?', opts: ['file', 'binwalk', 'strings', 'xxd'], ans: 1, exp: 'binwalk -e extracts embedded files.' },
+        { q: 'Which tool reads/removes EXIF metadata?', opts: ['steghide', 'exiftool', 'stegseek', 'zsteg'], ans: 1, exp: 'exiftool reads and removes metadata.' },
+        { q: 'zsteg output "b1,b,lsb,xy" means?', opts: ['Bit 1, blue channel, LSB, xy scan', 'Binary layer 1', 'Byte 1', 'Bit 1, brightness'], ans: 0, exp: 'b1=bit plane 1, b=blue channel, lsb=least significant bit, xy=scan order.' }
+    ],
+    forensic: [
+        { q: 'What is a PCAP file?', opts: ['Compressed archive', 'Binary recording of network packets', 'Malware payload', 'Certificate file'], ans: 1, exp: 'A PCAP stores raw network traffic.' },
+        { q: 'Wireshark "Follow TCP Stream" does what?', opts: ['Filters SYN packets', 'Reassembles TCP conversation', 'Sends test packets', 'Decrypts TLS'], ans: 1, exp: 'Reassembles full client-server TCP conversation.' },
+        { q: 'Filter for POST requests containing "login"?', opts: ['tcp.port==80 && login', 'http.request.method=="POST" && http contains "login"', 'http.post.login', 'tcp.payload contains login'], ans: 1, exp: 'Correct display filter syntax.' },
+        { q: 'How to verify disk image integrity?', opts: ['Check file date', 'Compare SHA-256 hash', 'Open in hex editor', 'Run antivirus'], ans: 1, exp: 'Matching cryptographic hashes prove forensic soundness.' },
+        { q: 'Command to find SetUID files?', opts: ['ls -la | grep s', 'find / -perm -4000', 'locate setuid', 'chmod -s'], ans: 1, exp: 'find / -perm -4000 finds SUID binaries.' },
+        { q: 'Thousands of SYN packets with no ACK indicates?', opts: ['DNS amplification', 'ARP poisoning', 'SYN flood DDoS', 'SQL injection'], ans: 2, exp: 'SYN flood exhausts TCP connection table.' },
+        { q: 'Extract HTTP files from PCAP?', opts: ['Edit → Paste', 'File → Export Objects → HTTP', 'Analyze → Decode As', 'Statistics → Save'], ans: 1, exp: 'Wireshark can export all HTTP objects.' },
+        { q: 'Which protocol transmits credentials in plaintext?', opts: ['SSH', 'SFTP', 'HTTPS', 'FTP'], ans: 3, exp: 'FTP sends USER and PASS as plain ASCII.' },
+        { q: 'Order of volatility: collect what first?', opts: ['Disk', 'RAM', 'Network', 'Backups'], ans: 1, exp: 'Most volatile (RAM) first before power loss.' },
+        { q: '`file suspicious.bin` returns "PE32 executable". What is it?', opts: ['Linux ELF', '32-bit Windows executable', 'Encrypted archive', 'PDF'], ans: 1, exp: 'PE32 = Windows Portable Executable format.' }
+    ],
+    sql: [
+        { q: 'First test character for SQL injection?', opts: ['"', "'", ';', '&'], ans: 1, exp: 'Single quote breaks string literals.' },
+        { q: 'What does `\' OR \'1\'=\'1\' --` achieve?', opts: ['Deletes table', 'Bypasses login', 'Crashes DB', 'Creates admin'], ans: 1, exp: 'Makes WHERE clause always TRUE, comments out password check.' },
+        { q: 'Best defense against SQL injection?', opts: ['Input limits', 'Client validation', 'Parameterized queries', 'HTML encoding'], ans: 2, exp: 'Parameterized queries separate code from data.' },
+        { q: 'UNION injection requires?', opts: ['MySQL only', 'Same column count', 'Admin password', 'PHP installed'], ans: 1, exp: 'Both queries must return same number of columns.' },
+        { q: 'Boolean-based blind SQL injection uses?', opts: ['UNION', 'True/False page differences', 'Time delays', 'Error messages'], ans: 1, exp: 'Infers data from two distinct page responses.' },
+        { q: 'Time-based blind payload?', opts: ["' OR '1'='1", "'; DROP TABLE", "' AND SLEEP(5)--", "' UNION SELECT"], ans: 2, exp: 'SLEEP(5) pauses database, confirming injection.' },
+        { q: 'What does sqlmap --dump do?', opts: ['Dumps logs', 'Extracts table data', 'Deletes database', 'Creates backup'], ans: 1, exp: 'Retrieves all data from identified tables.' },
+        { q: 'Concatenating user_id into SQL is vulnerable because?', opts: ['SELECT is unsafe', 'OR 1=1 changes logic', 'Wildcard issue', 'Numbers crash'], ans: 1, exp: 'User input can alter query logic.' },
+        { q: 'OWASP ranks SQL injection under?', opts: ['A01', 'A02', 'A03', 'A05'], ans: 2, exp: 'A03: Injection in OWASP Top 10 2021.' },
+        { q: 'Extracting admin password character by character is?', opts: ['Boolean-based blind SQLi', 'Union injection', 'Error-based', 'Out-of-band'], ans: 0, exp: 'Uses SUBSTRING() and boolean inference.' }
+    ],
+    ethack: [
+        { q: 'Black vs White vs Grey box testing?', opts: ['Internal/external/wireless', 'No knowledge/full knowledge/partial knowledge', 'Malware/scanning/social', 'All same'], ans: 1, exp: 'Black=no prior info, White=full access, Grey=partial.' },
+        { q: 'What does CVE stand for?', opts: ['Common Vulnerability Exposure', 'Common Vulnerabilities and Exposures', 'Certified Vulnerability Expert', 'Cyber Vulnerability Enumeration'], ans: 1, exp: 'CVE is a public dictionary of known security flaws.' },
+        { q: 'Purpose of a reverse shell?', opts: ['Encrypt connection', 'Target connects back to attacker', 'Reverse engineer binary', 'Read shell history'], ans: 1, exp: 'Bypasses inbound firewalls by initiating outbound connection.' },
+        { q: 'Nmap SYN stealth scan flag?', opts: ['-sV', '-sS', '-sU', '-O'], ans: 1, exp: 'nmap -sS performs half-open SYN scan.' },
+        { q: 'Privilege escalation means?', opts: ['Initial access', 'Increasing permissions (user → admin)', 'DoS attack', 'Ransomware'], ans: 1, exp: 'Moving from limited to elevated access.' },
+        { q: 'OSINT stands for?', opts: ['Open Source Intelligence', 'Operational Security Intelligence', 'Offensive Security Integration', 'Online System ID'], ans: 0, exp: 'OSINT collects publicly available information.' },
+        { q: 'MITRE ATT&CK framework?', opts: ['Certification', 'Knowledge base of TTPs', 'Scanning tool', 'Scoring system'], ans: 1, exp: 'Tactics, Techniques, and Procedures from real-world attacks.' },
+        { q: 'Zero-day vulnerability means?', opts: ['Patched yesterday', 'Unknown to vendor, no patch', 'Only works on day zero', 'Zero-second exploit'], ans: 1, exp: 'Flaw unknown to vendor with no available patch.' },
+        { q: 'Lateral movement describes?', opts: ['Moving files', 'Expanding access across network', 'Horizontal scanning', 'TLS downgrade'], ans: 1, exp: 'Spreading from initial foothold to other systems.' },
+        { q: 'GPU-accelerated password cracker?', opts: ['Metasploit', 'Wireshark', 'Hashcat', 'Burp Suite'], ans: 2, exp: 'Hashcat supports 300+ hash types with GPU acceleration.' }
+    ],
+    bruteforce: [
+        { q: 'What is a brute force attack?', opts: ['Encrypting data', 'Trying all possible password combinations', 'Injecting SQL code', 'Network scanning'], ans: 1, exp: 'Systematically trying every possible combination until correct.' },
+        { q: 'What is a dictionary attack?', opts: ['Cracking with wordlist of common passwords', 'Attacking dictionary websites', 'Encrypting dictionary files', 'DOS attack'], ans: 0, exp: 'Uses pre-compiled wordlist of common passwords.' },
+        { q: 'What is a rainbow table?', opts: ['Colourful password list', 'Precomputed hash-to-plaintext lookup table', 'Encryption algorithm', 'Password manager'], ans: 1, exp: 'Precomputed table for reversing cryptographic hash functions.' },
+        { q: 'How does salting defeat rainbow tables?', opts: ['Makes passwords longer', 'Adds random data making each hash unique', 'Encrypts the password twice', 'Deletes the table'], ans: 1, exp: 'Random salt creates unique hash for identical passwords.' },
+        { q: 'Which tool is commonly used for offline password cracking?', opts: ['Nmap', 'Wireshark', 'John the Ripper', 'Metasploit'], ans: 2, exp: 'John the Ripper is a popular password cracking tool.' },
+        { q: 'What is a hybrid attack?', opts: ['Combining dictionary with mutations', 'Two computers attacking together', 'Mixed encryption types', 'Network and local attack'], ans: 0, exp: 'Appends/prepends numbers/symbols to dictionary words.' },
+        { q: 'What is credential stuffing?', opts: ['Filling credentials manually', 'Using stolen username/password pairs from one breach on other sites', 'Creating new credentials', 'Encrypting credentials'], ans: 1, exp: 'Automated injection of breached username/password pairs.' },
+        { q: 'How does account lockout prevent brute force?', opts: ['Locks keyboard', 'Disables account after failed attempts', 'Changes password', 'Encrypts login'], ans: 1, exp: 'Temporarily or permanently disables account after threshold.' },
+        { q: 'What is rate limiting?', opts: ['Limiting internet speed', 'Restricting number of login attempts per time period', 'Limiting file downloads', 'Bandwidth control'], ans: 1, exp: 'Restricts request frequency to slow automated attacks.' },
+        { q: 'Which hash type is deliberately slow to resist brute force?', opts: ['MD5', 'SHA-1', 'bcrypt', 'CRC32'], ans: 2, exp: 'bcrypt has configurable work factor making it computationally expensive.' }
+    ],
+    malware: [
+        { q: 'What is static malware analysis?', opts: ['Running malware in debugger', 'Examining code without executing', 'Network traffic analysis', 'Memory forensics'], ans: 1, exp: 'Analyzing binary without executing it.' },
+        { q: 'What is dynamic analysis?', opts: ['Examining code without running', 'Executing malware in sandbox', 'Source code review', 'Signature scanning'], ans: 1, exp: 'Observing behaviour in controlled environment.' },
+        { q: 'What is a sandbox in malware analysis?', opts: ['Beach container', 'Isolated environment for safe execution', 'Encryption tool', 'Network scanner'], ans: 1, exp: 'Isolated environment to execute malware safely.' },
+        { q: 'What is a trojan horse?', opts: ['Ancient weapon', 'Malware disguised as legitimate software', 'Virus replicating itself', 'Network worm'], ans: 1, exp: 'Disguises malicious functionality within legitimate-looking software.' },
+        { q: 'What is a ransomware?', opts: ['Random encryption', 'Malware that encrypts files for ransom', 'Network scanner', 'Password cracker'], ans: 1, exp: 'Encrypts victim files and demands payment for decryption.' },
+        { q: 'What is a keylogger?', opts: ['Logging network keys', 'Recording keystrokes', 'Encrypting keys', 'Key generator'], ans: 1, exp: 'Captures and records user keystrokes.' },
+        { q: 'What is packer/obfuscator used for?', opts: ['Compressing code', 'Hiding malware from signature detection', 'Encrypting files', 'Network packing'], ans: 1, exp: 'Obfuscates code to evade signature-based detection.' },
+        { q: 'Which tool unpacks UPX-packed binaries?', opts: ['upx -d', 'unzip', 'tar -x', 'gzip -d'], ans: 0, exp: 'upx -d decompresses UPX-packed executables.' },
+        { q: 'What is a rootkit?', opts: ['Network toolkit', 'Malware hiding its presence from OS', 'Password cracker', 'Encryption tool'], ans: 1, exp: 'Modifies OS to conceal malicious activity.' },
+        { q: 'What is IAT hooking?', opts: ['Fishing technique', 'Modifying Import Address Table to redirect API calls', 'Network hooking', 'Registry modification'], ans: 1, exp: 'Redirects API calls to attacker-controlled code.' }
+    ],
+    vuln: [
+        { q: 'What is a vulnerability scanner?', opts: ['Network monitor', 'Automated tool finding security weaknesses', 'Password cracker', 'Encryption tool'], ans: 1, exp: 'Identifies known vulnerabilities in systems and applications.' },
+        { q: 'What does CVSS score represent?', opts: ['Company value', 'Vulnerability severity rating', 'Scan speed', 'Network bandwidth'], ans: 1, exp: 'Common Vulnerability Scoring System (0-10 scale).' },
+        { q: 'What is a false positive in vulnerability scanning?', opts: ['Missed vulnerability', 'Reported vulnerability that doesn\'t exist', 'Critical finding', 'Network error'], ans: 1, exp: 'Scanner reports vulnerability that is not actually present.' },
+        { q: 'What is a false negative?', opts: ['Incorrect report', 'Missed vulnerability that exists', 'Scanner error', 'Network issue'], ans: 1, exp: 'Scanner fails to detect an actual vulnerability.' },
+        { q: 'What is the difference between VA and PT?', opts: ['Same thing', 'VA identifies vulnerabilities, PT actively exploits them', 'PT identifies, VA exploits', 'Different tools'], ans: 1, exp: 'Vulnerability Assessment finds weaknesses; Penetration Testing exploits them.' },
+        { q: 'What is credentialed scanning?', opts: ['Scanning with login credentials for deeper assessment', 'Certificate-based scan', 'Encrypted scan', 'Anonymous scan'], ans: 0, exp: 'Authenticated scan with valid credentials for thorough assessment.' },
+        { q: 'What is CVE?', opts: ['Company vulnerability', 'Common Vulnerabilities and Exposures identifier', 'CVSS score', 'Patch level'], ans: 1, exp: 'Unique identifier for known security vulnerabilities.' },
+        { q: 'What is patch management?', opts: ['Network patching', 'Process of applying software updates to fix vulnerabilities', 'Encryption patching', 'Firewall rules'], ans: 1, exp: 'Systematic process of deploying software updates.' },
+        { q: 'What is vulnerability prioritisation?', opts: ['Random selection', 'Ranking vulnerabilities by risk for remediation order', 'Ignoring low risk', 'Fixing all'], ans: 1, exp: 'Prioritising based on severity, exploitability, and asset criticality.' },
+        { q: 'What is a zero-day vulnerability?', opts: ['Patched yesterday', 'Unknown to vendor with no patch', 'Low severity', 'Network issue'], ans: 1, exp: 'Vulnerability with no available patch when discovered.' }
+    ],
+    social: [
+        { q: 'What is phishing?', opts: ['Fishing in cyber sea', 'Fraudulent attempt to obtain sensitive information via email', 'Network scanning', 'Password cracking'], ans: 1, exp: 'Deceptive emails tricking victims into revealing information.' },
+        { q: 'What is spear phishing?', opts: ['Generic phishing', 'Targeted phishing at specific individuals', 'Fast phishing', 'Slow phishing'], ans: 1, exp: 'Personalised phishing using victim-specific information.' },
+        { q: 'What is vishing?', opts: ['Video phishing', 'Voice phishing (phone calls)', 'Virtual phishing', 'Virus phishing'], ans: 1, exp: 'Phishing conducted via phone calls.' },
+        { q: 'What is smishing?', opts: ['SMS phishing', 'Small phishing', 'Smart phishing', 'Secure phishing'], ans: 0, exp: 'Phishing attacks via SMS text messages.' },
+        { q: 'What is pretexting?', opts: ['Pretending to be someone else', 'Text message attack', 'Email attack', 'Network attack'], ans: 0, exp: 'Creating fabricated scenario to obtain information.' },
+        { q: 'What is tailgating?', opts: ['Following car', 'Unauthorized person following authorized into secure area', 'Following network traffic', 'Email following'], ans: 1, exp: 'Physical security breach by following authorized person.' },
+        { q: 'What is baiting?', opts: ['Fishing bait', 'Leaving infected USB drives in public', 'Email bait', 'Network bait'], ans: 1, exp: 'Tempting victims with physical media containing malware.' },
+        { q: 'What is pretexting in social engineering?', opts: ['Text message attack', 'Fabricated scenario to extract information', 'Email attack', 'Phone attack'], ans: 1, exp: 'Creating believable story to manipulate victim.' },
+        { q: 'How to identify phishing email?', opts: ['Check sender domain', 'Look for urgency', 'Hover over links', 'All of above'], ans: 3, exp: 'Multiple red flags: mismatched domains, urgency, suspicious links.' },
+        { q: 'What is MFA and how does it help?', opts: ['Multi-Factor Authentication - requires additional verification', 'Main Frame Access', 'Manual Authentication', 'Maximum Authentication'], ans: 0, exp: 'Requires second factor (OTP, biometric) even if password stolen.' }
+    ]
+};
+
+const QUIZZES = [
+    { id: 'crypto', title: 'Cryptography', icon: '🔐', accent: 'var(--neon-purple)', desc: 'Ciphers, hashing, public-key crypto', points: 100 },
+    { id: 'steg', title: 'Steganography', icon: '🖼️', accent: 'var(--neon-yellow)', desc: 'Hiding data in images and files', points: 100 },
+    { id: 'forensic', title: 'Digital Forensics', icon: '🔍', accent: 'var(--neon-pink)', desc: 'PCAP analysis and investigation', points: 100 },
+    { id: 'sql', title: 'SQL Injection', icon: '💉', accent: 'var(--neon-cyan)', desc: 'Query manipulation and defenses', points: 100 },
+    { id: 'ethack', title: 'Ethical Hacking', icon: '🛡️', accent: 'var(--neon-green)', desc: 'Core concepts and tools', points: 100 },
+    { id: 'bruteforce', title: 'Brute Force', icon: '💣', accent: 'var(--neon-red)', desc: 'Password cracking and mitigation', points: 100 },
+    { id: 'malware', title: 'Malware Analysis', icon: '🦠', accent: 'var(--neon-purple)', desc: 'Types and analysis techniques', points: 100 },
+    { id: 'vuln', title: 'Vulnerability Assessment', icon: '🔎', accent: 'var(--neon-cyan)', desc: 'Scanning and CVSS', points: 100 },
+    { id: 'social', title: 'Social Engineering', icon: '🎭', accent: 'var(--neon-orange)', desc: 'Phishing and manipulation', points: 100 }
+];
+
+// State
+let currentQuiz = null;
+let currentQuestions = [];
+let currentIndex = 0;
+let currentScore = 0;
+let currentStreak = 0;
+let currentLives = 5;
+let currentAnswers = [];
+let quizInProgress = false;
+
+function renderHome() {
+    const user = getCurrentUser();
+    if (!user) return;
+    
+    const results = getStudentResults();
+    const bestStreak = getStudentStreak();
+    
+    let totalPoints = 0;
+    let completedCount = 0;
+    let totalPct = 0;
+    
+    for (const [quizId, result] of Object.entries(results)) {
+        totalPoints += (result.score || 0) * 10;
+        completedCount++;
+        totalPct += (result.percentage || 0);
+    }
+    const avgAcc = completedCount > 0 ? Math.round(totalPct / completedCount) : null;
+    
+    document.getElementById('gsTotal').textContent = totalPoints;
+    document.getElementById('gsCompleted').textContent = completedCount + ' / ' + QUIZZES.length;
+    document.getElementById('gsStreak').textContent = bestStreak + '🔥';
+    document.getElementById('gsAcc').textContent = avgAcc !== null ? avgAcc + '%' : '—';
+    
+    const grid = document.getElementById('quizCardGrid');
+    grid.innerHTML = QUIZZES.map(quiz => {
+        const result = results[quiz.id];
+        const isCompleted = result && result.score >= 7;
+        const scoreText = result ? `${result.score}/10` : 'Not started';
+        return `
+            <div class="quiz-card ${isCompleted ? 'completed' : ''}" style="--accent: ${quiz.accent}" onclick="startQuiz('${quiz.id}')">
+                <div class="qc-top"><span class="qc-icon">${quiz.icon}</span><div class="qc-title">${quiz.title}</div><div class="qc-desc">${quiz.desc}</div></div>
+                <div class="qc-bottom"><span class="qc-meta">10 Qs • ${quiz.points} pts</span><div class="qc-progress-wrap"><div class="qc-progress-fill" style="width:${result?.percentage || 0}%"></div></div><span class="qc-pct">${result?.percentage || 0}%</span></div>
+                <div style="padding: 0.5rem 1.5rem 1rem; display:flex; justify-content:space-between; align-items:center;"><div class="qc-stars">${[1,2,3].map(i => `<i class="fas fa-star${i <= (result?.stars || 0) ? ' lit' : ''}"></i>`).join('')}</div><span style="font-size:0.7rem;color:var(--text-secondary);">${scoreText}</span></div>
+            </div>
+        `;
+    }).join('');
+}
+
+function startQuiz(quizId) {
+    const user = getCurrentUser();
+    if (!user) { showToast('Please login to take quizzes', true); return; }
+    
+    const quiz = QUIZZES.find(q => q.id === quizId);
+    if (!quiz) return;
+    
+    currentQuestions = [...QUIZ_QUESTIONS[quizId]];
+    currentQuiz = quiz;
+    currentIndex = 0;
+    currentScore = 0;
+    currentStreak = 0;
+    currentLives = 5;
+    currentAnswers = [];
+    quizInProgress = true;
+    
+    showQuestion();
+    showScreen('screenQuiz');
+}
+
 function showQuestion() {
-    const q       = state.questions[state.index];
-    const total   = state.questions.length;
-    const pct     = (state.index / total) * 100;
-    const quiz    = QUIZZES.find(x => x.id === state.quizId);
-
-    // topbar
+    if (!currentQuestions || currentIndex >= currentQuestions.length) { finishQuiz(); return; }
+    
+    const q = currentQuestions[currentIndex];
+    const total = currentQuestions.length;
+    const pct = ((currentIndex) / total) * 100;
+    
     document.getElementById('topProgress').style.width = pct + '%';
-    document.getElementById('qCounter').textContent    = (state.index + 1) + ' / ' + total;
-    document.getElementById('streakDisplay').textContent = state.streak;
-
-    // category tag
-    const tag = document.getElementById('qCatTag');
-    tag.style.borderColor = quiz.accent;
-    tag.style.color       = quiz.accent;
-    tag.innerHTML = `${quiz.icon} ${quiz.title}`;
-
-    // question card
-    const card = document.getElementById('questionCard');
-    card.dataset.num = state.index + 1;
-    card.style.borderColor = 'rgba(0,255,157,0.15)';
+    document.getElementById('qCounter').textContent = (currentIndex + 1) + ' / ' + total;
+    document.getElementById('streakDisplay').textContent = currentStreak;
+    document.getElementById('qCatTag').innerHTML = `${currentQuiz.icon} ${currentQuiz.title}`;
     document.getElementById('questionText').innerHTML = q.q;
-
-    // reset feedback + next
-    const fb = document.getElementById('feedbackBanner');
-    fb.className = 'feedback-banner';
-    const nb = document.getElementById('nextBtn');
-    nb.className = 'next-btn';
-
-    // render options
+    
+    document.getElementById('feedbackBanner').className = 'feedback-banner';
+    document.getElementById('nextBtn').classList.remove('show');
+    
     const letters = ['A', 'B', 'C', 'D'];
-    const grid    = document.getElementById('optionsGrid');
+    const grid = document.getElementById('optionsGrid');
     grid.innerHTML = '';
-
-    // shuffle option order
+    
     const indices = [0,1,2,3].sort(() => Math.random() - 0.5);
-    const correctLetter = String.fromCharCode(65 + indices.indexOf(q.ans));
-
+    
     indices.forEach((origIdx, pos) => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
-        btn.dataset.orig = origIdx;
-        btn.innerHTML = `
-            <span class="opt-letter" style="color:${quiz.accent};border-color:${quiz.accent};">
-                ${letters[pos]}
-            </span>
-            ${q.opts[origIdx]}
-        `;
-        btn.addEventListener('click', () => onAnswer(btn, origIdx, q, indices));
+        btn.innerHTML = `<span class="opt-letter" style="color:${currentQuiz.accent};border-color:${currentQuiz.accent};">${letters[pos]}</span> ${q.opts[origIdx]}`;
+        btn.onclick = () => onAnswer(btn, origIdx, q);
         grid.appendChild(btn);
     });
+    
+    renderLives();
 }
 
-// ════════════════════════════════════════════════════════════
-// ANSWER HANDLING
-// ════════════════════════════════════════════════════════════
-function onAnswer(clickedBtn, chosenOrig, q, indices) {
-    // disable all
+function onAnswer(btn, chosenIdx, q) {
     document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-
-    const isCorrect = chosenOrig === q.ans;
-
-    // mark buttons
-    document.querySelectorAll('.option-btn').forEach(btn => {
-        const orig = parseInt(btn.dataset.orig);
-        if (orig === q.ans)    btn.classList.add(isCorrect ? 'correct' : 'reveal-correct');
-        if (orig === chosenOrig && !isCorrect) btn.classList.add('wrong');
-    });
-    if (isCorrect) clickedBtn.classList.remove('reveal-correct');
-    if (isCorrect) clickedBtn.classList.add('correct');
-
-    // feedback
-    const fb   = document.getElementById('feedbackBanner');
-    const head = document.getElementById('fbHeading');
-    const txt  = document.getElementById('fbText');
-
+    const isCorrect = chosenIdx === q.ans;
+    
+    document.querySelectorAll('.option-btn').forEach(b => { if (b.innerHTML.includes(q.opts[q.ans])) b.classList.add('correct'); });
+    
     if (isCorrect) {
-        state.correct++;
-        state.streak++;
-        if (state.streak > state.bestStreak) state.bestStreak = state.streak;
-        fb.classList.add('show', 'correct-fb');
-        head.innerHTML = '<i class="fas fa-check-circle"></i> Correct!';
-        txt.innerHTML  = q.exp;
-        document.getElementById('questionCard').style.borderColor = 'rgba(80,250,123,0.3)';
+        btn.classList.add('correct');
+        currentScore++;
+        currentStreak++;
+        showToast('✓ Correct! +10 points', false);
+        document.getElementById('feedbackBanner').className = 'feedback-banner show correct-fb';
+        document.getElementById('fbHeading').innerHTML = '<i class="fas fa-check-circle"></i> Correct!';
+        document.getElementById('fbText').innerHTML = q.exp;
     } else {
-        state.streak = 0;
-        state.lives--;
-        renderLives();
-        fb.classList.add('show', 'wrong-fb');
-        head.innerHTML = '<i class="fas fa-times-circle"></i> Not quite';
-        txt.innerHTML  = q.exp;
-        document.getElementById('questionCard').style.borderColor = 'rgba(255,85,85,0.3)';
+        btn.classList.add('wrong');
+        currentStreak = 0;
+        currentLives--;
+        showToast('✗ Incorrect', true);
+        document.getElementById('feedbackBanner').className = 'feedback-banner show wrong-fb';
+        document.getElementById('fbHeading').innerHTML = '<i class="fas fa-times-circle"></i> Not quite';
+        document.getElementById('fbText').innerHTML = q.exp;
+        if (currentLives <= 0) { showToast('💀 You ran out of lives!', true); setTimeout(() => finishQuiz(), 1500); return; }
     }
-
-    state.log.push({ q: q.q, correct: isCorrect, chosen: q.opts[chosenOrig], answer: q.opts[q.ans] });
-    document.getElementById('streakDisplay').textContent = state.streak;
-
-    // show next
-    const nb = document.getElementById('nextBtn');
-    nb.classList.add('show');
-    nb.textContent = state.index + 1 === state.questions.length
-        ? '  See Results  ' : '  Continue  ';
-    nb.innerHTML += ' <i class="fas fa-arrow-right"></i>';
+    
+    currentAnswers.push({ question: q.q, correct: isCorrect, selected: q.opts[chosenIdx], correctAnswer: q.opts[q.ans], explanation: q.exp });
+    renderLives();
+    document.getElementById('nextBtn').classList.add('show');
 }
 
-function nextQuestion() {
-    state.index++;
-    if (state.index >= state.questions.length) {
-        showResults();
-    } else {
-        showQuestion();
+function nextQuestion() { currentIndex++; if (currentIndex >= currentQuestions.length || currentLives <= 0) finishQuiz(); else showQuestion(); }
+
+function finishQuiz() {
+    quizInProgress = false;
+    const total = currentQuestions.length;
+    const percentage = Math.round((currentScore / total) * 100);
+    const stars = percentage === 100 ? 3 : percentage >= 70 ? 2 : percentage >= 50 ? 1 : 0;
+    
+    const results = getStudentResults();
+    const existing = results[currentQuiz.id];
+    if (!existing || currentScore > existing.score) {
+        results[currentQuiz.id] = { score: currentScore, total: total, percentage: percentage, stars: stars, completedAt: new Date().toISOString() };
+        saveStudentResults(results);
+        const bestStreak = getStudentStreak();
+        if (currentStreak > bestStreak) saveStudentStreak(currentStreak);
+        recordToGlobalSubmissions(currentQuiz.id, currentQuiz.title, currentScore, total);
+        showToast(`Quiz completed! You earned ${currentScore * 10} points!`, false);
     }
-}
-
-// ════════════════════════════════════════════════════════════
-// LIVES
-// ════════════════════════════════════════════════════════════
-function renderLives() {
-    const row = document.getElementById('livesRow');
-    row.innerHTML = '';
-    for (let i = 0; i < MAX_LIVES; i++) {
-        const dot = document.createElement('div');
-        dot.className = 'life-dot' + (i >= state.lives ? ' lost' : '');
-        row.appendChild(dot);
-    }
-}
-
-// ════════════════════════════════════════════════════════════
-// RESULTS
-// ════════════════════════════════════════════════════════════
-function showResults() {
-    const total   = state.questions.length;
-    const correct = state.correct;
-    const pct     = Math.round((correct / total) * 100);
-
-    // grade + emoji
-    const grades = [
-        { min:100, grade:'S', emoji:'🏆', label:'PERFECT SCORE' },
-        { min:90,  grade:'A', emoji:'⚡', label:'EXCELLENT' },
-        { min:70,  grade:'B', emoji:'🔥', label:'GREAT WORK' },
-        { min:50,  grade:'C', emoji:'💡', label:'KEEP LEARNING' },
-        { min:0,   grade:'D', emoji:'🔁', label:'TRY AGAIN' },
-    ];
-    const g = grades.find(x => pct >= x.min);
-
-    // stars
-    const stars = pct === 100 ? 3 : pct >= 70 ? 2 : pct >= 50 ? 1 : 0;
-
-    // save
-    const prev = state.results[state.quizId];
-    if (!prev || correct > prev.correct) {
-        state.results[state.quizId] = { correct, pct, stars };
-    }
-    savePersist();
-    syncUserScore(correct * 10);
-
-    // DOM
-    document.getElementById('resultEmoji').textContent  = g.emoji;
-    document.getElementById('resultGrade').textContent  = g.grade;
-    document.getElementById('resultLabel').textContent  = g.label;
-    document.getElementById('scoreNum').textContent     = correct;
-    document.getElementById('scoreDen').textContent     = '/ ' + total;
-    document.getElementById('rCorrect').textContent     = correct;
-    document.getElementById('rWrong').textContent       = total - correct;
-    document.getElementById('rAcc').textContent         = pct + '%';
-
-    // animated ring
-    const circumference = 2 * Math.PI * 65; // ~408.4
-    const offset = circumference * (1 - pct / 100);
+    
+    const grade = percentage === 100 ? 'Perfect!' : percentage >= 70 ? 'Great Job!' : percentage >= 50 ? 'Good Try!' : 'Keep Practicing!';
+    const emoji = percentage === 100 ? '🏆' : percentage >= 70 ? '🎉' : percentage >= 50 ? '📚' : '💪';
+    
+    document.getElementById('resultEmoji').textContent = emoji;
+    document.getElementById('resultGrade').textContent = grade;
+    document.getElementById('resultLabel').textContent = `${percentage}% Accuracy`;
+    document.getElementById('scoreNum').textContent = currentScore;
+    document.getElementById('scoreDen').textContent = '/ ' + total;
+    document.getElementById('rCorrect').textContent = currentScore;
+    document.getElementById('rWrong').textContent = total - currentScore;
+    document.getElementById('rAcc').textContent = percentage + '%';
+    
+    const circumference = 2 * Math.PI * 65;
+    const offset = circumference * (1 - percentage / 100);
     const ring = document.getElementById('ringFill');
-    ring.style.strokeDasharray  = circumference;
+    ring.style.strokeDasharray = circumference;
     ring.style.strokeDashoffset = circumference;
     setTimeout(() => { ring.style.strokeDashoffset = offset; }, 100);
-
-    // review list
-    const reviewDiv = document.getElementById('reviewItems');
-    reviewDiv.innerHTML = state.log.map((entry, i) => `
-        <div class="review-item ${entry.correct ? 'r-correct' : 'r-wrong'}">
-            <span class="r-icon">
-                ${entry.correct
-                    ? '<i class="fas fa-check-circle" style="color:var(--diff-beginner)"></i>'
-                    : '<i class="fas fa-times-circle" style="color:var(--diff-advanced)"></i>'}
-            </span>
-            <div>
-                <div class="r-q">Q${i+1}: ${entry.q}</div>
-                ${!entry.correct
-                    ? `<div class="r-a">✓ ${entry.answer}</div>`
-                    : ''}
-            </div>
+    
+    document.getElementById('reviewItems').innerHTML = currentAnswers.map((a, i) => `
+        <div class="review-item ${a.correct ? 'r-correct' : 'r-wrong'}">
+            <span class="r-icon"><i class="fas ${a.correct ? 'fa-check-circle' : 'fa-times-circle'}" style="color:${a.correct ? 'var(--diff-beginner)' : 'var(--diff-advanced)'}"></i></span>
+            <div><div class="r-q">Q${i+1}: ${a.question}</div>${!a.correct ? `<div class="r-a">✓ ${a.correctAnswer}</div>` : ''}<div class="r-a" style="font-size:0.7rem; margin-top:0.3rem;">${a.explanation}</div></div>
         </div>
     `).join('');
-
+    
     showScreen('screenResults');
-}
-
-// ════════════════════════════════════════════════════════════
-// NAVIGATION HELPERS
-// ════════════════════════════════════════════════════════════
-function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function goHome()    { showScreen('screenHome');  renderHome(); }
-function retryQuiz() { startQuiz(state.quizId); }
-function quitQuiz()  { if (confirm('Quit this quiz? Progress will be lost.')) goHome(); }
-
-function syncUserScore(pts) {
-    try {
-        const raw  = localStorage.getItem('user') || sessionStorage.getItem('user') || '{}';
-        const user = JSON.parse(raw);
-        user.points = (user.points || 0) + pts;
-        const store = localStorage.getItem('user') ? localStorage : sessionStorage;
-        store.setItem('user', JSON.stringify(user));
-    } catch(_) {}
-}
-
-// ════════════════════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
-    loadPersist();
     renderHome();
+}
 
-    // auth link
-    try {
-        const raw = localStorage.getItem('user') || sessionStorage.getItem('user');
-        if (raw) {
-            const u = JSON.parse(raw);
-            const l = document.getElementById('auth-link');
-            if (l && u.username) l.textContent = u.username;
-        }
-    } catch(_) {}
-});
+function recordToGlobalSubmissions(quizId, quizTitle, score, totalQuestions) {
+    const user = getCurrentUser();
+    if (!user) return;
+    const pointsEarned = score * 10;
+    let submissions = JSON.parse(localStorage.getItem(DB_KEYS.SUBMISSIONS) || '[]');
+    const existingIndex = submissions.findIndex(s => s.userName === user.username && s.quizId === quizId && s.type === 'quiz');
+    const submission = { id: Date.now(), userId: user.id || Date.now(), userName: user.username, quizId, quizTitle, score, totalQuestions, points: pointsEarned, type: 'quiz', time: new Date().toISOString(), timestamp: Date.now() };
+    if (existingIndex !== -1) { if (submissions[existingIndex].score < score) submissions[existingIndex] = submission; else return; } 
+    else { submissions.push(submission); }
+    localStorage.setItem(DB_KEYS.SUBMISSIONS, JSON.stringify(submissions));
+    updateUserPoints(user.username, pointsEarned, quizId);
+}
+
+function updateUserPoints(username, points, quizId) {
+    let pointsData = JSON.parse(localStorage.getItem(DB_KEYS.USER_POINTS) || '{}');
+    if (!pointsData[username]) pointsData[username] = { total: 0, challenges: {}, quizzes: {}, lastUpdated: Date.now() };
+    const existingPoints = pointsData[username].quizzes?.[quizId]?.points || 0;
+    if (existingPoints < points) {
+        pointsData[username].total = pointsData[username].total - existingPoints + points;
+        pointsData[username].quizzes = pointsData[username].quizzes || {};
+        pointsData[username].quizzes[quizId] = { points, completedAt: Date.now() };
+        pointsData[username].lastUpdated = Date.now();
+        localStorage.setItem(DB_KEYS.USER_POINTS, JSON.stringify(pointsData));
+    }
+    const users = JSON.parse(localStorage.getItem(DB_KEYS.USERS) || '{}');
+    if (users[username]) { users[username].points = pointsData[username].total; localStorage.setItem(DB_KEYS.USERS, JSON.stringify(users)); }
+}
+
+function resetMyProgress() {
+    const user = getCurrentUser();
+    if (!user) return;
+    if (confirm('⚠️ This will reset ALL your quiz progress and points earned from quizzes. This cannot be undone!')) {
+        localStorage.removeItem(DB_KEYS.STUDENT_QUIZ_RESULTS(user.username));
+        localStorage.removeItem(DB_KEYS.STUDENT_QUIZ_STREAK(user.username));
+        let submissions = JSON.parse(localStorage.getItem(DB_KEYS.SUBMISSIONS) || '[]');
+        submissions = submissions.filter(s => !(s.userName === user.username && s.type === 'quiz'));
+        localStorage.setItem(DB_KEYS.SUBMISSIONS, JSON.stringify(submissions));
+        let pointsData = JSON.parse(localStorage.getItem(DB_KEYS.USER_POINTS) || '{}');
+        if (pointsData[user.username]) { pointsData[user.username].quizzes = {}; pointsData[user.username].total = Object.values(pointsData[user.username].challenges || {}).reduce((sum, c) => sum + (c.points || 0), 0); pointsData[user.username].lastUpdated = Date.now(); localStorage.setItem(DB_KEYS.USER_POINTS, JSON.stringify(pointsData)); }
+        const users = JSON.parse(localStorage.getItem(DB_KEYS.USERS) || '{}');
+        if (users[user.username]) { users[user.username].points = pointsData[user.username]?.total || 0; localStorage.setItem(DB_KEYS.USERS, JSON.stringify(users)); }
+        const sessionUser = getCurrentUser();
+        if (sessionUser) { sessionUser.points = users[user.username]?.points || 0; if (sessionStorage.getItem('user')) sessionStorage.setItem('user', JSON.stringify(sessionUser)); else localStorage.setItem('user', JSON.stringify(sessionUser)); }
+        showToast('Your quiz progress has been reset!');
+        renderHome();
+    }
+}
+
+function renderLives() { const row = document.getElementById('livesRow'); row.innerHTML = ''; for (let i = 0; i < 5; i++) { const dot = document.createElement('div'); dot.className = 'life-dot' + (i >= currentLives ? ' lost' : ''); row.appendChild(dot); } }
+function showScreen(screenId) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(screenId).classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function goHome() { showScreen('screenHome'); renderHome(); }
+function retryQuiz() { if (currentQuiz) startQuiz(currentQuiz.id); }
+function quitQuiz() { if (confirm('Quit this quiz? Progress will be lost.')) goHome(); }
+
+document.addEventListener('DOMContentLoaded', () => { updateAuthUI(); if (getCurrentUser()) renderHome(); });
 </script>
 </body>
 </html>
